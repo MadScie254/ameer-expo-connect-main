@@ -13,8 +13,10 @@ import {
   ClipboardCheck,
   PartyPopper,
   Star,
+  Star,
 } from "lucide-react";
 import logo from "@/assets/ameer-expo-logo.png.asset.json";
+import { VideoEmbed } from "../components/expo/VideoEmbed";
 
 export const Route = createFileRoute("/register")({
   component: Register,
@@ -365,8 +367,10 @@ function Register() {
             </button>
           </div>
         )}
-        {/* Stepper */}
-        <div className="rounded-3xl glass shadow-soft border border-border/60 p-6 sm:p-8">
+        <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_340px]">
+          <div className="flex flex-col gap-6">
+            {/* Stepper */}
+            <div className="rounded-3xl glass shadow-soft border border-border/60 p-6 sm:p-8">
           <div className="flex items-center justify-between gap-2 overflow-x-auto">
             {steps.map((s, i) => {
               const active = i === step;
@@ -405,7 +409,7 @@ function Register() {
         </div>
 
         {/* Step content */}
-        <div className="mt-6 rounded-3xl bg-card border border-border/60 shadow-soft p-6 sm:p-10">
+        <div className="rounded-3xl bg-card border border-border/60 shadow-soft p-6 sm:p-10">
           {step === 0 && (
             <StepBlock title="Personal information" subtitle="Tell us who's attending.">
               <div className="grid gap-5 sm:grid-cols-2">
@@ -797,10 +801,22 @@ function Register() {
             {savedAt
               ? `Progress saved automatically · ${savedAt.toLocaleTimeString()}`
               : "Your progress saves automatically to this device."}
+            </div>
+          </div>
+        </div>
+
+        <div className="order-first lg:order-last">
+          <div className="sticky top-24 rounded-3xl bg-card border border-border/60 shadow-soft p-6">
+            <h3 className="font-display font-semibold mb-4 text-lg text-foreground">Experience Ameer Expo</h3>
+            <VideoEmbed youtubeId="dQw4w9WgXcQ" caption="Join industry leaders in shaping the future." />
+            <div className="mt-6 rounded-2xl bg-secondary/50 p-4 text-sm text-muted-foreground">
+              <p>Hear from previous attendees about their experience, the networking opportunities, and the insights they gained.</p>
+            </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
   );
 }
 

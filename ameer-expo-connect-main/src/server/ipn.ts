@@ -1,17 +1,7 @@
-import { createAPIFileRoute } from '@tanstack/react-start/api';
-import { getPesapalToken } from '../../../server/pesapal';
-import db from '../../../lib/db';
+import { getPesapalToken } from "./pesapal";
+import db from "../lib/db";
 
-export const Route = createAPIFileRoute('/api/pesapal/ipn')({
-  GET: async ({ request }) => {
-    return handleIpn(request);
-  },
-  POST: async ({ request }) => {
-    return handleIpn(request);
-  }
-});
-
-async function handleIpn(request: Request) {
+export async function handleIpn(request: Request) {
   try {
     const url = new URL(request.url);
     let orderTrackingId = url.searchParams.get("OrderTrackingId");
@@ -70,8 +60,9 @@ async function handleIpn(request: Request) {
       message: "IPN handled successfully"
     }), { status: 200, headers: { 'Content-Type': 'application/json' } });
 
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "IPN Error";
     console.error("IPN Error:", err);
-    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: msg }), { status: 500 });
   }
 }
