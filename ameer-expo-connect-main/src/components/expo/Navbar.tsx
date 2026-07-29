@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import logo from "@/assets/ameer-expo-logo.png.asset.json";
 import { Menu, X } from "lucide-react";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 const links = [
   { label: "About", href: "#about" },
@@ -75,6 +76,7 @@ export function Navbar() {
           </div>
 
           <div className="flex items-center gap-2">
+            <LanguageSwitcher />
             <Link
               to="/register"
               className="hidden sm:inline-flex items-center rounded-xl bg-gradient-gold px-5 py-2.5 text-sm font-semibold text-gold-foreground shadow-glow hover:shadow-elegant transition-all hover:-translate-y-0.5"
