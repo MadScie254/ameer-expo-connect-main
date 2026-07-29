@@ -2,20 +2,20 @@ import { Globe, Check } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
 const LANGUAGES = [
-  { code: "en", label: "English", flag: "🇬🇧" },
-  { code: "ar", label: "Arabic", flag: "🇸🇦" },
-  { code: "so", label: "Somali", flag: "🇸🇴" },
-  { code: "sw", label: "Swahili", flag: "🇰🇪" },
-  { code: "tr", label: "Turkish", flag: "🇹🇷" },
-  { code: "fr", label: "French", flag: "🇫🇷" },
-  { code: "de", label: "German", flag: "🇩🇪" },
-  { code: "it", label: "Italian", flag: "🇮🇹" },
-  { code: "es", label: "Spanish", flag: "🇪🇸" },
-  { code: "pt", label: "Portuguese", flag: "🇵🇹" },
-  { code: "nl", label: "Dutch", flag: "🇳🇱" },
-  { code: "el", label: "Greek", flag: "🇬🇷" },
-  { code: "ru", label: "Russian", flag: "🇷🇺" },
-  { code: "zh-CN", label: "Chinese", flag: "🇨🇳" },
+  { code: "en", label: "English", country: "gb" },
+  { code: "ar", label: "Arabic", country: "sa" },
+  { code: "so", label: "Somali", country: "so" },
+  { code: "sw", label: "Swahili", country: "ke" },
+  { code: "tr", label: "Turkish", country: "tr" },
+  { code: "fr", label: "French", country: "fr" },
+  { code: "de", label: "German", country: "de" },
+  { code: "it", label: "Italian", country: "it" },
+  { code: "es", label: "Spanish", country: "es" },
+  { code: "pt", label: "Portuguese", country: "pt" },
+  { code: "nl", label: "Dutch", country: "nl" },
+  { code: "el", label: "Greek", country: "gr" },
+  { code: "ru", label: "Russian", country: "ru" },
+  { code: "zh-CN", label: "Chinese", country: "cn" },
 ];
 
 export function LanguageSwitcher() {
@@ -23,8 +23,29 @@ export function LanguageSwitcher() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Load language from cookie if available
+  // Load language from cookie if available and inject script
   useEffect(() => {
+    // Inject Google Translate script safely
+    if (!document.getElementById("google-translate-script")) {
+      (window as any).googleTranslateElementInit = function () {
+        new (window as any).google.translate.TranslateElement(
+          {
+            pageLanguage: "en",
+            includedLanguages: "en,ar,so,sw,tr,fr,de,it,es,pt,nl,el,ru,zh-CN",
+            layout: (window as any).google.translate.TranslateElement.InlineLayout.SIMPLE,
+            autoDisplay: false,
+          },
+          "google_translate_element"
+        );
+      };
+
+      const script = document.createElement("script");
+      script.id = "google-translate-script";
+      script.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+      script.async = true;
+      document.body.appendChild(script);
+    }
+
     const match = document.cookie.match(/(?:^|;)\s*googtrans=([^;]*)/);
     if (match) {
       const parts = match[1].split("/");
@@ -32,7 +53,7 @@ export function LanguageSwitcher() {
         setCurrentLang(parts[2]);
       }
     }
-
+    
     const clickHandler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setIsOpen(false);
@@ -85,13 +106,17 @@ export function LanguageSwitcher() {
             key={lang.code}
             onClick={() => changeLanguage(lang.code)}
             title={lang.label}
-            className={`w-7 h-7 rounded-full flex items-center justify-center text-sm transition-all ${
+            className={`w-7 h-7 rounded-full flex items-center justify-center transition-all overflow-hidden border border-border/20 ${
               currentLang === lang.code
-                ? "bg-primary text-primary-foreground shadow-glow scale-110"
-                : "hover:bg-white/10 opacity-70 hover:opacity-100"
+                ? "shadow-glow scale-110 border-primary"
+                : "opacity-70 hover:opacity-100"
             }`}
           >
-            {lang.flag}
+            <img 
+              src={`https://flagcdn.com/w40/${lang.country}.png`} 
+              alt={lang.label}
+              className="w-full h-full object-cover"
+            />
           </button>
         ))}
       </div>
@@ -106,7 +131,11 @@ export function LanguageSwitcher() {
           {currentLang === "en" ? (
             <Globe size={18} className="text-foreground" />
           ) : (
-            LANGUAGES.find((l) => l.code === currentLang)?.flag || <Globe size={18} />
+            <img 
+              src={`https://flagcdn.com/w40/${LANGUAGES.find((l) => l.code === currentLang)?.country}.png`} 
+              alt={currentLang}
+              className="w-6 h-6 rounded-full object-cover"
+            />
           )}
         </button>
 
@@ -122,7 +151,11 @@ export function LanguageSwitcher() {
                     : "text-foreground"
                 }`}
               >
-                <span className="text-lg">{lang.flag}</span>
+                <img 
+                  src={`https://flagcdn.com/w40/${lang.country}.png`} 
+                  alt={lang.label}
+                  className="w-5 h-5 rounded-full object-cover border border-border/20"
+                />
                 <span className="flex-1">{lang.label}</span>
                 {currentLang === lang.code && <Check size={16} />}
               </button>
