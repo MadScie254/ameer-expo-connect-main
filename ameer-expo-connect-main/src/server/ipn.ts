@@ -52,7 +52,7 @@ export async function handleIpn(request: Request) {
       args: {
         status: internalStatus,
         orderTrackingId,
-      }
+      },
     });
 
     return new Response(

@@ -228,16 +228,16 @@ function Register() {
   // Poll for payment status
   useEffect(() => {
     if (!confirmingRid) return;
-    
+
     let isSubscribed = true;
     let pollCount = 0;
     const maxPolls = 40; // 40 * 3s = 120s
-    
+
     const checkStatus = async () => {
       try {
         const result = await getRegistrationStatus({ data: confirmingRid });
         if (!isSubscribed) return;
-        
+
         if (result && result.paymentStatus === "paid") {
           setSubmitted(confirmingRid);
           try {
@@ -245,7 +245,9 @@ function Register() {
               STORAGE_KEY,
               JSON.stringify({ submitted: confirmingRid, savedAt: new Date().toISOString() }),
             );
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
           setConfirmingRid(null);
         } else if (result && result.paymentStatus === "failed") {
           setPollError("Payment failed. Please try again.");
@@ -270,9 +272,11 @@ function Register() {
         }
       }
     };
-    
+
     checkStatus();
-    return () => { isSubscribed = false; };
+    return () => {
+      isSubscribed = false;
+    };
   }, [confirmingRid]);
 
   // Load persisted draft on mount
@@ -387,7 +391,8 @@ function Register() {
             </div>
             <h2 className="mb-4 font-display text-3xl font-bold">Confirming Payment...</h2>
             <p className="mb-8 text-muted-foreground">
-              Please wait while we verify your payment with Pesapal. This usually takes a few seconds.
+              Please wait while we verify your payment with Pesapal. This usually takes a few
+              seconds.
             </p>
           </div>
         </div>
@@ -406,7 +411,8 @@ function Register() {
             </div>
             <h2 className="mb-4 font-display text-3xl font-bold">Payment Processing</h2>
             <p className="mb-8 text-muted-foreground">
-              Your payment is taking longer than usual to confirm. Don't worry — we'll email your confirmation and VIP pass once it goes through.
+              Your payment is taking longer than usual to confirm. Don't worry — we'll email your
+              confirmation and VIP pass once it goes through.
             </p>
           </div>
         </div>
@@ -420,10 +426,10 @@ function Register() {
         <TopBar />
         <div className="mx-auto max-w-2xl px-4 py-24">
           <div className="rounded-3xl bg-card p-10 text-center shadow-elegant border border-destructive/60">
-            <h2 className="mb-4 font-display text-3xl font-bold text-destructive">Payment Failed</h2>
-            <p className="mb-8 text-muted-foreground">
-              {pollError}
-            </p>
+            <h2 className="mb-4 font-display text-3xl font-bold text-destructive">
+              Payment Failed
+            </h2>
+            <p className="mb-8 text-muted-foreground">{pollError}</p>
             <button
               onClick={() => {
                 setPollError(null);

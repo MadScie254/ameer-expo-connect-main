@@ -83,7 +83,7 @@ export const submitRegistration = createServerFn({ method: "POST" })
           paymentStatus,
           orderTrackingId,
           payload,
-        }
+        },
       });
 
       return { success: true, id, passType, redirectUrl };
