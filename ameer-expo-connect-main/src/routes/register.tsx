@@ -13,6 +13,7 @@ import {
   Hotel,
   ClipboardCheck,
   PartyPopper,
+  Star,
 } from "lucide-react";
 import logo from "@/assets/ameer-expo-logo.png.asset.json";
 
@@ -41,6 +42,7 @@ const steps = [
   { key: "interests", label: "Interests", icon: Sparkles },
   { key: "networking", label: "Networking", icon: Users },
   { key: "logistics", label: "Logistics", icon: Hotel },
+  { key: "passType", label: "Pass Type", icon: Star },
   { key: "review", label: "Review", icon: ClipboardCheck },
 ];
 
@@ -117,6 +119,7 @@ type FormState = {
   dietary: string;
   accessibility: string;
   terms: boolean;
+  passType: string;
 };
 
 const initial: FormState = {
@@ -146,6 +149,7 @@ const initial: FormState = {
   dietary: "",
   accessibility: "",
   terms: false,
+  passType: "general",
 };
 
 function Field({
@@ -276,7 +280,7 @@ function Register() {
   const canNext = () => {
     if (step === 0) return f.firstName && f.lastName && f.email && f.country && f.phone;
     if (step === 1) return f.company && f.jobTitle && f.businessType;
-    if (step === 5) return f.terms;
+    if (step === 6) return f.terms;
     return true;
   };
 
@@ -293,6 +297,10 @@ function Register() {
           );
         } catch {
           /* ignore */
+        }
+        if (result.redirectUrl) {
+          window.location.href = result.redirectUrl;
+          return;
         }
         setSubmitted(result.id);
       }
@@ -665,6 +673,50 @@ function Register() {
           )}
 
           {step === 5 && (
+            <StepBlock title="Select your pass" subtitle="Choose your experience for the expo.">
+              <div className="grid gap-4 sm:grid-cols-2">
+                {[
+                  {
+                    id: "general",
+                    title: "General (Free)",
+                    desc: "Access to the main exhibition floor and open sessions.",
+                    price: 0,
+                  },
+                  {
+                    id: "vip",
+                    title: "VIP Pass",
+                    desc: "VIP lounge access, fast-track badge, gala dinner, and concierge.",
+                    price: 5000,
+                  },
+                ].map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => set("passType", p.id)}
+                    className={`cursor-pointer rounded-2xl border p-5 text-left transition-all ${
+                      f.passType === p.id
+                        ? "border-primary bg-primary/5 shadow-soft ring-1 ring-primary"
+                        : "border-border bg-card hover:border-primary/40"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-display font-semibold">{p.title}</span>
+                      <span
+                        className={`h-5 w-5 grid place-items-center rounded-full border ${f.passType === p.id ? "bg-primary border-primary text-primary-foreground" : "border-border"}`}
+                      >
+                        {f.passType === p.id && <Check size={12} />}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-sm text-muted-foreground">{p.desc}</p>
+                    <div className="mt-4 font-bold text-foreground">
+                      {p.price === 0 ? "Free" : `KES ${p.price.toLocaleString()}`}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </StepBlock>
+          )}
+
+          {step === 6 && (
             <StepBlock title="Review & confirm" subtitle="Everything look right?">
               <div className="rounded-2xl bg-secondary/50 p-5 sm:p-6 grid gap-4 sm:grid-cols-2 text-sm">
                 <Sum label="Name" value={`${f.firstName} ${f.lastName}`} />
@@ -689,6 +741,7 @@ function Register() {
                       .join(", ") || "—"
                   }
                 />
+                <Sum label="Pass Type" value={f.passType === "vip" ? "VIP Pass (KES 5,000)" : "General (Free)"} />
               </div>
               <label className="mt-6 flex items-start gap-3 text-sm">
                 <input
@@ -736,7 +789,7 @@ function Register() {
                   disabled={!f.terms || isSubmitting}
                   className="inline-flex items-center gap-2 rounded-xl bg-gradient-gold px-6 py-3 text-sm font-semibold text-gold-foreground shadow-glow disabled:opacity-50 hover:-translate-y-0.5 transition-all"
                 >
-                  {isSubmitting ? "Submitting..." : "Complete Registration"} <Check size={16} />
+                  {isSubmitting ? "Submitting..." : f.passType === "vip" ? "Proceed to Payment" : "Complete Registration"} <Check size={16} />
                 </button>
               </div>
             )}
