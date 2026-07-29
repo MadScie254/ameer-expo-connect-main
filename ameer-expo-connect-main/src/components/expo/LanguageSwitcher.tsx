@@ -68,28 +68,25 @@ export function LanguageSwitcher() {
     if (code === "en") {
       // Reset logic
       document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-      document.cookie =
-        "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=." +
-        window.location.hostname +
-        ";";
+      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=." + window.location.hostname + ";";
       document.documentElement.dir = "ltr";
       window.location.reload();
       return;
     }
 
-    const select = document.querySelector("select.goog-te-combo") as HTMLSelectElement;
-    if (select) {
-      select.value = code;
-      select.dispatchEvent(new Event("change", { bubbles: true }));
-      setCurrentLang(code);
-      // Keep LTR even for Arabic to preserve existing spacing/alignment
-      // Note: Full RTL support is a separate future task.
-      document.documentElement.dir = "ltr";
-      setIsOpen(false);
-    } else {
-      // If the script hasn't loaded yet, try again in a moment
-      setTimeout(() => changeLanguage(code), 500);
-    }
+    // Set the Google Translate cookie manually for guaranteed initialization
+    document.cookie = `googtrans=/en/${code}; path=/`;
+    document.cookie = `googtrans=/en/${code}; path=/; domain=.${window.location.hostname}`;
+
+    setCurrentLang(code);
+    
+    // Keep LTR even for Arabic to preserve existing spacing/alignment
+    // Note: Full RTL support is a separate future task.
+    document.documentElement.dir = "ltr"; 
+    setIsOpen(false);
+    
+    // Reload to let the Google Translate script pick up the new cookie and apply cleanly
+    window.location.reload();
   };
 
   return (

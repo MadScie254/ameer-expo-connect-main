@@ -177,8 +177,17 @@
     top: 0 !important;
   }
   
-  /* Hide Google Translate UI */
-  #google_translate_element,
+  /* Hide Google Translate UI but keep it in DOM for initialization */
+  #google_translate_element {
+    position: absolute !important;
+    top: -10000px !important;
+    left: -10000px !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+  }
+  
   .goog-te-banner-frame,
   .skiptranslate > iframe.goog-te-banner-frame {
     display: none !important;
