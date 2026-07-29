@@ -44,6 +44,8 @@ export const submitRegistration = createServerFn({ method: "POST" })
       let orderTrackingId = null;
       let paymentStatus = "free";
 
+      const passType = data.passType || "general";
+
       if (passType === "vip") {
         paymentStatus = "pending";
         // Fetch pesapal token and submit order

@@ -13,7 +13,6 @@ import {
   ClipboardCheck,
   PartyPopper,
   Star,
-  Star,
 } from "lucide-react";
 import logo from "@/assets/ameer-expo-logo.png.asset.json";
 import { VideoEmbed } from "../components/expo/VideoEmbed";
