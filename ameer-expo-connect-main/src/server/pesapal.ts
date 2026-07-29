@@ -37,7 +37,7 @@ export const submitPesapalOrder = async (
     currency: "KES",
     amount: options.amount,
     description: "Ameer Expo VIP Pass",
-    callback_url: `${baseUrl}/register?status=confirming`,
+    callback_url: `${baseUrl}/register?rid=${options.id}`,
     notification_id: process.env.PESAPAL_IPN_ID,
     billing_address: {
       email_address: options.email,
