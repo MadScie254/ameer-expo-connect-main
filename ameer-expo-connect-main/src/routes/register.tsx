@@ -1,5 +1,7 @@
+import { createFileRoute } from '@tanstack/react-router'
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { submitRegistration } from "../server/registration";
 import {
   ArrowLeft,
   ArrowRight,
@@ -202,6 +204,8 @@ function Register() {
   const [hydrated, setHydrated] = useState(false);
   const [resumedAt, setResumedAt] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Load persisted draft on mount
   useEffect(() => {
@@ -276,17 +280,28 @@ function Register() {
     return true;
   };
 
-  const submit = () => {
-    const id = "AE26-" + Math.random().toString(36).slice(2, 8).toUpperCase();
+  const submit = async () => {
+    setIsSubmitting(true);
+    setSubmitError(null);
     try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({ submitted: id, savedAt: new Date().toISOString() }),
-      );
-    } catch {
-      /* ignore */
+      const result = await submitRegistration({ data: f });
+      if (result.success) {
+        try {
+          localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({ submitted: result.id, savedAt: new Date().toISOString() }),
+          );
+        } catch {
+          /* ignore */
+        }
+        setSubmitted(result.id);
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Registration failed. Please try again.";
+      setSubmitError(msg);
+    } finally {
+      setIsSubmitting(false);
     }
-    setSubmitted(id);
   };
 
   if (submitted) {
@@ -714,13 +729,16 @@ function Register() {
                 Continue <ArrowRight size={16} />
               </button>
             ) : (
-              <button
-                onClick={submit}
-                disabled={!f.terms}
-                className="inline-flex items-center gap-2 rounded-xl bg-gradient-gold px-6 py-3 text-sm font-semibold text-gold-foreground shadow-glow disabled:opacity-50 hover:-translate-y-0.5 transition-all"
-              >
-                Complete Registration <Check size={16} />
-              </button>
+              <div className="flex items-center gap-4">
+                {submitError && <span className="text-sm font-medium text-destructive">{submitError}</span>}
+                <button
+                  onClick={submit}
+                  disabled={!f.terms || isSubmitting}
+                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-gold px-6 py-3 text-sm font-semibold text-gold-foreground shadow-glow disabled:opacity-50 hover:-translate-y-0.5 transition-all"
+                >
+                  {isSubmitting ? "Submitting..." : "Complete Registration"} <Check size={16} />
+                </button>
+              </div>
             )}
           </div>
           <div className="mt-4 text-center text-xs text-muted-foreground">
