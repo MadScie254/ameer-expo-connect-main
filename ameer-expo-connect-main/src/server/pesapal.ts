@@ -25,13 +25,13 @@ export const submitPesapalOrder = async (
     phone: string;
     firstName: string;
     lastName: string;
-  }
+  },
 ) => {
   const url = "https://cybqa.pesapal.com/pesapalv3/api/Transactions/SubmitOrderRequest";
   // The callback URL should be our absolute URL, which we don't have trivially in this generic module without request context.
   // We'll use a placeholder or read from env.
   const baseUrl = process.env.PUBLIC_APP_URL || "http://localhost:3000";
-  
+
   const payload = {
     id: options.id,
     currency: "KES",

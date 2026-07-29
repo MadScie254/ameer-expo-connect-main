@@ -6,7 +6,7 @@ export async function handleIpn(request: Request) {
     const url = new URL(request.url);
     let orderTrackingId = url.searchParams.get("OrderTrackingId");
     let merchantReference = url.searchParams.get("OrderMerchantReference");
-    
+
     // Fallback to body if not in query
     if (!orderTrackingId && request.method === "POST") {
       try {
@@ -30,8 +30,8 @@ export async function handleIpn(request: Request) {
     const statusReq = await fetch(statusUrl, {
       headers: {
         Accept: "application/json",
-        Authorization: `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     });
 
     const statusData = await statusReq.json();
@@ -48,18 +48,20 @@ export async function handleIpn(request: Request) {
       SET paymentStatus = @status 
       WHERE orderTrackingId = @orderTrackingId
     `);
-    
+
     update.run({
       status: internalStatus,
-      orderTrackingId
+      orderTrackingId,
     });
 
-    return new Response(JSON.stringify({ 
-      orderTrackingId,
-      status: 200,
-      message: "IPN handled successfully"
-    }), { status: 200, headers: { 'Content-Type': 'application/json' } });
-
+    return new Response(
+      JSON.stringify({
+        orderTrackingId,
+        status: 200,
+        message: "IPN handled successfully",
+      }),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "IPN Error";
     console.error("IPN Error:", err);

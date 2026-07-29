@@ -6,6 +6,16 @@ export function Footer() {
   return (
     <footer className="relative bg-gradient-primary text-primary-foreground">
       <div className="mx-auto max-w-7xl px-4 py-16">
+        <div className="mb-16 flex flex-col sm:flex-row items-center justify-between gap-6 rounded-3xl bg-primary-foreground/5 p-8 border border-white/10">
+          <div>
+            <h3 className="font-display text-2xl font-bold">Ready to join?</h3>
+            <p className="mt-2 text-sm text-white/70">Register now and secure your spot at the Ameer Expo 2026.</p>
+          </div>
+          <Link to="/register" className="shrink-0 rounded-xl bg-gradient-gold px-8 py-4 font-semibold text-gold-foreground shadow-glow hover:-translate-y-1 transition-all">
+            Register Now
+          </Link>
+        </div>
+
         <div className="grid gap-10 lg:grid-cols-4">
           <div>
             <div className="flex items-center gap-3">

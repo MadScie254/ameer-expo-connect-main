@@ -371,452 +371,475 @@ function Register() {
           <div className="flex flex-col gap-6">
             {/* Stepper */}
             <div className="rounded-3xl glass shadow-soft border border-border/60 p-6 sm:p-8">
-          <div className="flex items-center justify-between gap-2 overflow-x-auto">
-            {steps.map((s, i) => {
-              const active = i === step;
-              const done = i < step;
-              return (
-                <div key={s.key} className="flex items-center gap-2 min-w-fit">
-                  <div
-                    className={`grid h-10 w-10 place-items-center rounded-full text-sm font-semibold transition-all ${
-                      done
-                        ? "bg-gradient-primary text-primary-foreground"
-                        : active
-                          ? "bg-gradient-gold text-gold-foreground shadow-glow"
-                          : "bg-secondary text-muted-foreground"
-                    }`}
-                  >
-                    {done ? <Check size={16} /> : <s.icon size={16} />}
-                  </div>
-                  <span
-                    className={`hidden sm:inline text-xs font-medium ${
-                      active ? "text-foreground" : "text-muted-foreground"
-                    }`}
-                  >
-                    {s.label}
-                  </span>
-                  {i < steps.length - 1 && <div className="hidden sm:block h-px w-6 bg-border" />}
-                </div>
-              );
-            })}
-          </div>
-          <div className="mt-6 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
-            <div
-              className="h-full rounded-full bg-gradient-gold transition-all duration-500"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Step content */}
-        <div className="rounded-3xl bg-card border border-border/60 shadow-soft p-6 sm:p-10">
-          {step === 0 && (
-            <StepBlock title="Personal information" subtitle="Tell us who's attending.">
-              <div className="grid gap-5 sm:grid-cols-2">
-                <Field label="First Name" required>
-                  <input
-                    className={inputCls}
-                    value={f.firstName}
-                    onChange={(e) => set("firstName", e.target.value)}
-                  />
-                </Field>
-                <Field label="Last Name" required>
-                  <input
-                    className={inputCls}
-                    value={f.lastName}
-                    onChange={(e) => set("lastName", e.target.value)}
-                  />
-                </Field>
-                <Field label="Gender">
-                  <select
-                    className={inputCls}
-                    value={f.gender}
-                    onChange={(e) => set("gender", e.target.value)}
-                  >
-                    <option value="">Select…</option>
-                    <option>Female</option>
-                    <option>Male</option>
-                    <option>Prefer not to say</option>
-                  </select>
-                </Field>
-                <Field label="Date of Birth">
-                  <input
-                    type="date"
-                    className={inputCls}
-                    value={f.dob}
-                    onChange={(e) => set("dob", e.target.value)}
-                  />
-                </Field>
-                <Field label="Passport / National ID">
-                  <input
-                    className={inputCls}
-                    value={f.idNumber}
-                    onChange={(e) => set("idNumber", e.target.value)}
-                  />
-                </Field>
-                <Field label="Country" required>
-                  <input
-                    className={inputCls}
-                    value={f.country}
-                    onChange={(e) => set("country", e.target.value)}
-                  />
-                </Field>
-                <Field label="City">
-                  <input
-                    className={inputCls}
-                    value={f.city}
-                    onChange={(e) => set("city", e.target.value)}
-                  />
-                </Field>
-                <Field label="Phone Number" required>
-                  <input
-                    className={inputCls}
-                    value={f.phone}
-                    onChange={(e) => set("phone", e.target.value)}
-                    placeholder="+254…"
-                  />
-                </Field>
-                <Field label="WhatsApp Number">
-                  <input
-                    className={inputCls}
-                    value={f.whatsapp}
-                    onChange={(e) => set("whatsapp", e.target.value)}
-                  />
-                </Field>
-                <Field label="Email Address" required>
-                  <input
-                    type="email"
-                    className={inputCls}
-                    value={f.email}
-                    onChange={(e) => set("email", e.target.value)}
-                  />
-                </Field>
-                <Field label="LinkedIn (optional)">
-                  <input
-                    className={inputCls}
-                    value={f.linkedin}
-                    onChange={(e) => set("linkedin", e.target.value)}
-                    placeholder="https://linkedin.com/in/…"
-                  />
-                </Field>
-                <Field label="Photo Upload">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className={
-                      inputCls +
-                      " file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-primary-foreground"
-                    }
-                  />
-                </Field>
-              </div>
-            </StepBlock>
-          )}
-
-          {step === 1 && (
-            <StepBlock title="Professional information" subtitle="Where do you work?">
-              <div className="grid gap-5 sm:grid-cols-2">
-                <Field label="Company Name" required>
-                  <input
-                    className={inputCls}
-                    value={f.company}
-                    onChange={(e) => set("company", e.target.value)}
-                  />
-                </Field>
-                <Field label="Job Title" required>
-                  <input
-                    className={inputCls}
-                    value={f.jobTitle}
-                    onChange={(e) => set("jobTitle", e.target.value)}
-                  />
-                </Field>
-                <Field label="Industry">
-                  <select
-                    className={inputCls}
-                    value={f.industry}
-                    onChange={(e) => set("industry", e.target.value)}
-                  >
-                    <option value="">Select industry…</option>
-                    {industries.map((i) => (
-                      <option key={i}>{i}</option>
-                    ))}
-                  </select>
-                </Field>
-                <Field label="Company Website">
-                  <input
-                    className={inputCls}
-                    value={f.website}
-                    onChange={(e) => set("website", e.target.value)}
-                    placeholder="https://…"
-                  />
-                </Field>
-                <Field label="Business Type" required>
-                  <select
-                    className={inputCls}
-                    value={f.businessType}
-                    onChange={(e) => set("businessType", e.target.value)}
-                  >
-                    <option value="">Select…</option>
-                    {businessTypes.map((i) => (
-                      <option key={i}>{i}</option>
-                    ))}
-                  </select>
-                </Field>
-                <Field label="Years of Experience">
-                  <input
-                    type="number"
-                    min={0}
-                    className={inputCls}
-                    value={f.experience}
-                    onChange={(e) => set("experience", e.target.value)}
-                  />
-                </Field>
-              </div>
-            </StepBlock>
-          )}
-
-          {step === 2 && (
-            <StepBlock title="Areas of interest" subtitle="Pick everything you'd like to explore.">
-              <div className="flex flex-wrap gap-2">
-                {industries.map((i) => (
-                  <Chip
-                    key={i}
-                    active={f.interests.includes(i)}
-                    onClick={() => toggle("interests", i)}
-                  >
-                    {i}
-                  </Chip>
-                ))}
-              </div>
-            </StepBlock>
-          )}
-
-          {step === 3 && (
-            <StepBlock
-              title="Networking preferences"
-              subtitle="We'll match you with the right people."
-            >
-              <div className="space-y-6">
-                <Field label="Would you like to schedule B2B meetings?">
-                  <div className="flex gap-2">
-                    {["Yes", "No"].map((v) => (
-                      <Chip key={v} active={f.b2b === v} onClick={() => set("b2b", v)}>
-                        {v}
-                      </Chip>
-                    ))}
-                  </div>
-                </Field>
-                <Field label="Interested in meeting">
-                  <div className="flex flex-wrap gap-2">
-                    {networkingTargets.map((v) => (
-                      <Chip
-                        key={v}
-                        active={f.targets.includes(v)}
-                        onClick={() => toggle("targets", v)}
+              <div className="flex items-center justify-between gap-2 overflow-x-auto">
+                {steps.map((s, i) => {
+                  const active = i === step;
+                  const done = i < step;
+                  return (
+                    <div key={s.key} className="flex items-center gap-2 min-w-fit">
+                      <div
+                        className={`grid h-10 w-10 place-items-center rounded-full text-sm font-semibold transition-all ${
+                          done
+                            ? "bg-gradient-primary text-primary-foreground"
+                            : active
+                              ? "bg-gradient-gold text-gold-foreground shadow-glow"
+                              : "bg-secondary text-muted-foreground"
+                        }`}
                       >
-                        {v}
+                        {done ? <Check size={16} /> : <s.icon size={16} />}
+                      </div>
+                      <span
+                        className={`hidden sm:inline text-xs font-medium ${
+                          active ? "text-foreground" : "text-muted-foreground"
+                        }`}
+                      >
+                        {s.label}
+                      </span>
+                      {i < steps.length - 1 && (
+                        <div className="hidden sm:block h-px w-6 bg-border" />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="mt-6 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+                <div
+                  className="h-full rounded-full bg-gradient-gold transition-all duration-500"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Step content */}
+            <div className="rounded-3xl bg-card border border-border/60 shadow-soft p-6 sm:p-10">
+              {step === 0 && (
+                <StepBlock title="Personal information" subtitle="Tell us who's attending.">
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <Field label="First Name" required>
+                      <input
+                        className={inputCls}
+                        value={f.firstName}
+                        onChange={(e) => set("firstName", e.target.value)}
+                      />
+                    </Field>
+                    <Field label="Last Name" required>
+                      <input
+                        className={inputCls}
+                        value={f.lastName}
+                        onChange={(e) => set("lastName", e.target.value)}
+                      />
+                    </Field>
+                    <Field label="Gender">
+                      <select
+                        className={inputCls}
+                        value={f.gender}
+                        onChange={(e) => set("gender", e.target.value)}
+                      >
+                        <option value="">Select…</option>
+                        <option>Female</option>
+                        <option>Male</option>
+                        <option>Prefer not to say</option>
+                      </select>
+                    </Field>
+                    <Field label="Date of Birth">
+                      <input
+                        type="date"
+                        className={inputCls}
+                        value={f.dob}
+                        onChange={(e) => set("dob", e.target.value)}
+                      />
+                    </Field>
+                    <Field label="Passport / National ID">
+                      <input
+                        className={inputCls}
+                        value={f.idNumber}
+                        onChange={(e) => set("idNumber", e.target.value)}
+                      />
+                    </Field>
+                    <Field label="Country" required>
+                      <input
+                        className={inputCls}
+                        value={f.country}
+                        onChange={(e) => set("country", e.target.value)}
+                      />
+                    </Field>
+                    <Field label="City">
+                      <input
+                        className={inputCls}
+                        value={f.city}
+                        onChange={(e) => set("city", e.target.value)}
+                      />
+                    </Field>
+                    <Field label="Phone Number" required>
+                      <input
+                        className={inputCls}
+                        value={f.phone}
+                        onChange={(e) => set("phone", e.target.value)}
+                        placeholder="+254…"
+                      />
+                    </Field>
+                    <Field label="WhatsApp Number">
+                      <input
+                        className={inputCls}
+                        value={f.whatsapp}
+                        onChange={(e) => set("whatsapp", e.target.value)}
+                      />
+                    </Field>
+                    <Field label="Email Address" required>
+                      <input
+                        type="email"
+                        className={inputCls}
+                        value={f.email}
+                        onChange={(e) => set("email", e.target.value)}
+                      />
+                    </Field>
+                    <Field label="LinkedIn (optional)">
+                      <input
+                        className={inputCls}
+                        value={f.linkedin}
+                        onChange={(e) => set("linkedin", e.target.value)}
+                        placeholder="https://linkedin.com/in/…"
+                      />
+                    </Field>
+                    <Field label="Photo Upload">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className={
+                          inputCls +
+                          " file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-primary-foreground"
+                        }
+                      />
+                    </Field>
+                  </div>
+                </StepBlock>
+              )}
+
+              {step === 1 && (
+                <StepBlock title="Professional information" subtitle="Where do you work?">
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <Field label="Company Name" required>
+                      <input
+                        className={inputCls}
+                        value={f.company}
+                        onChange={(e) => set("company", e.target.value)}
+                      />
+                    </Field>
+                    <Field label="Job Title" required>
+                      <input
+                        className={inputCls}
+                        value={f.jobTitle}
+                        onChange={(e) => set("jobTitle", e.target.value)}
+                      />
+                    </Field>
+                    <Field label="Industry">
+                      <select
+                        className={inputCls}
+                        value={f.industry}
+                        onChange={(e) => set("industry", e.target.value)}
+                      >
+                        <option value="">Select industry…</option>
+                        {industries.map((i) => (
+                          <option key={i}>{i}</option>
+                        ))}
+                      </select>
+                    </Field>
+                    <Field label="Company Website">
+                      <input
+                        className={inputCls}
+                        value={f.website}
+                        onChange={(e) => set("website", e.target.value)}
+                        placeholder="https://…"
+                      />
+                    </Field>
+                    <Field label="Business Type" required>
+                      <select
+                        className={inputCls}
+                        value={f.businessType}
+                        onChange={(e) => set("businessType", e.target.value)}
+                      >
+                        <option value="">Select…</option>
+                        {businessTypes.map((i) => (
+                          <option key={i}>{i}</option>
+                        ))}
+                      </select>
+                    </Field>
+                    <Field label="Years of Experience">
+                      <input
+                        type="number"
+                        min={0}
+                        className={inputCls}
+                        value={f.experience}
+                        onChange={(e) => set("experience", e.target.value)}
+                      />
+                    </Field>
+                  </div>
+                </StepBlock>
+              )}
+
+              {step === 2 && (
+                <StepBlock
+                  title="Areas of interest"
+                  subtitle="Pick everything you'd like to explore."
+                >
+                  <div className="flex flex-wrap gap-2">
+                    {industries.map((i) => (
+                      <Chip
+                        key={i}
+                        active={f.interests.includes(i)}
+                        onClick={() => toggle("interests", i)}
+                      >
+                        {i}
                       </Chip>
                     ))}
                   </div>
-                </Field>
-              </div>
-            </StepBlock>
-          )}
+                </StepBlock>
+              )}
 
-          {step === 4 && (
-            <StepBlock title="Logistics & accommodation" subtitle="We'll handle the details.">
-              <div className="grid gap-4 sm:grid-cols-3">
-                {[
-                  { k: "hotel", label: "Need hotel booking?" },
-                  { k: "pickup", label: "Airport pickup?" },
-                  { k: "visa", label: "Visa invitation letter?" },
-                ].map((o) => (
-                  <label
-                    key={o.k}
-                    className={`cursor-pointer rounded-2xl border p-5 transition-all ${
-                      f[o.k as "hotel"]
-                        ? "border-primary bg-primary/5 shadow-soft"
-                        : "border-border bg-card hover:border-primary/40"
-                    }`}
-                  >
+              {step === 3 && (
+                <StepBlock
+                  title="Networking preferences"
+                  subtitle="We'll match you with the right people."
+                >
+                  <div className="space-y-6">
+                    <Field label="Would you like to schedule B2B meetings?">
+                      <div className="flex gap-2">
+                        {["Yes", "No"].map((v) => (
+                          <Chip key={v} active={f.b2b === v} onClick={() => set("b2b", v)}>
+                            {v}
+                          </Chip>
+                        ))}
+                      </div>
+                    </Field>
+                    <Field label="Interested in meeting">
+                      <div className="flex flex-wrap gap-2">
+                        {networkingTargets.map((v) => (
+                          <Chip
+                            key={v}
+                            active={f.targets.includes(v)}
+                            onClick={() => toggle("targets", v)}
+                          >
+                            {v}
+                          </Chip>
+                        ))}
+                      </div>
+                    </Field>
+                  </div>
+                </StepBlock>
+              )}
+
+              {step === 4 && (
+                <StepBlock title="Logistics & accommodation" subtitle="We'll handle the details.">
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    {[
+                      { k: "hotel", label: "Need hotel booking?" },
+                      { k: "pickup", label: "Airport pickup?" },
+                      { k: "visa", label: "Visa invitation letter?" },
+                    ].map((o) => (
+                      <label
+                        key={o.k}
+                        className={`cursor-pointer rounded-2xl border p-5 transition-all ${
+                          f[o.k as "hotel"]
+                            ? "border-primary bg-primary/5 shadow-soft"
+                            : "border-border bg-card hover:border-primary/40"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          className="sr-only"
+                          checked={f[o.k as "hotel"]}
+                          onChange={(e) => set(o.k as "hotel", e.target.checked)}
+                        />
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">{o.label}</span>
+                          <span
+                            className={`h-5 w-5 grid place-items-center rounded-full border ${f[o.k as "hotel"] ? "bg-primary border-primary text-primary-foreground" : "border-border"}`}
+                          >
+                            {f[o.k as "hotel"] && <Check size={12} />}
+                          </span>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                  <div className="mt-6 grid gap-5 sm:grid-cols-2">
+                    <Field label="Special dietary requirements">
+                      <input
+                        className={inputCls}
+                        value={f.dietary}
+                        onChange={(e) => set("dietary", e.target.value)}
+                      />
+                    </Field>
+                    <Field label="Accessibility needs">
+                      <input
+                        className={inputCls}
+                        value={f.accessibility}
+                        onChange={(e) => set("accessibility", e.target.value)}
+                      />
+                    </Field>
+                  </div>
+                </StepBlock>
+              )}
+
+              {step === 5 && (
+                <StepBlock title="Select your pass" subtitle="Choose your experience for the expo.">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {[
+                      {
+                        id: "general",
+                        title: "General (Free)",
+                        desc: "Access to the main exhibition floor and open sessions.",
+                        price: 0,
+                      },
+                      {
+                        id: "vip",
+                        title: "VIP Pass",
+                        desc: "VIP lounge access, fast-track badge, gala dinner, and concierge.",
+                        price: 5000,
+                      },
+                    ].map((p) => (
+                      <button
+                        key={p.id}
+                        onClick={() => set("passType", p.id)}
+                        className={`cursor-pointer rounded-2xl border p-5 text-left transition-all ${
+                          f.passType === p.id
+                            ? "border-primary bg-primary/5 shadow-soft ring-1 ring-primary"
+                            : "border-border bg-card hover:border-primary/40"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-display font-semibold">{p.title}</span>
+                          <span
+                            className={`h-5 w-5 grid place-items-center rounded-full border ${f.passType === p.id ? "bg-primary border-primary text-primary-foreground" : "border-border"}`}
+                          >
+                            {f.passType === p.id && <Check size={12} />}
+                          </span>
+                        </div>
+                        <p className="mt-2 text-sm text-muted-foreground">{p.desc}</p>
+                        <div className="mt-4 font-bold text-foreground">
+                          {p.price === 0 ? "Free" : `KES ${p.price.toLocaleString()}`}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </StepBlock>
+              )}
+
+              {step === 6 && (
+                <StepBlock title="Review & confirm" subtitle="Everything look right?">
+                  <div className="rounded-2xl bg-secondary/50 p-5 sm:p-6 grid gap-4 sm:grid-cols-2 text-sm">
+                    <Sum label="Name" value={`${f.firstName} ${f.lastName}`} />
+                    <Sum label="Email" value={f.email} />
+                    <Sum label="Phone" value={f.phone} />
+                    <Sum
+                      label="Country / City"
+                      value={[f.country, f.city].filter(Boolean).join(", ")}
+                    />
+                    <Sum label="Company" value={f.company} />
+                    <Sum label="Role" value={f.jobTitle} />
+                    <Sum label="Business Type" value={f.businessType} />
+                    <Sum label="Industry" value={f.industry} />
+                    <Sum label="Interests" value={f.interests.join(", ") || "—"} />
+                    <Sum label="B2B Meetings" value={f.b2b || "—"} />
+                    <Sum label="Meeting" value={f.targets.join(", ") || "—"} />
+                    <Sum
+                      label="Logistics"
+                      value={
+                        [f.hotel && "Hotel", f.pickup && "Pickup", f.visa && "Visa"]
+                          .filter(Boolean)
+                          .join(", ") || "—"
+                      }
+                    />
+                    <Sum
+                      label="Pass Type"
+                      value={f.passType === "vip" ? "VIP Pass (KES 5,000)" : "General (Free)"}
+                    />
+                  </div>
+                  <label className="mt-6 flex items-start gap-3 text-sm">
                     <input
                       type="checkbox"
-                      className="sr-only"
-                      checked={f[o.k as "hotel"]}
-                      onChange={(e) => set(o.k as "hotel", e.target.checked)}
+                      checked={f.terms}
+                      onChange={(e) => set("terms", e.target.checked)}
+                      className="mt-1 h-4 w-4 rounded border-input"
                     />
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">{o.label}</span>
-                      <span
-                        className={`h-5 w-5 grid place-items-center rounded-full border ${f[o.k as "hotel"] ? "bg-primary border-primary text-primary-foreground" : "border-border"}`}
-                      >
-                        {f[o.k as "hotel"] && <Check size={12} />}
-                      </span>
-                    </div>
+                    <span>
+                      I accept the{" "}
+                      <a href="#" className="text-primary underline">
+                        terms & conditions
+                      </a>{" "}
+                      and consent to receive event communications.
+                    </span>
                   </label>
-                ))}
-              </div>
-              <div className="mt-6 grid gap-5 sm:grid-cols-2">
-                <Field label="Special dietary requirements">
-                  <input
-                    className={inputCls}
-                    value={f.dietary}
-                    onChange={(e) => set("dietary", e.target.value)}
-                  />
-                </Field>
-                <Field label="Accessibility needs">
-                  <input
-                    className={inputCls}
-                    value={f.accessibility}
-                    onChange={(e) => set("accessibility", e.target.value)}
-                  />
-                </Field>
-              </div>
-            </StepBlock>
-          )}
+                  <div className="mt-4 rounded-xl border border-dashed border-border bg-secondary/40 px-4 py-3 text-xs text-muted-foreground">
+                    Protected by CAPTCHA · Your data is encrypted in transit.
+                  </div>
+                </StepBlock>
+              )}
 
-          {step === 5 && (
-            <StepBlock title="Select your pass" subtitle="Choose your experience for the expo.">
-              <div className="grid gap-4 sm:grid-cols-2">
-                {[
-                  {
-                    id: "general",
-                    title: "General (Free)",
-                    desc: "Access to the main exhibition floor and open sessions.",
-                    price: 0,
-                  },
-                  {
-                    id: "vip",
-                    title: "VIP Pass",
-                    desc: "VIP lounge access, fast-track badge, gala dinner, and concierge.",
-                    price: 5000,
-                  },
-                ].map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => set("passType", p.id)}
-                    className={`cursor-pointer rounded-2xl border p-5 text-left transition-all ${
-                      f.passType === p.id
-                        ? "border-primary bg-primary/5 shadow-soft ring-1 ring-primary"
-                        : "border-border bg-card hover:border-primary/40"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-display font-semibold">{p.title}</span>
-                      <span
-                        className={`h-5 w-5 grid place-items-center rounded-full border ${f.passType === p.id ? "bg-primary border-primary text-primary-foreground" : "border-border"}`}
-                      >
-                        {f.passType === p.id && <Check size={12} />}
-                      </span>
-                    </div>
-                    <p className="mt-2 text-sm text-muted-foreground">{p.desc}</p>
-                    <div className="mt-4 font-bold text-foreground">
-                      {p.price === 0 ? "Free" : `KES ${p.price.toLocaleString()}`}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </StepBlock>
-          )}
-
-          {step === 6 && (
-            <StepBlock title="Review & confirm" subtitle="Everything look right?">
-              <div className="rounded-2xl bg-secondary/50 p-5 sm:p-6 grid gap-4 sm:grid-cols-2 text-sm">
-                <Sum label="Name" value={`${f.firstName} ${f.lastName}`} />
-                <Sum label="Email" value={f.email} />
-                <Sum label="Phone" value={f.phone} />
-                <Sum
-                  label="Country / City"
-                  value={[f.country, f.city].filter(Boolean).join(", ")}
-                />
-                <Sum label="Company" value={f.company} />
-                <Sum label="Role" value={f.jobTitle} />
-                <Sum label="Business Type" value={f.businessType} />
-                <Sum label="Industry" value={f.industry} />
-                <Sum label="Interests" value={f.interests.join(", ") || "—"} />
-                <Sum label="B2B Meetings" value={f.b2b || "—"} />
-                <Sum label="Meeting" value={f.targets.join(", ") || "—"} />
-                <Sum
-                  label="Logistics"
-                  value={
-                    [f.hotel && "Hotel", f.pickup && "Pickup", f.visa && "Visa"]
-                      .filter(Boolean)
-                      .join(", ") || "—"
-                  }
-                />
-                <Sum label="Pass Type" value={f.passType === "vip" ? "VIP Pass (KES 5,000)" : "General (Free)"} />
-              </div>
-              <label className="mt-6 flex items-start gap-3 text-sm">
-                <input
-                  type="checkbox"
-                  checked={f.terms}
-                  onChange={(e) => set("terms", e.target.checked)}
-                  className="mt-1 h-4 w-4 rounded border-input"
-                />
-                <span>
-                  I accept the{" "}
-                  <a href="#" className="text-primary underline">
-                    terms & conditions
-                  </a>{" "}
-                  and consent to receive event communications.
-                </span>
-              </label>
-              <div className="mt-4 rounded-xl border border-dashed border-border bg-secondary/40 px-4 py-3 text-xs text-muted-foreground">
-                Protected by CAPTCHA · Your data is encrypted in transit.
-              </div>
-            </StepBlock>
-          )}
-
-          {/* Nav */}
-          <div className="mt-10 flex items-center justify-between gap-3">
-            <button
-              onClick={() => setStep((s) => Math.max(0, s - 1))}
-              disabled={step === 0}
-              className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-5 py-3 text-sm font-medium disabled:opacity-40 hover:border-primary/40 transition-colors"
-            >
-              <ArrowLeft size={16} /> Back
-            </button>
-            {step < steps.length - 1 ? (
-              <button
-                onClick={() => canNext() && setStep((s) => s + 1)}
-                disabled={!canNext()}
-                className="inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-50 shadow-soft hover:-translate-y-0.5 transition-all"
-              >
-                Continue <ArrowRight size={16} />
-              </button>
-            ) : (
-              <div className="flex items-center gap-4">
-                {submitError && <span className="text-sm font-medium text-destructive">{submitError}</span>}
+              {/* Nav */}
+              <div className="mt-10 flex items-center justify-between gap-3">
                 <button
-                  onClick={submit}
-                  disabled={!f.terms || isSubmitting}
-                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-gold px-6 py-3 text-sm font-semibold text-gold-foreground shadow-glow disabled:opacity-50 hover:-translate-y-0.5 transition-all"
+                  onClick={() => setStep((s) => Math.max(0, s - 1))}
+                  disabled={step === 0}
+                  className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-5 py-3 text-sm font-medium disabled:opacity-40 hover:border-primary/40 transition-colors"
                 >
-                  {isSubmitting ? "Submitting..." : f.passType === "vip" ? "Proceed to Payment" : "Complete Registration"} <Check size={16} />
+                  <ArrowLeft size={16} /> Back
                 </button>
+                {step < steps.length - 1 ? (
+                  <button
+                    onClick={() => canNext() && setStep((s) => s + 1)}
+                    disabled={!canNext()}
+                    className="inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-50 shadow-soft hover:-translate-y-0.5 transition-all"
+                  >
+                    Continue <ArrowRight size={16} />
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-4">
+                    {submitError && (
+                      <span className="text-sm font-medium text-destructive">{submitError}</span>
+                    )}
+                    <button
+                      onClick={submit}
+                      disabled={!f.terms || isSubmitting}
+                      className="inline-flex items-center gap-2 rounded-xl bg-gradient-gold px-6 py-3 text-sm font-semibold text-gold-foreground shadow-glow disabled:opacity-50 hover:-translate-y-0.5 transition-all"
+                    >
+                      {isSubmitting
+                        ? "Submitting..."
+                        : f.passType === "vip"
+                          ? "Proceed to Payment"
+                          : "Complete Registration"}{" "}
+                      <Check size={16} />
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          <div className="mt-4 text-center text-xs text-muted-foreground">
-            {savedAt
-              ? `Progress saved automatically · ${savedAt.toLocaleTimeString()}`
-              : "Your progress saves automatically to this device."}
+              <div className="mt-4 text-center text-xs text-muted-foreground">
+                {savedAt
+                  ? `Progress saved automatically · ${savedAt.toLocaleTimeString()}`
+                  : "Your progress saves automatically to this device."}
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="order-first lg:order-last">
-          <div className="sticky top-24 rounded-3xl bg-card border border-border/60 shadow-soft p-6">
-            <h3 className="font-display font-semibold mb-4 text-lg text-foreground">Experience Ameer Expo</h3>
-            <VideoEmbed youtubeId="dQw4w9WgXcQ" caption="Join industry leaders in shaping the future." />
-            <div className="mt-6 rounded-2xl bg-secondary/50 p-4 text-sm text-muted-foreground">
-              <p>Hear from previous attendees about their experience, the networking opportunities, and the insights they gained.</p>
+          <div className="order-first lg:order-last">
+            <div className="sticky top-24 rounded-3xl bg-card border border-border/60 shadow-soft p-6">
+              <h3 className="font-display font-semibold mb-4 text-lg text-foreground">
+                Experience Ameer Expo
+              </h3>
+              <VideoEmbed
+                youtubeId="dQw4w9WgXcQ"
+                caption="Join industry leaders in shaping the future."
+              />
+              <div className="mt-6 rounded-2xl bg-secondary/50 p-4 text-sm text-muted-foreground">
+                <p>
+                  Hear from previous attendees about their experience, the networking opportunities,
+                  and the insights they gained.
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
   );
 }
 

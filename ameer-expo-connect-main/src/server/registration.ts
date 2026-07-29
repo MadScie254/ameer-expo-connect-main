@@ -33,13 +33,13 @@ const RegistrationSchema = z.object({
   passType: z.string().optional(), // Added for Task 3
 });
 
-export const submitRegistration = createServerFn({ method: 'POST' })
+export const submitRegistration = createServerFn({ method: "POST" })
   .validator((data: unknown) => RegistrationSchema.parse(data))
   .handler(async ({ data }) => {
     try {
       const id = `AE26-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       const payload = JSON.stringify(data);
-      
+
       let redirectUrl = null;
       let orderTrackingId = null;
       let paymentStatus = "free";
@@ -80,7 +80,7 @@ export const submitRegistration = createServerFn({ method: 'POST' })
         amount: passType === "vip" ? 5000 : 0,
         paymentStatus,
         orderTrackingId,
-        payload
+        payload,
       });
 
       return { success: true, id, passType, redirectUrl };
