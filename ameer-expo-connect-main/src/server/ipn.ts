@@ -43,7 +43,25 @@ export async function handleIpn(request: Request) {
     const paymentStatus = statusData.payment_status_description; // COMPLETED, FAILED, etc.
     const internalStatus = paymentStatus === "COMPLETED" ? "paid" : "failed";
 
-    // 3. Update DB
+    // 3. Read current registration to make notification idempotent.
+    const { data: existingRow, error: findError } = await supabaseAdmin
+      .from("registrations")
+      .select("id, first_name, last_name, email, phone, company, pass_type, amount, payment_status")
+      .eq("order_tracking_id", orderTrackingId)
+      .maybeSingle();
+
+    if (findError) {
+      console.error("IPN Supabase lookup error:", findError);
+      return new Response(JSON.stringify({ error: "Failed to lookup registration" }), { status: 500 });
+    }
+
+    if (!existingRow) {
+      return new Response(JSON.stringify({ error: "Registration not found" }), { status: 404 });
+    }
+
+    const wasPaid = existingRow.payment_status === "paid";
+
+    // 4. Update DB
     const { data: updatedRow, error } = await supabaseAdmin
       .from("registrations")
       .update({ payment_status: internalStatus })
@@ -53,8 +71,8 @@ export async function handleIpn(request: Request) {
 
     if (error) {
       console.error("IPN Supabase Error:", error);
-    } else if (updatedRow && internalStatus === "paid") {
-      // 4. Send notification for successful paid registration
+    } else if (updatedRow && internalStatus === "paid" && !wasPaid) {
+      // 5. Send notification only on transition to paid
       await sendRegistrationNotification({
         id: updatedRow.id,
         firstName: updatedRow.first_name,
