@@ -32,7 +32,7 @@ export function LanguageSwitcher() {
         setCurrentLang(parts[2]);
       }
     }
-    
+
     const clickHandler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setIsOpen(false);
@@ -46,7 +46,10 @@ export function LanguageSwitcher() {
     if (code === "en") {
       // Reset logic
       document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=." + window.location.hostname + ";";
+      document.cookie =
+        "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=." +
+        window.location.hostname +
+        ";";
       document.documentElement.dir = "ltr";
       window.location.reload();
       return;
@@ -59,7 +62,7 @@ export function LanguageSwitcher() {
       setCurrentLang(code);
       // Keep LTR even for Arabic to preserve existing spacing/alignment
       // Note: Full RTL support is a separate future task.
-      document.documentElement.dir = "ltr"; 
+      document.documentElement.dir = "ltr";
       setIsOpen(false);
     } else {
       // If the script hasn't loaded yet, try again in a moment
@@ -74,7 +77,7 @@ export function LanguageSwitcher() {
         After selecting a language, navigate between routes using the app links
         to confirm Google Translate catches the new DOM rendered by TanStack Router.
       */}
-      
+
       {/* Inline Strip for xl screens */}
       <div className="hidden xl:flex items-center gap-1 bg-white/5 p-1 rounded-full border border-border/40">
         {LANGUAGES.map((lang) => (
@@ -100,7 +103,11 @@ export function LanguageSwitcher() {
           className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 border border-border/40 hover:bg-white/10 transition-colors"
           aria-label="Change Language"
         >
-          {currentLang === "en" ? <Globe size={18} className="text-foreground" /> : LANGUAGES.find(l => l.code === currentLang)?.flag || <Globe size={18} />}
+          {currentLang === "en" ? (
+            <Globe size={18} className="text-foreground" />
+          ) : (
+            LANGUAGES.find((l) => l.code === currentLang)?.flag || <Globe size={18} />
+          )}
         </button>
 
         {isOpen && (
@@ -110,7 +117,9 @@ export function LanguageSwitcher() {
                 key={lang.code}
                 onClick={() => changeLanguage(lang.code)}
                 className={`w-full flex items-center gap-3 px-4 py-2 text-sm text-left transition-colors hover:bg-secondary/50 ${
-                  currentLang === lang.code ? "text-primary font-medium bg-primary/5" : "text-foreground"
+                  currentLang === lang.code
+                    ? "text-primary font-medium bg-primary/5"
+                    : "text-foreground"
                 }`}
               >
                 <span className="text-lg">{lang.flag}</span>
