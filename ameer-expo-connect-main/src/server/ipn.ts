@@ -1,5 +1,6 @@
 import { getPesapalToken } from "./pesapal";
-import db from "../lib/db";
+import { supabaseAdmin } from "../lib/supabase-server";
+import { sendRegistrationNotification } from "../lib/notify";
 
 export async function handleIpn(request: Request) {
   try {
@@ -43,17 +44,29 @@ export async function handleIpn(request: Request) {
     const internalStatus = paymentStatus === "COMPLETED" ? "paid" : "failed";
 
     // 3. Update DB
-    await db.execute({
-      sql: `
-        UPDATE registrations 
-        SET paymentStatus = @status 
-        WHERE orderTrackingId = @orderTrackingId
-      `,
-      args: {
-        status: internalStatus,
-        orderTrackingId,
-      },
-    });
+    const { data: updatedRow, error } = await supabaseAdmin
+      .from("registrations")
+      .update({ payment_status: internalStatus })
+      .eq("order_tracking_id", orderTrackingId)
+      .select()
+      .maybeSingle();
+
+    if (error) {
+      console.error("IPN Supabase Error:", error);
+    } else if (updatedRow && internalStatus === "paid") {
+      // 4. Send notification for successful paid registration
+      await sendRegistrationNotification({
+        id: updatedRow.id,
+        firstName: updatedRow.first_name,
+        lastName: updatedRow.last_name,
+        email: updatedRow.email,
+        phone: updatedRow.phone,
+        company: updatedRow.company,
+        passType: updatedRow.pass_type,
+        amount: Number(updatedRow.amount),
+        paymentStatus: updatedRow.payment_status,
+      });
+    }
 
     return new Response(
       JSON.stringify({

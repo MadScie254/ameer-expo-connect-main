@@ -1,7 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import db from "../lib/db";
+import { supabaseAdmin } from "../lib/supabase-server";
 import { getPesapalToken, submitPesapalOrder } from "./pesapal";
+import { sendRegistrationNotification } from "../lib/notify";
 
 const RegistrationSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -30,21 +31,40 @@ const RegistrationSchema = z.object({
   dietary: z.string(),
   accessibility: z.string(),
   terms: z.boolean().refine((val) => val === true, "Must accept terms"),
-  passType: z.string().optional(), // Added for Task 3
+  passType: z.string().optional(),
 });
+
+async function findOrCreateUserId(email: string, firstName: string, lastName: string) {
+  const { data: existingProfile } = await supabaseAdmin
+    .from("profiles")
+    .select("id")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (existingProfile) return existingProfile.id;
+
+  const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
+    email,
+    email_confirm: true, // trust the registration form itself; don't send a confirmation email
+    user_metadata: { first_name: firstName, last_name: lastName },
+  });
+  if (error) throw error;
+  return created.user!.id;
+}
 
 export const submitRegistration = createServerFn({ method: "POST" })
   .validator((data: unknown) => RegistrationSchema.parse(data))
   .handler(async ({ data }) => {
     try {
       const id = `AE26-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-      const payload = JSON.stringify(data);
+      const payload = data;
 
       let redirectUrl = null;
       let orderTrackingId = null;
       let paymentStatus = "free";
 
       const passType = data.passType || "general";
+      const amount = passType === "vip" ? 5000 : 0;
 
       if (passType === "vip") {
         paymentStatus = "pending";
@@ -52,7 +72,7 @@ export const submitRegistration = createServerFn({ method: "POST" })
         const token = await getPesapalToken();
         const pesapalRes = await submitPesapalOrder(token, {
           id,
-          amount: 5000,
+          amount,
           email: data.email,
           phone: data.phone,
           firstName: data.firstName,
@@ -62,31 +82,46 @@ export const submitRegistration = createServerFn({ method: "POST" })
         orderTrackingId = pesapalRes.order_tracking_id;
       }
 
-      await db.execute({
-        sql: `
-          INSERT INTO registrations (
-            id, firstName, lastName, email, phone, company, jobTitle, passType, amount, paymentStatus, orderTrackingId, payload
-          ) VALUES (
-            @id, @firstName, @lastName, @email, @phone, @company, @jobTitle, @passType, @amount, @paymentStatus, @orderTrackingId, @payload
-          )
-        `,
-        args: {
-          id,
-          firstName: data.firstName,
-          lastName: data.lastName,
+      const userId = await findOrCreateUserId(data.email, data.firstName, data.lastName);
+
+      const { data: row, error: insertError } = await supabaseAdmin
+        .from("registrations")
+        .insert({
+          user_id: userId,
+          first_name: data.firstName,
+          last_name: data.lastName,
           email: data.email,
           phone: data.phone,
           company: data.company,
-          jobTitle: data.jobTitle,
-          passType,
-          amount: passType === "vip" ? 5000 : 0,
-          paymentStatus,
-          orderTrackingId,
-          payload,
-        },
-      });
+          job_title: data.jobTitle,
+          pass_type: passType,
+          amount: amount,
+          payment_status: paymentStatus,
+          order_tracking_id: orderTrackingId,
+          payload: payload,
+        })
+        .select()
+        .single();
 
-      return { success: true, id, passType, redirectUrl };
+      if (insertError) {
+        throw insertError;
+      }
+
+      if (paymentStatus === "free") {
+        await sendRegistrationNotification({
+          id: row.id,
+          firstName: row.first_name,
+          lastName: row.last_name,
+          email: row.email,
+          phone: row.phone,
+          company: row.company,
+          passType: row.pass_type,
+          amount: Number(row.amount),
+          paymentStatus: row.payment_status,
+        });
+      }
+
+      return { success: true, id: row.id, passType, redirectUrl };
     } catch (error) {
       console.error("Registration error:", error);
       throw new Error("Failed to save registration");
@@ -96,19 +131,20 @@ export const submitRegistration = createServerFn({ method: "POST" })
 export const getRegistrationStatus = createServerFn({ method: "GET" })
   .validator((id: unknown) => z.string().parse(id))
   .handler(async ({ data: id }) => {
-    const result = await db.execute({
-      sql: `SELECT id, paymentStatus, passType, firstName FROM registrations WHERE id = @id`,
-      args: { id },
-    });
+    const { data: row, error } = await supabaseAdmin
+      .from("registrations")
+      .select("id, payment_status, pass_type, first_name")
+      .eq("id", id)
+      .maybeSingle();
 
-    if (result.rows.length === 0) {
+    if (error || !row) {
       return null;
     }
-    const row = result.rows[0];
+    
     return {
       id: row.id as string,
-      paymentStatus: row.paymentStatus as string,
-      passType: row.passType as string,
-      firstName: row.firstName as string,
+      paymentStatus: row.payment_status as string,
+      passType: row.pass_type as string,
+      firstName: row.first_name as string,
     };
   });
