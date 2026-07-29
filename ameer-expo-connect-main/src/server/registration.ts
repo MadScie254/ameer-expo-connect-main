@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import db from "../lib/db";
+import { getPesapalToken, submitPesapalOrder } from "./pesapal";
 
 const RegistrationSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -39,16 +40,33 @@ export const submitRegistration = createServerFn({ method: 'POST' })
       const id = `AE26-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       const payload = JSON.stringify(data);
       
+      let redirectUrl = null;
+      let orderTrackingId = null;
+      let paymentStatus = "free";
+
+      if (passType === "vip") {
+        paymentStatus = "pending";
+        // Fetch pesapal token and submit order
+        const token = await getPesapalToken();
+        const pesapalRes = await submitPesapalOrder(token, {
+          id,
+          amount: 5000,
+          email: data.email,
+          phone: data.phone,
+          firstName: data.firstName,
+          lastName: data.lastName,
+        });
+        redirectUrl = pesapalRes.redirect_url;
+        orderTrackingId = pesapalRes.order_tracking_id;
+      }
+
       const insert = db.prepare(`
         INSERT INTO registrations (
-          id, firstName, lastName, email, phone, company, jobTitle, passType, payload
+          id, firstName, lastName, email, phone, company, jobTitle, passType, amount, paymentStatus, orderTrackingId, payload
         ) VALUES (
-          @id, @firstName, @lastName, @email, @phone, @company, @jobTitle, @passType, @payload
+          @id, @firstName, @lastName, @email, @phone, @company, @jobTitle, @passType, @amount, @paymentStatus, @orderTrackingId, @payload
         )
       `);
-
-      // For task 3, default to general pass type if missing
-      const passType = data.passType || 'general';
 
       insert.run({
         id,
@@ -59,10 +77,13 @@ export const submitRegistration = createServerFn({ method: 'POST' })
         company: data.company,
         jobTitle: data.jobTitle,
         passType: passType,
+        amount: passType === "vip" ? 5000 : 0,
+        paymentStatus,
+        orderTrackingId,
         payload
       });
 
-      return { success: true, id, passType };
+      return { success: true, id, passType, redirectUrl };
     } catch (error) {
       console.error("Registration error:", error);
       throw new Error("Failed to save registration");
