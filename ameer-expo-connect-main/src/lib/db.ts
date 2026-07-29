@@ -1,18 +1,11 @@
-import Database from "better-sqlite3";
-import { join } from "path";
-import { existsSync, mkdirSync } from "fs";
+import { createClient } from "@libsql/client";
 
-// Ensure data directory exists
-const dataDir = join(process.cwd(), "data");
-if (!existsSync(dataDir)) {
-  mkdirSync(dataDir, { recursive: true });
-}
+const db = createClient({
+  url: process.env.TURSO_DATABASE_URL!,
+  authToken: process.env.TURSO_AUTH_TOKEN!,
+});
 
-const dbPath = join(dataDir, "ameer_expo.sqlite");
-const db = new Database(dbPath);
-
-// Initialize tables
-db.exec(`
+await db.execute(`
   CREATE TABLE IF NOT EXISTS registrations (
     id TEXT PRIMARY KEY,
     firstName TEXT NOT NULL,

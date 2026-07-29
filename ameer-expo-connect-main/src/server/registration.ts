@@ -62,27 +62,28 @@ export const submitRegistration = createServerFn({ method: "POST" })
         orderTrackingId = pesapalRes.order_tracking_id;
       }
 
-      const insert = db.prepare(`
-        INSERT INTO registrations (
-          id, firstName, lastName, email, phone, company, jobTitle, passType, amount, paymentStatus, orderTrackingId, payload
-        ) VALUES (
-          @id, @firstName, @lastName, @email, @phone, @company, @jobTitle, @passType, @amount, @paymentStatus, @orderTrackingId, @payload
-        )
-      `);
-
-      insert.run({
-        id,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        phone: data.phone,
-        company: data.company,
-        jobTitle: data.jobTitle,
-        passType: passType,
-        amount: passType === "vip" ? 5000 : 0,
-        paymentStatus,
-        orderTrackingId,
-        payload,
+      await db.execute({
+        sql: `
+          INSERT INTO registrations (
+            id, firstName, lastName, email, phone, company, jobTitle, passType, amount, paymentStatus, orderTrackingId, payload
+          ) VALUES (
+            @id, @firstName, @lastName, @email, @phone, @company, @jobTitle, @passType, @amount, @paymentStatus, @orderTrackingId, @payload
+          )
+        `,
+        args: {
+          id,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          phone: data.phone,
+          company: data.company,
+          jobTitle: data.jobTitle,
+          passType,
+          amount: passType === "vip" ? 5000 : 0,
+          paymentStatus,
+          orderTrackingId,
+          payload,
+        }
       });
 
       return { success: true, id, passType, redirectUrl };
@@ -90,4 +91,24 @@ export const submitRegistration = createServerFn({ method: "POST" })
       console.error("Registration error:", error);
       throw new Error("Failed to save registration");
     }
+  });
+
+export const getRegistrationStatus = createServerFn({ method: "GET" })
+  .validator((id: unknown) => z.string().parse(id))
+  .handler(async ({ data: id }) => {
+    const result = await db.execute({
+      sql: `SELECT id, paymentStatus, passType, firstName FROM registrations WHERE id = @id`,
+      args: { id },
+    });
+
+    if (result.rows.length === 0) {
+      return null;
+    }
+    const row = result.rows[0];
+    return {
+      id: row.id as string,
+      paymentStatus: row.paymentStatus as string,
+      passType: row.passType as string,
+      firstName: row.firstName as string,
+    };
   });

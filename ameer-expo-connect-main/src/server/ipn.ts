@@ -43,15 +43,16 @@ export async function handleIpn(request: Request) {
     const internalStatus = paymentStatus === "COMPLETED" ? "paid" : "failed";
 
     // 3. Update DB
-    const update = db.prepare(`
-      UPDATE registrations 
-      SET paymentStatus = @status 
-      WHERE orderTrackingId = @orderTrackingId
-    `);
-
-    update.run({
-      status: internalStatus,
-      orderTrackingId,
+    await db.execute({
+      sql: `
+        UPDATE registrations 
+        SET paymentStatus = @status 
+        WHERE orderTrackingId = @orderTrackingId
+      `,
+      args: {
+        status: internalStatus,
+        orderTrackingId,
+      }
     });
 
     return new Response(
