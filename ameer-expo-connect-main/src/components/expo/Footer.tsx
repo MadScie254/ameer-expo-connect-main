@@ -2,6 +2,13 @@ import { Link } from "@tanstack/react-router";
 import { Mail, Phone, MapPin, Instagram, Linkedin, Twitter, Facebook } from "lucide-react";
 import logo from "@/assets/ameer-expo-logo.png.asset.json";
 
+const SOCIAL_LINKS = {
+  linkedin: "#", // TODO: replace with real URL
+  twitter: "#", // TODO: replace with real URL
+  instagram: "#", // TODO: replace with real URL
+  facebook: "#", // TODO: replace with real URL
+};
+
 export function Footer() {
   return (
     <footer className="relative bg-gradient-primary text-primary-foreground">
@@ -43,10 +50,15 @@ export function Footer() {
               investment.
             </p>
             <div className="mt-5 flex gap-2">
-              {[Linkedin, Twitter, Instagram, Facebook].map((I, i) => (
+              {[
+                { icon: Linkedin, url: SOCIAL_LINKS.linkedin },
+                { icon: Twitter, url: SOCIAL_LINKS.twitter },
+                { icon: Instagram, url: SOCIAL_LINKS.instagram },
+                { icon: Facebook, url: SOCIAL_LINKS.facebook },
+              ].map(({ icon: I, url }, i) => (
                 <a
                   key={i}
-                  href="#"
+                  href={url}
                   className="grid h-9 w-9 place-items-center rounded-full bg-white/10 hover:bg-gold hover:text-gold-foreground transition-colors"
                 >
                   <I size={16} />

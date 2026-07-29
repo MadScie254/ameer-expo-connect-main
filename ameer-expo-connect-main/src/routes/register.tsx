@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { submitRegistration } from "../server/registration";
+import { submitRegistration, getRegistrationStatus } from "../server/registration";
 import {
   ArrowLeft,
   ArrowRight,
@@ -210,6 +210,70 @@ function Register() {
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [confirmingRid, setConfirmingRid] = useState<string | null>(null);
+  const [pollTimeout, setPollTimeout] = useState(false);
+  const [pollError, setPollError] = useState<string | null>(null);
+
+  // Check for rid in URL on mount
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const rid = searchParams.get("rid");
+    if (rid) {
+      setConfirmingRid(rid);
+      // Remove rid from URL to prevent polling again on refresh
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
+  // Poll for payment status
+  useEffect(() => {
+    if (!confirmingRid) return;
+    
+    let isSubscribed = true;
+    let pollCount = 0;
+    const maxPolls = 40; // 40 * 3s = 120s
+    
+    const checkStatus = async () => {
+      try {
+        const result = await getRegistrationStatus({ data: confirmingRid });
+        if (!isSubscribed) return;
+        
+        if (result && result.paymentStatus === "paid") {
+          setSubmitted(confirmingRid);
+          try {
+            localStorage.setItem(
+              STORAGE_KEY,
+              JSON.stringify({ submitted: confirmingRid, savedAt: new Date().toISOString() }),
+            );
+          } catch { /* ignore */ }
+          setConfirmingRid(null);
+        } else if (result && result.paymentStatus === "failed") {
+          setPollError("Payment failed. Please try again.");
+          setConfirmingRid(null);
+        } else {
+          pollCount++;
+          if (pollCount >= maxPolls) {
+            setPollTimeout(true);
+            setConfirmingRid(null);
+          } else {
+            setTimeout(checkStatus, 3000);
+          }
+        }
+      } catch (err) {
+        if (!isSubscribed) return;
+        pollCount++;
+        if (pollCount >= maxPolls) {
+          setPollTimeout(true);
+          setConfirmingRid(null);
+        } else {
+          setTimeout(checkStatus, 3000);
+        }
+      }
+    };
+    
+    checkStatus();
+    return () => { isSubscribed = false; };
+  }, [confirmingRid]);
 
   // Load persisted draft on mount
   useEffect(() => {
@@ -290,6 +354,10 @@ function Register() {
     try {
       const result = await submitRegistration({ data: f });
       if (result.success) {
+        if (result.redirectUrl) {
+          window.location.href = result.redirectUrl;
+          return;
+        }
         try {
           localStorage.setItem(
             STORAGE_KEY,
@@ -297,10 +365,6 @@ function Register() {
           );
         } catch {
           /* ignore */
-        }
-        if (result.redirectUrl) {
-          window.location.href = result.redirectUrl;
-          return;
         }
         setSubmitted(result.id);
       }
@@ -311,6 +375,69 @@ function Register() {
       setIsSubmitting(false);
     }
   };
+
+  if (confirmingRid) {
+    return (
+      <div className="min-h-screen bg-secondary/40">
+        <TopBar />
+        <div className="mx-auto max-w-2xl px-4 py-24">
+          <div className="rounded-3xl bg-card p-10 text-center shadow-elegant border border-border/60">
+            <div className="mx-auto mb-6 flex h-16 w-16 animate-pulse items-center justify-center rounded-full bg-gold/20 text-gold">
+              <Star size={32} />
+            </div>
+            <h2 className="mb-4 font-display text-3xl font-bold">Confirming Payment...</h2>
+            <p className="mb-8 text-muted-foreground">
+              Please wait while we verify your payment with Pesapal. This usually takes a few seconds.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (pollTimeout) {
+    return (
+      <div className="min-h-screen bg-secondary/40">
+        <TopBar />
+        <div className="mx-auto max-w-2xl px-4 py-24">
+          <div className="rounded-3xl bg-card p-10 text-center shadow-elegant border border-border/60">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/20 text-primary">
+              <Check size={32} />
+            </div>
+            <h2 className="mb-4 font-display text-3xl font-bold">Payment Processing</h2>
+            <p className="mb-8 text-muted-foreground">
+              Your payment is taking longer than usual to confirm. Don't worry — we'll email your confirmation and VIP pass once it goes through.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (pollError) {
+    return (
+      <div className="min-h-screen bg-secondary/40">
+        <TopBar />
+        <div className="mx-auto max-w-2xl px-4 py-24">
+          <div className="rounded-3xl bg-card p-10 text-center shadow-elegant border border-destructive/60">
+            <h2 className="mb-4 font-display text-3xl font-bold text-destructive">Payment Failed</h2>
+            <p className="mb-8 text-muted-foreground">
+              {pollError}
+            </p>
+            <button
+              onClick={() => {
+                setPollError(null);
+                setStep(5); // Go back to pass type
+              }}
+              className="rounded-xl bg-gradient-primary px-8 py-4 font-semibold text-primary-foreground shadow-glow hover:-translate-y-1 transition-all"
+            >
+              Try payment again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (submitted) {
     return (
@@ -825,7 +952,7 @@ function Register() {
                 Experience Ameer Expo
               </h3>
               <VideoEmbed
-                youtubeId="dQw4w9WgXcQ"
+                // TODO: replace with real promo video ID
                 caption="Join industry leaders in shaping the future."
               />
               <div className="mt-6 rounded-2xl bg-secondary/50 p-4 text-sm text-muted-foreground">
