@@ -35,13 +35,14 @@ export function LanguageSwitcher() {
             layout: (window as any).google.translate.TranslateElement.InlineLayout.SIMPLE,
             autoDisplay: false,
           },
-          "google_translate_element"
+          "google_translate_element",
         );
       };
 
       const script = document.createElement("script");
       script.id = "google-translate-script";
-      script.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+      script.src =
+        "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
       script.async = true;
       document.body.appendChild(script);
     }
@@ -53,7 +54,7 @@ export function LanguageSwitcher() {
         setCurrentLang(parts[2]);
       }
     }
-    
+
     const clickHandler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setIsOpen(false);
@@ -112,8 +113,8 @@ export function LanguageSwitcher() {
                 : "opacity-70 hover:opacity-100"
             }`}
           >
-            <img 
-              src={`https://flagcdn.com/w40/${lang.country}.png`} 
+            <img
+              src={`https://flagcdn.com/w40/${lang.country}.png`}
               alt={lang.label}
               className="w-full h-full object-cover"
             />
@@ -131,8 +132,8 @@ export function LanguageSwitcher() {
           {currentLang === "en" ? (
             <Globe size={18} className="text-foreground" />
           ) : (
-            <img 
-              src={`https://flagcdn.com/w40/${LANGUAGES.find((l) => l.code === currentLang)?.country}.png`} 
+            <img
+              src={`https://flagcdn.com/w40/${LANGUAGES.find((l) => l.code === currentLang)?.country}.png`}
               alt={currentLang}
               className="w-6 h-6 rounded-full object-cover"
             />
@@ -151,8 +152,8 @@ export function LanguageSwitcher() {
                     : "text-foreground"
                 }`}
               >
-                <img 
-                  src={`https://flagcdn.com/w40/${lang.country}.png`} 
+                <img
+                  src={`https://flagcdn.com/w40/${lang.country}.png`}
                   alt={lang.label}
                   className="w-5 h-5 rounded-full object-cover border border-border/20"
                 />
