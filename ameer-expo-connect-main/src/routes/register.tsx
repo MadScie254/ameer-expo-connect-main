@@ -437,7 +437,12 @@ function Register() {
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Registration failed. Please try again.";
-      setSubmitError(msg);
+      console.error("Registration error:", err);
+      if (msg.trim().startsWith("<")) {
+        setSubmitError("Something went wrong saving your registration. Please try again in a moment.");
+      } else {
+        setSubmitError(msg);
+      }
     } finally {
       setIsSubmitting(false);
     }
