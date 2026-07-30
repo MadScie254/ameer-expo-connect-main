@@ -8,7 +8,7 @@ console.log(
   "[supabase-server] env check — SUPABASE_URL length:",
   (process.env.SUPABASE_URL ?? "").length,
   "| SUPABASE_SERVICE_ROLE_KEY length:",
-  (process.env.SUPABASE_SERVICE_ROLE_KEY ?? "").length
+  (process.env.SUPABASE_SERVICE_ROLE_KEY ?? "").length,
 );
 
 if (!supabaseUrl || !supabaseServerKey) {
