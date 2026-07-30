@@ -10,7 +10,10 @@ export async function sendRegistrationNotification(registration: {
   paymentStatus: string;
 }) {
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey || !process.env.ADMIN_NOTIFICATION_EMAIL) {
+  const to = process.env.ADMIN_NOTIFICATION_EMAIL?.split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (!apiKey || !to || to.length === 0) {
     console.error("Notification skipped: missing RESEND_API_KEY or ADMIN_NOTIFICATION_EMAIL");
     return;
   }
@@ -23,11 +26,7 @@ export async function sendRegistrationNotification(registration: {
       },
       body: JSON.stringify({
         from: "Ameer Expo <notifications@ameergroupltd.com>",
-        to: [
-          process.env.ADMIN_NOTIFICATION_EMAIL,
-          process.env.SECOND_NOTIFICATION_EMAIL,
-          "dmwanjala254@gmail.com",
-        ].filter(Boolean) as string[],
+        to,
         subject: `New registration — ${registration.firstName} ${registration.lastName} (${registration.passType})`,
         html: `
           <h2>New Ameer Expo registration</h2>
@@ -63,7 +62,10 @@ export async function sendExhibitorLeadNotification(lead: {
   message?: string | null;
 }) {
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey || !process.env.ADMIN_NOTIFICATION_EMAIL) {
+  const to = process.env.ADMIN_NOTIFICATION_EMAIL?.split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (!apiKey || !to || to.length === 0) {
     console.error("Notification skipped: missing RESEND_API_KEY or ADMIN_NOTIFICATION_EMAIL");
     return;
   }
@@ -76,11 +78,7 @@ export async function sendExhibitorLeadNotification(lead: {
       },
       body: JSON.stringify({
         from: "Ameer Expo <notifications@ameergroupltd.com>",
-        to: [
-          process.env.ADMIN_NOTIFICATION_EMAIL,
-          process.env.SECOND_NOTIFICATION_EMAIL,
-          "dmwanjala254@gmail.com",
-        ].filter(Boolean) as string[],
+        to,
         subject: `New ${lead.interest} enquiry — ${lead.company} (${lead.tierOrSize ?? "unspecified"})`,
         html: `
           <h2>New Ameer Expo ${lead.interest} enquiry</h2>
@@ -160,7 +158,10 @@ export async function sendPartnerNotification(inquiry: {
   message?: string | null;
 }) {
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey || !process.env.ADMIN_NOTIFICATION_EMAIL) {
+  const to = process.env.ADMIN_NOTIFICATION_EMAIL?.split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (!apiKey || !to || to.length === 0) {
     console.error("Notification skipped: missing RESEND_API_KEY or ADMIN_NOTIFICATION_EMAIL");
     return;
   }
@@ -173,11 +174,7 @@ export async function sendPartnerNotification(inquiry: {
       },
       body: JSON.stringify({
         from: "Ameer Expo <notifications@ameergroupltd.com>",
-        to: [
-          process.env.ADMIN_NOTIFICATION_EMAIL,
-          process.env.SECOND_NOTIFICATION_EMAIL,
-          "dmwanjala254@gmail.com",
-        ].filter(Boolean) as string[],
+        to,
         subject: `New ${inquiry.type} inquiry — ${inquiry.companyName}`,
         html: `
           <h2>New Ameer Expo ${inquiry.type} inquiry</h2>
