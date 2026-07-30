@@ -9,9 +9,8 @@ export async function sendRegistrationNotification(registration: {
   amount: number;
   paymentStatus: string;
 }) {
-  const to = process.env.ADMIN_NOTIFICATION_EMAIL;
   const apiKey = process.env.RESEND_API_KEY;
-  if (!to || !apiKey) {
+  if (!apiKey || !process.env.ADMIN_NOTIFICATION_EMAIL) {
     console.error("Notification skipped: missing RESEND_API_KEY or ADMIN_NOTIFICATION_EMAIL");
     return;
   }
