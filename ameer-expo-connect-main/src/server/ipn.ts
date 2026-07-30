@@ -92,6 +92,18 @@ export async function handleIpn(request: Request) {
         firstName: updatedRow.first_name,
         referenceCode: updatedRow.reference_code,
         passType: updatedRow.pass_type,
+        lastName: updatedRow.last_name,
+        company: updatedRow.company,
+        jobTitle: updatedRow.job_title,
+        industry: updatedRow.industry,
+        interests: updatedRow.interests,
+        networkingTargets: updatedRow.networking_targets,
+        needsHotel: updatedRow.needs_hotel,
+        needsPickup: updatedRow.needs_pickup,
+        needsVisa: updatedRow.needs_visa,
+        dietary: updatedRow.dietary,
+        accessibility: updatedRow.accessibility,
+        gender: updatedRow.gender,
       });
     }
 

@@ -136,6 +136,22 @@ export const submitRegistration = createServerFn({ method: "POST" })
           city: data.city,
           country: data.country,
           payload: payload,
+          gender: data.gender,
+          id_number: data.idNumber,
+          whatsapp: data.whatsapp,
+          linkedin: data.linkedin,
+          industry: data.industry,
+          website: data.website,
+          business_type: data.businessType,
+          experience: data.experience,
+          interests: data.interests,
+          wants_b2b: data.b2b,
+          networking_targets: data.targets,
+          needs_hotel: data.hotel,
+          needs_pickup: data.pickup,
+          needs_visa: data.visa,
+          dietary: data.dietary,
+          accessibility: data.accessibility,
         })
         .select()
         .single();
@@ -162,6 +178,18 @@ export const submitRegistration = createServerFn({ method: "POST" })
           firstName: row.first_name,
           referenceCode: row.reference_code,
           passType: row.pass_type,
+          lastName: row.last_name,
+          company: row.company,
+          jobTitle: row.job_title,
+          industry: row.industry,
+          interests: row.interests,
+          networkingTargets: row.networking_targets,
+          needsHotel: row.needs_hotel,
+          needsPickup: row.needs_pickup,
+          needsVisa: row.needs_visa,
+          dietary: row.dietary,
+          accessibility: row.accessibility,
+          gender: row.gender,
         });
       }
 

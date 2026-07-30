@@ -548,6 +548,10 @@ function Register() {
             </div>
             <Link
               to="/"
+              onClick={() => {
+                clearDraft();
+                setSubmitted(null);
+              }}
               className="mt-8 inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-6 py-3 text-sm font-semibold text-primary-foreground"
             >
               <ArrowLeft size={16} /> Back to home

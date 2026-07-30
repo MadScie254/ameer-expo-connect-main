@@ -147,27 +147,27 @@ export async function sendRegistrantConfirmation(registration: {
           <br/>
           
           <h3>Your Details</h3>
-          <p><strong>Name:</strong> ${registration.firstName} ${registration.lastName || ''}</p>
-          <p><strong>Gender:</strong> ${registration.gender || '—'}</p>
+          <p><strong>Name:</strong> ${registration.firstName} ${registration.lastName || ""}</p>
+          <p><strong>Gender:</strong> ${registration.gender || "—"}</p>
           <br/>
 
           <h3>Professional Background</h3>
-          <p><strong>Company:</strong> ${registration.company || '—'}</p>
-          <p><strong>Job Title:</strong> ${registration.jobTitle || '—'}</p>
-          <p><strong>Industry:</strong> ${registration.industry || '—'}</p>
+          <p><strong>Company:</strong> ${registration.company || "—"}</p>
+          <p><strong>Job Title:</strong> ${registration.jobTitle || "—"}</p>
+          <p><strong>Industry:</strong> ${registration.industry || "—"}</p>
           <br/>
 
           <h3>Your Interests & Networking Goals</h3>
-          <p><strong>Interests:</strong> ${registration.interests?.join(", ") || '—'}</p>
-          <p><strong>Networking Targets:</strong> ${registration.networkingTargets?.join(", ") || '—'}</p>
+          <p><strong>Interests:</strong> ${registration.interests?.join(", ") || "—"}</p>
+          <p><strong>Networking Targets:</strong> ${registration.networkingTargets?.join(", ") || "—"}</p>
           <br/>
 
           <h3>Logistics</h3>
           <p><strong>Hotel Assistance:</strong> ${registration.needsHotel ? "Yes" : "No"}</p>
           <p><strong>Airport Pickup:</strong> ${registration.needsPickup ? "Yes" : "No"}</p>
           <p><strong>Visa Assistance:</strong> ${registration.needsVisa ? "Yes" : "No"}</p>
-          <p><strong>Dietary Requirements:</strong> ${registration.dietary || '—'}</p>
-          <p><strong>Accessibility Needs:</strong> ${registration.accessibility || '—'}</p>
+          <p><strong>Dietary Requirements:</strong> ${registration.dietary || "—"}</p>
+          <p><strong>Accessibility Needs:</strong> ${registration.accessibility || "—"}</p>
           <br/>
 
           <p><strong>Event Details:</strong></p>
