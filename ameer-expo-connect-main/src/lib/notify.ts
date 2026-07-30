@@ -149,3 +149,52 @@ export async function sendRegistrantConfirmation(registration: {
     console.error("Failed to send registrant confirmation", err);
   }
 }
+
+export async function sendPartnerNotification(inquiry: {
+  id: string;
+  type: "exhibitor" | "sponsor";
+  companyName: string;
+  contactName: string;
+  email: string;
+  phone?: string | null;
+  message?: string | null;
+}) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey || !process.env.ADMIN_NOTIFICATION_EMAIL) {
+    console.error("Notification skipped: missing RESEND_API_KEY or ADMIN_NOTIFICATION_EMAIL");
+    return;
+  }
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "Ameer Expo <notifications@ameergroupltd.com>",
+        to: [
+          process.env.ADMIN_NOTIFICATION_EMAIL,
+          process.env.SECOND_NOTIFICATION_EMAIL,
+          "dmwanjala254@gmail.com",
+        ].filter(Boolean) as string[],
+        subject: `New ${inquiry.type} inquiry — ${inquiry.companyName}`,
+        html: `
+          <h2>New Ameer Expo ${inquiry.type} inquiry</h2>
+          <p><strong>Company:</strong> ${inquiry.companyName}</p>
+          <p><strong>Contact:</strong> ${inquiry.contactName}</p>
+          <p><strong>Email:</strong> ${inquiry.email}</p>
+          <p><strong>Phone:</strong> ${inquiry.phone ?? "—"}</p>
+          <p><strong>Message:</strong> ${inquiry.message ?? "—"}</p>
+          <p><strong>Inquiry ID:</strong> ${inquiry.id}</p>
+        `,
+      }),
+    });
+    if (!response.ok) {
+      const text = await response.text();
+      console.error("Resend error:", text);
+    }
+  } catch (err) {
+    console.error("Failed to send partner notification", err);
+  }
+}
