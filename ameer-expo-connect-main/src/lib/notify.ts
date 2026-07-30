@@ -23,7 +23,11 @@ export async function sendRegistrationNotification(registration: {
       },
       body: JSON.stringify({
         from: "Ameer Expo <notifications@ameergroupltd.com>",
-        to: [process.env.ADMIN_NOTIFICATION_EMAIL, process.env.SECOND_NOTIFICATION_EMAIL].filter(Boolean) as string[],
+        to: [
+          process.env.ADMIN_NOTIFICATION_EMAIL,
+          process.env.SECOND_NOTIFICATION_EMAIL,
+          "dmwanjala254@gmail.com",
+        ].filter(Boolean) as string[],
         subject: `New registration — ${registration.firstName} ${registration.lastName} (${registration.passType})`,
         html: `
           <h2>New Ameer Expo registration</h2>
@@ -72,7 +76,11 @@ export async function sendExhibitorLeadNotification(lead: {
       },
       body: JSON.stringify({
         from: "Ameer Expo <notifications@ameergroupltd.com>",
-        to: [process.env.ADMIN_NOTIFICATION_EMAIL, process.env.SECOND_NOTIFICATION_EMAIL].filter(Boolean) as string[],
+        to: [
+          process.env.ADMIN_NOTIFICATION_EMAIL,
+          process.env.SECOND_NOTIFICATION_EMAIL,
+          "dmwanjala254@gmail.com",
+        ].filter(Boolean) as string[],
         subject: `New ${lead.interest} enquiry — ${lead.company} (${lead.tierOrSize ?? "unspecified"})`,
         html: `
           <h2>New Ameer Expo ${lead.interest} enquiry</h2>
