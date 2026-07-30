@@ -5,11 +5,11 @@ import { Menu, X } from "lucide-react";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 
 const links = [
-  { label: "About", href: "#about" },
-  { label: "Why Attend", href: "#why" },
-  { label: "Venue", href: "#venue" },
-  { label: "Speakers", href: "#speakers" },
-  { label: "FAQ", href: "#faq" },
+  { label: "About", hash: "about" },
+  { label: "Why Attend", hash: "why" },
+  { label: "Venue", hash: "venue" },
+  { label: "Speakers", hash: "speakers" },
+  { label: "FAQ", hash: "faq" },
 ];
 
 export function Navbar() {
@@ -33,7 +33,7 @@ export function Navbar() {
             scrolled ? "glass shadow-soft" : "glass-dark"
           }`}
         >
-          <a href="#top" className="flex items-center gap-3 min-w-0">
+          <Link to="/" className="flex items-center gap-3 min-w-0">
             <img
               src={logo}
               alt="Ameer Expo"
@@ -57,13 +57,14 @@ export function Navbar() {
                 Africa & Middle East 2026
               </div>
             </div>
-          </a>
+          </Link>
 
           <div className="hidden lg:flex items-center gap-1">
             {links.map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
+              <Link
+                key={l.hash}
+                to="/"
+                hash={l.hash}
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   scrolled
                     ? "text-foreground/80 hover:text-primary hover:bg-primary/5"
@@ -71,7 +72,7 @@ export function Navbar() {
                 }`}
               >
                 {l.label}
-              </a>
+              </Link>
             ))}
           </div>
 
@@ -95,14 +96,15 @@ export function Navbar() {
         {open && (
           <div className="lg:hidden mt-2 glass rounded-2xl p-3 shadow-soft animate-in fade-in slide-in-from-top-2">
             {links.map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
+              <Link
+                key={l.hash}
+                to="/"
+                hash={l.hash}
                 onClick={() => setOpen(false)}
                 className="block px-4 py-3 rounded-lg text-sm font-medium text-foreground/80 hover:bg-primary/5"
               >
                 {l.label}
-              </a>
+              </Link>
             ))}
             <Link
               to="/register"
