@@ -48,3 +48,54 @@ export async function sendRegistrationNotification(registration: {
     console.error("Failed to send registration notification", err);
   }
 }
+
+export async function sendExhibitorLeadNotification(lead: {
+  id: string;
+  company: string;
+  contactName: string;
+  email: string;
+  phone?: string | null;
+  interest: string;
+  tierOrSize?: string | null;
+  message?: string | null;
+}) {
+  const to = process.env.ADMIN_NOTIFICATION_EMAIL;
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!to || !apiKey) {
+    console.error("Notification skipped: missing RESEND_API_KEY or ADMIN_NOTIFICATION_EMAIL");
+    return;
+  }
+
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "Ameer Expo <notifications@ameergroupltd.com>",
+        to: [process.env.ADMIN_NOTIFICATION_EMAIL, process.env.SECOND_NOTIFICATION_EMAIL].filter(Boolean) as string[],
+        subject: `New exhibitor/sponsorship lead — ${lead.company}`,
+        html: `
+          <h2>New exhibitor or sponsorship interest</h2>
+          <p><strong>Company:</strong> ${lead.company}</p>
+          <p><strong>Contact:</strong> ${lead.contactName}</p>
+          <p><strong>Email:</strong> ${lead.email}</p>
+          <p><strong>Phone:</strong> ${lead.phone ?? "—"}</p>
+          <p><strong>Interest:</strong> ${lead.interest}</p>
+          <p><strong>Tier/size:</strong> ${lead.tierOrSize ?? "—"}</p>
+          <p><strong>Message:</strong> ${lead.message ?? "—"}</p>
+          <p><strong>Reference:</strong> ${lead.id}</p>
+        `,
+      }),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error("Resend error:", text);
+    }
+  } catch (err) {
+    console.error("Failed to send exhibitor lead notification", err);
+  }
+}

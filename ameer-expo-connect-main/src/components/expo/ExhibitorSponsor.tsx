@@ -45,7 +45,7 @@ export function ExhibitorSponsor() {
                 instant quotation. Reserve now to secure premium hall positioning.
               </p>
               <Link
-                to="/register"
+                to="/exhibit"
                 className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-gradient-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-elegant hover:-translate-y-0.5 transition-transform"
               >
                 <Building2 size={18} /> Reserve a Booth
@@ -118,7 +118,7 @@ export function ExhibitorSponsor() {
                   ))}
                 </ul>
                 <Link
-                  to="/register"
+                  to="/exhibit"
                   className={`mt-6 inline-flex items-center gap-2 text-sm font-semibold ${
                     p.accent ? "text-gold" : "text-primary"
                   } hover:gap-3 transition-all`}
