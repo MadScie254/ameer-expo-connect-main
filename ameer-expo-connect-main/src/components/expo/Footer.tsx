@@ -11,7 +11,7 @@ const SOCIAL_LINKS = {
 
 const FOOTER_LINKS = {
   privacy: "#", // TODO: replace with real URL
-  terms: "#", // TODO: replace with real URL
+  terms: "/terms",
   cookies: "#", // TODO: replace with real URL
   brochure: "#", // TODO: replace with real URL
 };
