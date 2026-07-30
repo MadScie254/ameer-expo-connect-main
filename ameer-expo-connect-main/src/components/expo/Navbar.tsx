@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import logo from "@/assets/ameer-expo-logo.png.asset.json";
+import logo from "@/assets/ameer-expo-logo.png";
 import { Menu, X } from "lucide-react";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 
@@ -35,7 +35,7 @@ export function Navbar() {
         >
           <a href="#top" className="flex items-center gap-3 min-w-0">
             <img
-              src={logo.url}
+              src={logo}
               alt="Ameer Expo"
               width={40}
               height={40}
