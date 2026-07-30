@@ -2,14 +2,13 @@
 
 ## Ameer Expo Africa & Middle East 2026
 
-**Effective Date:** [Insert Date] · **Last Updated:** [Insert Date]
+**Effective Date:** 31 July 2026 · **Last Updated:** 31 July 2026
 **Organizer:** Ameer Group Ltd ("Ameer Group," "we," "us," "our")
 **Event:** Ameer Expo Africa & Middle East 2026 ("the Expo," "the Event")
 **Venue:** Sarit Expo Centre, Westlands, Nairobi, Kenya
 **Dates:** 18–20 September 2026, 9:00 AM – 6:00 PM daily
-**Website:** [ameerexpo.com — insert final domain]
+**Website:** www.ameerexpo.com
 
-> ⚠️ **Drafting note (remove before publishing):** This document was generated as a comprehensive starting template based on the actual registration flow, payment provider, and data fields implemented in the `ameer-expo-connect-main` codebase. It is written to be thorough and internally consistent with the product, but it is **not a substitute for review by a Kenya-qualified lawyer**. Before this goes live, have counsel confirm compliance with the **Kenya Data Protection Act, 2019**, the **Consumer Protection Act, 2012**, Competent Authority requirements for public assembly/events at Sarit Expo Centre, and — since the Expo markets to visitors from 15+ countries — whether any GDPR / cross-border data transfer obligations apply to you as the data controller. Replace every `[bracketed]` placeholder (phone numbers, emails, company registration number, physical registered address, KRA PIN if applicable) with your real details before publishing. The footer of the current site literally has `TODO: replace with real URL` on the Terms/Privacy/Cookies links and social links — this document, plus its companion Privacy Policy and Cookie Policy, are meant to fill those gaps.
 
 ---
 
@@ -173,9 +172,9 @@
 
 10.1. **General Pass:** As the General Pass is free of charge, no refund provisions apply; you may simply choose not to attend without financial consequence, though we appreciate notice via the contact details in Section 31 so we can release capacity.
 
-10.2. **VIP Pass refund window:** You may request a refund of your VIP Pass fee by contacting the Organizer at least **[Insert number, e.g., 14]** days before the first day of the Event (i.e., on or before **[Insert cut-off date]**). Refund requests made after this window, or made on or after the Event start date, will **not** be eligible for a refund, except where required by applicable consumer protection law.
-10.3. Approved refunds will be processed back to the original payment method via Pesapal within **[Insert number, e.g., 14–21]** business days, less any non-recoverable payment processing fees actually incurred by the Organizer, where permitted by law.
-10.4. **Substitution instead of refund:** In lieu of a refund, you may request to transfer your VIP Pass to a substitute attendee (subject to that substitute meeting the eligibility requirements in Section 3) by notifying the Organizer at least **[Insert number, e.g., 5]** business days before the Event, subject to Organizer approval.
+10.2. **VIP Pass refund window:** You may request a refund of your VIP Pass fee by contacting the Organizer at least **14** days before the first day of the Event (i.e., on or before **4 September 2026**). Refund requests made after this window, or made on or after the Event start date, will **not** be eligible for a refund, except where required by applicable consumer protection law.
+10.3. Approved refunds will be processed back to the original payment method via Pesapal within **14–21** business days, less any non-recoverable payment processing fees actually incurred by the Organizer, where permitted by law.
+10.4. **Substitution instead of refund:** In lieu of a refund, you may request to transfer your VIP Pass to a substitute attendee (subject to that substitute meeting the eligibility requirements in Section 3) by notifying the Organizer at least **5** business days before the Event, subject to Organizer approval.
 10.5. **No-shows.** Failure to attend the Event after registering, whether for a free or paid pass, does not entitle you to a refund, credit, or compensation of any kind, and does not carry over to future events.
 10.6. The Organizer reserves the right, in cases of proven duplicate/fraudulent registration or a breach of these Terms, to cancel a registration and refuse a refund.
 
@@ -187,7 +186,7 @@
 
 11.3. **Effect of cancellation due to Force Majeure.** If the Event is cancelled in its entirety due to a Force Majeure Event, the Organizer will, at its sole discretion, either: (a) offer registrants a credit toward a future edition of the Expo; (b) offer a partial or full refund of paid pass fees, net of non-recoverable costs already incurred by the Organizer in staging the Event (such as venue deposits, production, and payment processing fees); or (c) a combination of both. The Organizer will not be liable for any other direct or indirect losses arising from a Force Majeure cancellation, including but not limited to travel, accommodation, visa, or lost business costs incurred by Attendees, Exhibitors, or Sponsors.
 
-11.4. **Postponement/rescheduling.** If the Event is postponed or rescheduled, existing registrations, exhibitor allocations, and sponsorship arrangements will, where reasonably practicable, automatically carry over to the new date at no additional charge, unless you notify the Organizer within **[Insert number, e.g., 14]** days of the rescheduling announcement that you wish to cancel instead, in which case the refund terms in Section 10 apply.
+11.4. **Postponement/rescheduling.** If the Event is postponed or rescheduled, existing registrations, exhibitor allocations, and sponsorship arrangements will, where reasonably practicable, automatically carry over to the new date at no additional charge, unless you notify the Organizer within **14** days of the rescheduling announcement that you wish to cancel instead, in which case the refund terms in Section 10 apply.
 
 11.5. Nothing in this Section limits any non-waivable statutory right you may have under Kenyan consumer protection law.
 
@@ -355,7 +354,7 @@
 
 29.2. The parties agree to first attempt to resolve any dispute arising out of or relating to this Agreement through good-faith negotiation by notifying the other party in writing.
 
-29.3. If a dispute is not resolved within **[Insert number, e.g., 30]** days of such notice, the parties agree that the dispute shall be [subject to the exclusive jurisdiction of the courts of Kenya sitting in Nairobi] **OR** [referred to and finally resolved by arbitration in Nairobi under the Arbitration Act (Cap 49) of Kenya, before a single arbitrator, in the English language] — _[choose one approach with counsel and delete the other]_.
+29.3. If a dispute is not resolved within **30** days of such notice, the parties agree that the dispute shall be subject to the exclusive jurisdiction of the courts of Kenya sitting in Nairobi.
 
 29.4. Nothing in this Section prevents either party from seeking urgent injunctive or equitable relief from a court of competent jurisdiction where necessary to protect its rights.
 
@@ -385,105 +384,12 @@ For any questions about these Terms, your registration, or a request relating to
 
 **Ameer Group Ltd**
 Organizer of Ameer Expo Africa & Middle East 2026
-📍 Sarit Expo Centre, Westlands, Nairobi, Kenya _(registered office address: [Insert full registered/postal address])_
-✉️ General enquiries: **hello@ameergroupltd.com**
-✉️ Registration/admin: **info@ameergroupltd.com**
-☎️ **[Insert real phone number — currently a placeholder in the codebase]**
-🌐 [Insert final Website domain]
-
-_Company registration number: [Insert]. KRA PIN (if applicable for tax invoicing): [Insert]._
+Sarit Expo Centre, Westlands, Nairobi, Kenya _(registered office: Westlands, Nairobi, Kenya)_
+General enquiries: **hello@ameergroupltd.com**
+Registration/admin: **info@ameergroupltd.com**
+Website: www.ameerexpo.com
 
 ## 32. Acknowledgement
 
 By checking "I agree to the Terms & Conditions" during registration, submitting an Exhibitor or Sponsor inquiry, completing payment for a VIP Pass, or attending Ameer Expo Africa & Middle East 2026, you acknowledge that you have read, understood, and agree to be bound by these Terms & Conditions in full.
 
----
-
-_Document generated as a comprehensive first draft aligned to the current `ameer-expo-connect-main` registration schema, pass structure, and payment/data flow. Replace all `[bracketed]` placeholders, confirm refund windows and dispute-resolution mechanism with the Organizer's management, and obtain legal sign-off before publishing._
-
----
-
----
-
-# 🧩 GitHub Copilot / AI Coding Agent Prompt
-
-### Use this to generate the actual `/terms` page inside the repo, matching the existing theme exactly
-
-Paste the block below into **Copilot Chat (Agent/Edit mode)** or **Copilot Workspace** inside the `ameer-expo-connect-main` repo. It's written to reference the project's real conventions (TanStack Router file-based routing, Tailwind v4 theme tokens, shadcn/ui, existing `Navbar`/`Footer` components) so the output drops in cleanly rather than needing a redesign pass.
-
-```
-You are working inside the "ameer-expo-connect-main" repo (TanStack Start + TanStack Router
-file-based routing + React + TypeScript + Tailwind CSS v4 + shadcn/ui). Your task is to add a
-new "/terms" route that renders the Ameer Expo 2026 Terms & Conditions page, matching the
-existing visual language of the site exactly — do not introduce a new color palette,
-font stack, or component style.
-
-CONTEXT — reuse these exactly as they exist in the codebase, do not redefine them:
-- Theme tokens live in src/styles.css under @theme inline / :root / .dark — use existing
-  utility classes and CSS vars: bg-background, text-foreground, bg-card, border-border/60,
-  text-primary, bg-gradient-primary, text-gradient-gold, bg-gradient-gold, the `glass` and
-  `glass-dark` utilities, shadow-soft, shadow-elegant, shadow-glow, and rounded-2xl/3xl radii.
-  Royal blue primary + gold accent, Poppins/Inter display font (font-display class), rounded
-  cards with soft shadows — matches the About.tsx / EventDetails.tsx / Footer.tsx style you'll
-  find already in src/components/expo/.
-- Reuse the existing <Navbar /> and <Footer /> components from src/components/expo/ at the top
-  and bottom of the new page, exactly as src/routes/index.tsx does.
-- Follow the file-based routing pattern used in src/routes/index.tsx and src/routes/register.tsx:
-  create src/routes/terms.tsx using createFileRoute("/terms")({ component: TermsPage, head: () => ({...}) })
-  with meta title "Terms & Conditions | Ameer Expo Africa & Middle East 2026" and an appropriate
-  meta description, following the same head() pattern already used in src/routes/index.tsx.
-
-WHAT TO BUILD in src/routes/terms.tsx:
-1. A hero/header block consistent with the site's section style (see EventDetails.tsx /
-   About.tsx for the "eyebrow label + font-display heading + text-gradient-gold accent word"
-   pattern) showing the page title, and an "Effective Date / Last Updated" line.
-2. A sticky, collapsible table of contents (desktop: sticky left sidebar inside a `glass` card;
-   mobile: a collapsible <details>/accordion at the top using the existing accordion.tsx from
-   src/components/ui/) that deep-links to each section via #anchor ids.
-3. The full legal body content — 32 numbered sections — rendered in a readable, generously
-   spaced typographic layout inside a bg-card rounded-2xl md:rounded-3xl border border-border/60
-   shadow-soft container, matching the card style used elsewhere on the site. Use the
-   font-display class for section headings and keep body copy on text-foreground /
-   text-muted-foreground per the existing scale. I will supply the full markdown text of the
-   Terms separately — structure the JSX to accept/render that content as clean semantic HTML
-   (h2 per numbered section with a matching id, ordered/unordered lists, a styled <table> for
-   the pass-type pricing table reusing src/components/ui/table.tsx).
-4. A print-friendly stylesheet tweak (@media print) that hides the Navbar, Footer, and TOC
-   sidebar and expands the content to full width.
-5. A "Back to top" floating button once the user scrolls past the hero, styled with the
-   bg-gradient-gold / shadow-glow treatment used on primary CTAs elsewhere (see Footer.tsx's
-   "Register Now" button for the exact visual reference).
-6. Fully responsive: single column with the TOC as a collapsible accordion below ~1024px,
-   two-column (TOC + content) above it.
-7. Accessible: correct heading hierarchy (h1 > h2 per section, no skipped levels), skip-to-
-   content link, sufficient color contrast using only existing theme tokens (don't invent new
-   ones), and keyboard-operable TOC links and back-to-top button.
-
-ALSO UPDATE, so the new page is actually wired into the site:
-- src/components/expo/Footer.tsx: change `terms: "#"` in the FOOTER_LINKS object to `"/terms"`,
-  and change the <a href={FOOTER_LINKS.terms}> to a <Link to="/terms"> from
-  @tanstack/react-router (matching how the "Register Now" link already uses <Link>), so it's a
-  client-side route transition instead of a hard link.
-- If src/routes/register.tsx has a "terms" checkbox/label tied to the `terms` boolean in the
-  registration Zod schema, link the checkbox label text to open /terms in a new tab
-  (target="_blank" rel="noopener noreferrer") without losing the user's in-progress draft.
-- public/sitemap.xml: add a <url> entry for /terms following the existing entries' format.
-
-CONSTRAINTS:
-- TypeScript strict, no `any`.
-- Do not add new npm dependencies — build the TOC/accordion/back-to-top behavior with existing
-  packages already in package.json (React state/hooks, existing shadcn/ui primitives, lucide-react
-  icons for chevron/arrow-up icons, consistent with icon usage elsewhere in src/components/expo/).
-- Do not touch src/styles.css theme tokens — only consume existing ones.
-- Keep the component split reasonably (e.g., a small TableOfContents subcomponent and a
-  BackToTopButton subcomponent colocated in the same route file or under
-  src/components/expo/ if that matches project convention).
-- Match the existing code style (see any existing file in src/components/expo/ for formatting,
-  Prettier config in .prettierrc, ESLint config in eslint.config.js).
-
-Ask me for the finalized Terms & Conditions markdown/JSON content before hardcoding section
-text, or accept it as a prop/constant array of {id, heading, body} so legal copy can be edited
-without touching layout code later.
-```
-
-**Tip:** After Copilot scaffolds the route, drop in the finalized text from the Terms & Conditions section above (once you've filled in every `[bracketed]` placeholder and had it reviewed) as the content data source it asks for.
