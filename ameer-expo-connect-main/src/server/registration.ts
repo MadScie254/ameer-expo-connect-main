@@ -69,6 +69,18 @@ export const submitRegistration = createServerFn({ method: "POST" })
   .validator((data: unknown) => RegistrationSchema.parse(data))
   .handler(async ({ data }) => {
     try {
+      const fiveMinsAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const { data: recentReg } = await supabaseAdmin
+        .from("registrations")
+        .select("id")
+        .eq("email", data.email)
+        .gte("created_at", fiveMinsAgo)
+        .maybeSingle();
+
+      if (recentReg) {
+        return { success: false, error: "Please wait 5 minutes before submitting another request." };
+      }
+
       const id = crypto.randomUUID();
       const referenceCode = `AE26-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       const payload = data;

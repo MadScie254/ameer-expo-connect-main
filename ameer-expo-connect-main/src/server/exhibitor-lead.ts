@@ -17,6 +17,18 @@ export const submitExhibitorLead = createServerFn({ method: "POST" })
   .validator((data: unknown) => ExhibitorLeadSchema.parse(data))
   .handler(async ({ data }) => {
     try {
+      const fiveMinsAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const { data: recentLead } = await supabaseAdmin
+        .from("exhibitor_leads")
+        .select("id")
+        .eq("email", data.email)
+        .gte("created_at", fiveMinsAgo)
+        .maybeSingle();
+
+      if (recentLead) {
+        return { success: false, error: "Please wait 5 minutes before submitting another request." };
+      }
+
       const { data: row, error } = await supabaseAdmin
         .from("exhibitor_leads")
         .insert({

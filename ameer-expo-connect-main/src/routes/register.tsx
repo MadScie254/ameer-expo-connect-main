@@ -420,21 +420,24 @@ function Register() {
     setSubmitError(null);
     try {
       const result = await submitRegistration({ data: f });
-      if (result.success) {
-        if (result.redirectUrl) {
-          window.location.href = result.redirectUrl;
-          return;
-        }
-        try {
-          localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify({ submitted: result.referenceCode, savedAt: new Date().toISOString() }),
-          );
-        } catch {
-          /* ignore */
-        }
-        setSubmitted(result.referenceCode);
+      if (!result.success) {
+        setSubmitError(result.error || "Registration failed. Please try again.");
+        return;
       }
+      
+      if (result.redirectUrl) {
+        window.location.href = result.redirectUrl;
+        return;
+      }
+      try {
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({ submitted: result.referenceCode, savedAt: new Date().toISOString() }),
+        );
+      } catch {
+        /* ignore */
+      }
+      setSubmitted(result.referenceCode);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Registration failed. Please try again.";
       console.error("Registration error:", err);

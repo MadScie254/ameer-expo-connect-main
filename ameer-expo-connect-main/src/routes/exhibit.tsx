@@ -39,7 +39,7 @@ function ExhibitPage() {
     setIsSubmitting(true);
 
     try {
-      await submitExhibitorLead({
+      const result = await submitExhibitorLead({
         data: {
           company,
           contactName,
@@ -50,6 +50,10 @@ function ExhibitPage() {
           message,
         },
       });
+      if (!result.success) {
+        setError(result.error || "Unable to submit your request right now.");
+        return;
+      }
       setSuccess(true);
       setCompany("");
       setContactName("");
