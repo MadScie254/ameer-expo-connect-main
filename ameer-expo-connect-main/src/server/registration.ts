@@ -114,6 +114,9 @@ export const submitRegistration = createServerFn({ method: "POST" })
           amount: amount,
           payment_status: paymentStatus,
           order_tracking_id: orderTrackingId,
+          date_of_birth: data.dob,
+          city: data.city,
+          country: data.country,
           payload: payload,
         })
         .select()

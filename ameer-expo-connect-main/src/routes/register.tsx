@@ -285,7 +285,10 @@ function Register() {
           try {
             localStorage.setItem(
               STORAGE_KEY,
-              JSON.stringify({ submitted: result.referenceCode, savedAt: new Date().toISOString() }),
+              JSON.stringify({
+                submitted: result.referenceCode,
+                savedAt: new Date().toISOString(),
+              }),
             );
           } catch {
             /* ignore */
@@ -389,7 +392,11 @@ function Register() {
   const personalErrors = useMemo(() => (step === 0 ? getPersonalStepErrors(f) : {}), [f, step]);
 
   const showPersonalError = (field: "dob" | "country" | "city") => {
-    return step === 0 && (personalValidationAttempted || personalTouchedFields[field]) && !!personalErrors[field];
+    return (
+      step === 0 &&
+      (personalValidationAttempted || personalTouchedFields[field]) &&
+      !!personalErrors[field]
+    );
   };
 
   const canNext = () => {
@@ -629,7 +636,11 @@ function Register() {
                         <option>Prefer not to say</option>
                       </select>
                     </Field>
-                    <Field label="Date of Birth" required error={showPersonalError("dob") ? personalErrors.dob : undefined}>
+                    <Field
+                      label="Date of Birth"
+                      required
+                      error={showPersonalError("dob") ? personalErrors.dob : undefined}
+                    >
                       <input
                         type="date"
                         className={inputCls}
@@ -653,7 +664,11 @@ function Register() {
                         onChange={(e) => set("idNumber", e.target.value)}
                       />
                     </Field>
-                    <Field label="Country" required error={showPersonalError("country") ? personalErrors.country : undefined}>
+                    <Field
+                      label="Country"
+                      required
+                      error={showPersonalError("country") ? personalErrors.country : undefined}
+                    >
                       <input
                         className={inputCls}
                         value={f.country}
@@ -661,7 +676,11 @@ function Register() {
                         onBlur={() => setPersonalTouchedFields((s) => ({ ...s, country: true }))}
                       />
                     </Field>
-                    <Field label="City" required error={showPersonalError("city") ? personalErrors.city : undefined}>
+                    <Field
+                      label="City"
+                      required
+                      error={showPersonalError("city") ? personalErrors.city : undefined}
+                    >
                       <input
                         className={inputCls}
                         value={f.city}
