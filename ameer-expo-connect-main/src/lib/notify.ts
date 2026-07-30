@@ -110,6 +110,18 @@ export async function sendRegistrantConfirmation(registration: {
   firstName: string;
   referenceCode: string;
   passType: string;
+  lastName?: string | null;
+  company?: string | null;
+  jobTitle?: string | null;
+  industry?: string | null;
+  interests?: string[] | null;
+  networkingTargets?: string[] | null;
+  needsHotel?: boolean | null;
+  needsPickup?: boolean | null;
+  needsVisa?: boolean | null;
+  dietary?: string | null;
+  accessibility?: string | null;
+  gender?: string | null;
 }) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
@@ -126,13 +138,38 @@ export async function sendRegistrantConfirmation(registration: {
       body: JSON.stringify({
         from: "Ameer Expo <notifications@ameergroupltd.com>",
         to: registration.email,
-        subject: `Registration Confirmed: Ameer Expo (${registration.referenceCode})`,
+        subject: `Registration Confirmed: Ameer Expo Africa & Middle East (${registration.referenceCode})`,
         html: `
           <h2>You're in, ${registration.firstName}!</h2>
-          <p>Your registration for Ameer Expo is confirmed.</p>
+          <p>Your registration for Ameer Expo Africa & Middle East is confirmed.</p>
           <p><strong>Registration Number:</strong> ${registration.referenceCode}</p>
           <p><strong>Pass Type:</strong> ${registration.passType}</p>
           <br/>
+          
+          <h3>Your Details</h3>
+          <p><strong>Name:</strong> ${registration.firstName} ${registration.lastName || ''}</p>
+          <p><strong>Gender:</strong> ${registration.gender || '—'}</p>
+          <br/>
+
+          <h3>Professional Background</h3>
+          <p><strong>Company:</strong> ${registration.company || '—'}</p>
+          <p><strong>Job Title:</strong> ${registration.jobTitle || '—'}</p>
+          <p><strong>Industry:</strong> ${registration.industry || '—'}</p>
+          <br/>
+
+          <h3>Your Interests & Networking Goals</h3>
+          <p><strong>Interests:</strong> ${registration.interests?.join(", ") || '—'}</p>
+          <p><strong>Networking Targets:</strong> ${registration.networkingTargets?.join(", ") || '—'}</p>
+          <br/>
+
+          <h3>Logistics</h3>
+          <p><strong>Hotel Assistance:</strong> ${registration.needsHotel ? "Yes" : "No"}</p>
+          <p><strong>Airport Pickup:</strong> ${registration.needsPickup ? "Yes" : "No"}</p>
+          <p><strong>Visa Assistance:</strong> ${registration.needsVisa ? "Yes" : "No"}</p>
+          <p><strong>Dietary Requirements:</strong> ${registration.dietary || '—'}</p>
+          <p><strong>Accessibility Needs:</strong> ${registration.accessibility || '—'}</p>
+          <br/>
+
           <p><strong>Event Details:</strong></p>
           <p>18-20 Sept 2026</p>
           <p>Sarit Expo Centre, Nairobi</p>
