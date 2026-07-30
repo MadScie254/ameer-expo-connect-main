@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "../lib/supabase-server";
 import { getPesapalToken, submitPesapalOrder } from "./pesapal";
-import { sendRegistrationNotification } from "../lib/notify";
+import { sendRegistrationNotification, sendRegistrantConfirmation } from "../lib/notify";
 
 function isAtLeast17(value: string) {
   const d = new Date(value);
@@ -149,6 +149,13 @@ export const submitRegistration = createServerFn({ method: "POST" })
           passType: row.pass_type,
           amount: Number(row.amount),
           paymentStatus: row.payment_status,
+        });
+        
+        await sendRegistrantConfirmation({
+          email: row.email,
+          firstName: row.first_name,
+          referenceCode: row.reference_code,
+          passType: row.pass_type,
         });
       }
 

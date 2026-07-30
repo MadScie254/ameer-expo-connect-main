@@ -1,6 +1,6 @@
 import { getPesapalToken } from "./pesapal";
 import { supabaseAdmin } from "../lib/supabase-server";
-import { sendRegistrationNotification } from "../lib/notify";
+import { sendRegistrationNotification, sendRegistrantConfirmation } from "../lib/notify";
 
 export async function handleIpn(request: Request) {
   try {
@@ -83,6 +83,13 @@ export async function handleIpn(request: Request) {
         passType: updatedRow.pass_type,
         amount: Number(updatedRow.amount),
         paymentStatus: updatedRow.payment_status,
+      });
+
+      await sendRegistrantConfirmation({
+        email: updatedRow.email,
+        firstName: updatedRow.first_name,
+        referenceCode: updatedRow.reference_code,
+        passType: updatedRow.pass_type,
       });
     }
 

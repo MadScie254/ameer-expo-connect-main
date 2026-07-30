@@ -97,3 +97,47 @@ export async function sendExhibitorLeadNotification(lead: {
   }
 }
 
+export async function sendRegistrantConfirmation(registration: {
+  email: string;
+  firstName: string;
+  referenceCode: string;
+  passType: string;
+}) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.error("Confirmation skipped: missing RESEND_API_KEY");
+    return;
+  }
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "Ameer Expo <notifications@ameergroupltd.com>",
+        to: registration.email,
+        subject: `Registration Confirmed: Ameer Expo (${registration.referenceCode})`,
+        html: `
+          <h2>You're in, ${registration.firstName}!</h2>
+          <p>Your registration for Ameer Expo is confirmed.</p>
+          <p><strong>Registration Number:</strong> ${registration.referenceCode}</p>
+          <p><strong>Pass Type:</strong> ${registration.passType}</p>
+          <br/>
+          <p><strong>Event Details:</strong></p>
+          <p>18-20 Sept 2026</p>
+          <p>Sarit Expo Centre, Nairobi</p>
+          <br/>
+          <p>We look forward to seeing you there.</p>
+        `,
+      }),
+    });
+    if (!response.ok) {
+      const text = await response.text();
+      console.error("Resend error (confirmation):", text);
+    }
+  } catch (err) {
+    console.error("Failed to send registrant confirmation", err);
+  }
+}
