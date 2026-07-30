@@ -16,7 +16,7 @@ export async function sendRegistrationNotification(registration: {
     return;
   }
   try {
-    await fetch("https://api.resend.com/emails", {
+    const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -24,7 +24,7 @@ export async function sendRegistrationNotification(registration: {
       },
       body: JSON.stringify({
         from: "Ameer Expo <notifications@ameergroupltd.com>",
-        to,
+        to: [process.env.ADMIN_NOTIFICATION_EMAIL, process.env.SECOND_NOTIFICATION_EMAIL].filter(Boolean) as string[],
         subject: `New registration — ${registration.firstName} ${registration.lastName} (${registration.passType})`,
         html: `
           <h2>New Ameer Expo registration</h2>
@@ -39,6 +39,10 @@ export async function sendRegistrationNotification(registration: {
         `,
       }),
     });
+    if (!response.ok) {
+      const text = await response.text();
+      console.error("Resend error:", text);
+    }
   } catch (err) {
     // Never let a failed notification email break the registration flow
     console.error("Failed to send registration notification", err);

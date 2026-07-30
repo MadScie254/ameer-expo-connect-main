@@ -17,5 +17,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Fixed registration confirmation polling by resolving the ID discrepancy (UUID vs Reference Code).
-- Replaced non-functioning Lovable preview assets with locally hosted images.
+- Replaced broken remote image references with locally hosted assets.
 - Removed unused `@libsql/client` dependencies.
