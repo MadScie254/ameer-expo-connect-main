@@ -1,3 +1,5 @@
+import "dotenv/config";
+
 export async function sendRegistrationNotification(registration: {
   id: string;
   firstName: string;
