@@ -59,13 +59,11 @@ export async function sendExhibitorLeadNotification(lead: {
   tierOrSize?: string | null;
   message?: string | null;
 }) {
-  const to = process.env.ADMIN_NOTIFICATION_EMAIL;
   const apiKey = process.env.RESEND_API_KEY;
-  if (!to || !apiKey) {
+  if (!apiKey || !process.env.ADMIN_NOTIFICATION_EMAIL) {
     console.error("Notification skipped: missing RESEND_API_KEY or ADMIN_NOTIFICATION_EMAIL");
     return;
   }
-
   try {
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -76,26 +74,27 @@ export async function sendExhibitorLeadNotification(lead: {
       body: JSON.stringify({
         from: "Ameer Expo <notifications@ameergroupltd.com>",
         to: [process.env.ADMIN_NOTIFICATION_EMAIL, process.env.SECOND_NOTIFICATION_EMAIL].filter(Boolean) as string[],
-        subject: `New exhibitor/sponsorship lead — ${lead.company}`,
+        subject: `New ${lead.interest} enquiry — ${lead.company} (${lead.tierOrSize ?? "unspecified"})`,
         html: `
-          <h2>New exhibitor or sponsorship interest</h2>
+          <h2>New Ameer Expo ${lead.interest} enquiry</h2>
           <p><strong>Company:</strong> ${lead.company}</p>
           <p><strong>Contact:</strong> ${lead.contactName}</p>
           <p><strong>Email:</strong> ${lead.email}</p>
           <p><strong>Phone:</strong> ${lead.phone ?? "—"}</p>
           <p><strong>Interest:</strong> ${lead.interest}</p>
-          <p><strong>Tier/size:</strong> ${lead.tierOrSize ?? "—"}</p>
+          <p><strong>Tier / Size:</strong> ${lead.tierOrSize ?? "—"}</p>
           <p><strong>Message:</strong> ${lead.message ?? "—"}</p>
-          <p><strong>Reference:</strong> ${lead.id}</p>
+          <p><strong>Lead ID:</strong> ${lead.id}</p>
         `,
       }),
     });
-
     if (!response.ok) {
       const text = await response.text();
       console.error("Resend error:", text);
     }
   } catch (err) {
+    // Never let a failed notification email break the lead capture flow
     console.error("Failed to send exhibitor lead notification", err);
   }
 }
+
