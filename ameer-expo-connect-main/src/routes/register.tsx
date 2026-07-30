@@ -1004,9 +1004,9 @@ function Register() {
                     />
                     <span>
                       I accept the{" "}
-                      <a href="#" className="text-primary underline">
+                      <Link to="/terms" target="_blank" className="text-primary underline">
                         terms & conditions
-                      </a>{" "}
+                      </Link>{" "}
                       and consent to receive event communications.
                     </span>
                   </label>
