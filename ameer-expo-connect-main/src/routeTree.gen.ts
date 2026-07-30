@@ -9,18 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ExhibitRouteImport } from './routes/exhibit'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ExhibitRouteImport } from './routes/exhibit'
 import { Route as RegisterRouteImport } from './routes/register'
 
-const ExhibitRoute = ExhibitRouteImport.update({
-  id: '/exhibit',
-  path: '/exhibit',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExhibitRoute = ExhibitRouteImport.update({
+  id: '/exhibit',
+  path: '/exhibit',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RegisterRoute = RegisterRouteImport.update({
