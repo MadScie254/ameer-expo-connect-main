@@ -1,0 +1,10 @@
+{
+  "files.associations": {
+    "**/*.sql": "postgresql"
+  },
+  "sqltools.connections": [],
+  "sqltools.useNodeRuntime": false,
+  "sqltools.enabled": false,
+  "sql.linting.enabled": false,
+  "mssql.linting.enabled": false
+}
