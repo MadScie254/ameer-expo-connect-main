@@ -157,10 +157,12 @@ function Field({
   label,
   children,
   required,
+  error,
 }: {
   label: string;
   children: React.ReactNode;
   required?: boolean;
+  error?: string;
 }) {
   return (
     <label className="block">
@@ -169,6 +171,7 @@ function Field({
         {required && <span className="text-destructive">*</span>}
       </span>
       <div className="mt-2">{children}</div>
+      {error ? <p className="mt-2 text-sm text-destructive">{error}</p> : null}
     </label>
   );
 }
@@ -202,6 +205,42 @@ function Chip({
 
 const STORAGE_KEY = "ameer-expo-register-v1";
 
+function calculateAge(dateValue: string) {
+  const d = new Date(dateValue);
+  if (Number.isNaN(d.getTime())) return null;
+
+  const today = new Date();
+  let age = today.getFullYear() - d.getFullYear();
+  const monthDiff = today.getMonth() - d.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < d.getDate())) {
+    age--;
+  }
+  return age;
+}
+
+function getPersonalStepErrors(form: FormState) {
+  const errors: Partial<Record<"dob" | "country" | "city", string>> = {};
+
+  if (!form.dob.trim()) {
+    errors.dob = "Date of birth is required";
+  } else {
+    const age = calculateAge(form.dob);
+    if (age === null || age < 17) {
+      errors.dob = "You must be at least 17 years old to register";
+    }
+  }
+
+  if (!form.country.trim()) {
+    errors.country = "Country is required";
+  }
+
+  if (!form.city.trim()) {
+    errors.city = "City is required";
+  }
+
+  return errors;
+}
+
 function Register() {
   const [step, setStep] = useState(0);
   const [f, setF] = useState<FormState>(initial);
@@ -214,6 +253,8 @@ function Register() {
   const [confirmingRid, setConfirmingRid] = useState<string | null>(null);
   const [pollTimeout, setPollTimeout] = useState(false);
   const [pollError, setPollError] = useState<string | null>(null);
+  const [personalTouchedFields, setPersonalTouchedFields] = useState<Record<string, boolean>>({});
+  const [personalValidationAttempted, setPersonalValidationAttempted] = useState(false);
 
   // Check for rid in URL on mount
   useEffect(() => {
@@ -345,12 +386,26 @@ function Register() {
   };
 
   const progress = useMemo(() => ((step + 1) / steps.length) * 100, [step]);
+  const personalErrors = useMemo(() => (step === 0 ? getPersonalStepErrors(f) : {}), [f, step]);
+
+  const showPersonalError = (field: "dob" | "country" | "city") => {
+    return step === 0 && (personalValidationAttempted || personalTouchedFields[field]) && !!personalErrors[field];
+  };
 
   const canNext = () => {
-    if (step === 0) return f.firstName && f.lastName && f.email && f.country && f.phone;
+    if (step === 0) return Object.keys(personalErrors).length === 0;
     if (step === 1) return f.company && f.jobTitle && f.businessType;
     if (step === 6) return f.terms;
     return true;
+  };
+
+  const handleContinue = () => {
+    if (step === 0) {
+      setPersonalValidationAttempted(true);
+    }
+    if (canNext()) {
+      setStep((s) => s + 1);
+    }
   };
 
   const submit = async () => {
@@ -574,12 +629,21 @@ function Register() {
                         <option>Prefer not to say</option>
                       </select>
                     </Field>
-                    <Field label="Date of Birth">
+                    <Field label="Date of Birth" required error={showPersonalError("dob") ? personalErrors.dob : undefined}>
                       <input
                         type="date"
                         className={inputCls}
                         value={f.dob}
+                        max={(() => {
+                          const maxDate = new Date();
+                          maxDate.setFullYear(maxDate.getFullYear() - 17);
+                          const year = maxDate.getFullYear();
+                          const month = String(maxDate.getMonth() + 1).padStart(2, "0");
+                          const day = String(maxDate.getDate()).padStart(2, "0");
+                          return `${year}-${month}-${day}`;
+                        })()}
                         onChange={(e) => set("dob", e.target.value)}
+                        onBlur={() => setPersonalTouchedFields((s) => ({ ...s, dob: true }))}
                       />
                     </Field>
                     <Field label="Passport / National ID">
@@ -589,18 +653,20 @@ function Register() {
                         onChange={(e) => set("idNumber", e.target.value)}
                       />
                     </Field>
-                    <Field label="Country" required>
+                    <Field label="Country" required error={showPersonalError("country") ? personalErrors.country : undefined}>
                       <input
                         className={inputCls}
                         value={f.country}
                         onChange={(e) => set("country", e.target.value)}
+                        onBlur={() => setPersonalTouchedFields((s) => ({ ...s, country: true }))}
                       />
                     </Field>
-                    <Field label="City">
+                    <Field label="City" required error={showPersonalError("city") ? personalErrors.city : undefined}>
                       <input
                         className={inputCls}
                         value={f.city}
                         onChange={(e) => set("city", e.target.value)}
+                        onBlur={() => setPersonalTouchedFields((s) => ({ ...s, city: true }))}
                       />
                     </Field>
                     <Field label="Phone Number" required>

@@ -4,14 +4,27 @@ import { supabaseAdmin } from "../lib/supabase-server";
 import { getPesapalToken, submitPesapalOrder } from "./pesapal";
 import { sendRegistrationNotification } from "../lib/notify";
 
+function isAtLeast17(value: string) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return false;
+
+  const today = new Date();
+  let age = today.getFullYear() - d.getFullYear();
+  const monthDiff = today.getMonth() - d.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < d.getDate())) {
+    age--;
+  }
+  return age >= 17;
+}
+
 const RegistrationSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   gender: z.string(),
-  dob: z.string(),
+  dob: z.string().min(1, "Date of birth is required").refine((val) => isAtLeast17(val), "You must be at least 17 years old to register"),
   idNumber: z.string(),
-  country: z.string(),
-  city: z.string(),
+  country: z.string().min(1, "Country is required"),
+  city: z.string().min(1, "City is required"),
   phone: z.string().min(1, "Phone is required"),
   whatsapp: z.string(),
   email: z.string().email("Invalid email address"),
