@@ -1,5 +1,62 @@
-import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { Building2, Handshake, ArrowRight, Check } from "lucide-react";
+import { submitPartnerInquiry } from "@/server/partners";
+
+function PartnerForm({ type, defaultMessage = "" }: { type: "exhibitor" | "sponsor"; defaultMessage?: string }) {
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setStatus("submitting");
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      type,
+      companyName: formData.get("companyName") as string,
+      contactName: formData.get("contactName") as string,
+      email: formData.get("email") as string,
+      phone: formData.get("phone") as string,
+      message: formData.get("message") as string,
+    };
+    try {
+      const res = await submitPartnerInquiry({ data });
+      if (res.success) {
+        setStatus("success");
+      } else {
+        setStatus("error");
+      }
+    } catch (err) {
+      setStatus("error");
+    }
+  }
+
+  if (status === "success") {
+    return (
+      <div className="mt-8 rounded-2xl bg-green-500/10 p-6 border border-green-500/20 text-green-700 dark:text-green-400">
+        <div className="font-semibold flex items-center gap-2 text-lg"><Check size={20} /> Thanks, we'll be in touch!</div>
+        <div className="text-sm mt-2">Your inquiry has been received.</div>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-8 space-y-4 max-w-md">
+      {status === "error" && <div className="text-red-500 text-sm font-semibold">Something went wrong. Please try again.</div>}
+      <div className="grid grid-cols-2 gap-4">
+        <input required name="companyName" placeholder="Company Name" className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary" />
+        <input required name="contactName" placeholder="Contact Name" className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary" />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <input required type="email" name="email" placeholder="Email Address" className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary" />
+        <input name="phone" placeholder="Phone (optional)" className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary" />
+      </div>
+      <textarea name="message" defaultValue={defaultMessage} placeholder="Message (optional)" className="flex min-h-[80px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary" />
+      <button disabled={status === "submitting"} type="submit" className="inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-elegant hover:-translate-y-0.5 transition-transform disabled:opacity-50">
+        {status === "submitting" ? "Submitting..." : `Submit ${type === "exhibitor" ? "Booth Request" : "Sponsorship Inquiry"}`}
+        {!status.includes("submitting") && <ArrowRight size={16} />}
+      </button>
+    </form>
+  );
+}
 
 const booths = [
   { size: "6 sqm", price: "From $1,800" },
@@ -44,13 +101,7 @@ export function ExhibitorSponsor() {
                 Shell scheme or fully custom builds — with power, internet, furniture add-ons and
                 instant quotation. Reserve now to secure premium hall positioning.
               </p>
-              <Link
-                to="/exhibit"
-                className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-gradient-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-elegant hover:-translate-y-0.5 transition-transform"
-              >
-                <Building2 size={18} /> Reserve a Booth
-                <ArrowRight size={16} />
-              </Link>
+              <PartnerForm type="exhibitor" />
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {booths.map((b) => (
@@ -117,14 +168,7 @@ export function ExhibitorSponsor() {
                     </li>
                   ))}
                 </ul>
-                <Link
-                  to="/exhibit"
-                  className={`mt-6 inline-flex items-center gap-2 text-sm font-semibold ${
-                    p.accent ? "text-gold" : "text-primary"
-                  } hover:gap-3 transition-all`}
-                >
-                  <Handshake size={16} /> Choose {p.tier}
-                </Link>
+                {/* Replaced with inline form below */}
               </div>
             ))}
           </div>
