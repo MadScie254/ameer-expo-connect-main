@@ -485,6 +485,15 @@ function Register() {
               Your payment is taking longer than usual to confirm. Don't worry — we'll email your
               confirmation and VIP pass once it goes through.
             </p>
+            <button
+              onClick={() => {
+                setPollTimeout(false);
+                submit();
+              }}
+              className="mt-4 rounded-xl bg-gradient-primary px-8 py-4 font-semibold text-primary-foreground shadow-glow hover:-translate-y-1 transition-all"
+            >
+              Try payment again
+            </button>
           </div>
         </div>
       </div>
@@ -504,7 +513,7 @@ function Register() {
             <button
               onClick={() => {
                 setPollError(null);
-                setStep(5); // Go back to pass type
+                submit();
               }}
               className="rounded-xl bg-gradient-primary px-8 py-4 font-semibold text-primary-foreground shadow-glow hover:-translate-y-1 transition-all"
             >

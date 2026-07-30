@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Basic SEO files (`robots.txt` and `sitemap.xml`).
+- Confirmation emails to registrants using Resend.
+- Submission abuse throttling for registration and exhibitor lead endpoints.
+- Retry path for failed or timed-out VIP payments.
+- Security hardening migration (RLS policies and function permissions).
 - VIP pass payment flow via Pesapal integration.
 - Language Switcher on the registration form.
 
@@ -16,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated registration flow to correctly use Supabase and handle Pesapal UUID mismatches.
 
 ### Fixed
+- Fixed eslint dependency version conflict.
 - Fixed registration confirmation polling by resolving the ID discrepancy (UUID vs Reference Code).
 - Replaced broken remote image references with locally hosted assets.
 - Removed unused `@libsql/client` dependencies.
