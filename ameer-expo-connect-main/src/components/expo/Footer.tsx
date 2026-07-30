@@ -1,12 +1,19 @@
 import { Link } from "@tanstack/react-router";
 import { Mail, Phone, MapPin, Instagram, Linkedin, Twitter, Facebook } from "lucide-react";
-import logo from "@/assets/ameer-expo-logo.png.asset.json";
+import logo from "@/assets/ameer-expo-logo.png";
 
 const SOCIAL_LINKS = {
   linkedin: "#", // TODO: replace with real URL
   twitter: "#", // TODO: replace with real URL
   instagram: "#", // TODO: replace with real URL
   facebook: "#", // TODO: replace with real URL
+};
+
+const FOOTER_LINKS = {
+  privacy: "#", // TODO: replace with real URL
+  terms: "#", // TODO: replace with real URL
+  cookies: "#", // TODO: replace with real URL
+  brochure: "#", // TODO: replace with real URL
 };
 
 export function Footer() {
@@ -32,7 +39,7 @@ export function Footer() {
           <div>
             <div className="flex items-center gap-3">
               <img
-                src={logo.url}
+                src={logo}
                 alt=""
                 className="h-12 w-12 object-contain"
                 width={48}
@@ -112,7 +119,7 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-gold">
+                <a href={FOOTER_LINKS.brochure} className="hover:text-gold">
                   Download Brochure
                 </a>
               </li>
@@ -139,13 +146,13 @@ export function Footer() {
         <div className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-white/60">
           <div>© 2026 Ameer Group Ltd. All rights reserved.</div>
           <div className="flex gap-4">
-            <a href="#" className="hover:text-gold">
+            <a href={FOOTER_LINKS.privacy} className="hover:text-gold">
               Privacy
             </a>
-            <a href="#" className="hover:text-gold">
+            <a href={FOOTER_LINKS.terms} className="hover:text-gold">
               Terms
             </a>
-            <a href="#" className="hover:text-gold">
+            <a href={FOOTER_LINKS.cookies} className="hover:text-gold">
               Cookies
             </a>
           </div>

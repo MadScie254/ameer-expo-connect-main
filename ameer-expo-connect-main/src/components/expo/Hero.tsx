@@ -3,6 +3,10 @@ import { ArrowRight, Building2, Handshake, Download } from "lucide-react";
 import heroImg from "@/assets/expo-hero.jpg";
 import { Countdown } from "./Countdown";
 
+const HERO_LINKS = {
+  brochure: "#", // TODO: replace with real URL
+};
+
 export function Hero() {
   return (
     <section id="top" className="relative min-h-screen overflow-hidden pt-28 pb-16 sm:pt-32">
@@ -59,7 +63,7 @@ export function Hero() {
                 <Handshake size={18} /> Become a Sponsor
               </a>
               <a
-                href="#"
+                href={HERO_LINKS.brochure}
                 className="inline-flex items-center gap-2 rounded-2xl border border-white/20 px-6 py-3.5 text-sm sm:text-base font-semibold text-white/90 hover:bg-white/10 transition-colors"
               >
                 <Download size={18} /> Brochure

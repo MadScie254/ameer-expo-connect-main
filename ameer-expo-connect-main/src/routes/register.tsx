@@ -14,8 +14,9 @@ import {
   PartyPopper,
   Star,
 } from "lucide-react";
-import logo from "@/assets/ameer-expo-logo.png.asset.json";
+import logo from "@/assets/ameer-expo-logo.png";
 import { VideoEmbed } from "../components/expo/VideoEmbed";
+import { LanguageSwitcher } from "../components/expo/LanguageSwitcher";
 
 export const Route = createFileRoute("/register")({
   component: Register,
@@ -239,11 +240,11 @@ function Register() {
         if (!isSubscribed) return;
 
         if (result && result.paymentStatus === "paid") {
-          setSubmitted(confirmingRid);
+          setSubmitted(result.referenceCode);
           try {
             localStorage.setItem(
               STORAGE_KEY,
-              JSON.stringify({ submitted: confirmingRid, savedAt: new Date().toISOString() }),
+              JSON.stringify({ submitted: result.referenceCode, savedAt: new Date().toISOString() }),
             );
           } catch {
             /* ignore */
@@ -365,12 +366,12 @@ function Register() {
         try {
           localStorage.setItem(
             STORAGE_KEY,
-            JSON.stringify({ submitted: result.id, savedAt: new Date().toISOString() }),
+            JSON.stringify({ submitted: result.referenceCode, savedAt: new Date().toISOString() }),
           );
         } catch {
           /* ignore */
         }
-        setSubmitted(result.id);
+        setSubmitted(result.referenceCode);
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Registration failed. Please try again.";
@@ -1008,7 +1009,7 @@ function TopBar() {
       <div className="mx-auto max-w-5xl px-4 py-4 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3">
           <img
-            src={logo.url}
+            src={logo}
             alt="Ameer Expo"
             className="h-9 w-9 object-contain"
             width={36}
@@ -1021,9 +1022,12 @@ function TopBar() {
             </div>
           </div>
         </Link>
-        <Link to="/" className="text-sm text-muted-foreground hover:text-primary">
-          Save & exit
-        </Link>
+        <div className="flex items-center gap-4">
+          <LanguageSwitcher />
+          <Link to="/" className="text-sm text-muted-foreground hover:text-primary">
+            Save & exit
+          </Link>
+        </div>
       </div>
     </div>
   );

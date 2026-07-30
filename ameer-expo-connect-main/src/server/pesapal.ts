@@ -1,5 +1,10 @@
+const PESAPAL_BASE_URL =
+  process.env.PESAPAL_ENV === "production"
+    ? "https://pay.pesapal.com/v3/api"
+    : "https://cybqa.pesapal.com/pesapalv3/api";
+
 export const getPesapalToken = async () => {
-  const url = "https://cybqa.pesapal.com/pesapalv3/api/Auth/RequestToken";
+  const url = `${PESAPAL_BASE_URL}/Auth/RequestToken`;
   const req = await fetch(url, {
     method: "POST",
     headers: {
@@ -27,7 +32,7 @@ export const submitPesapalOrder = async (
     lastName: string;
   },
 ) => {
-  const url = "https://cybqa.pesapal.com/pesapalv3/api/Transactions/SubmitOrderRequest";
+  const url = `${PESAPAL_BASE_URL}/Transactions/SubmitOrderRequest`;
   // The callback URL should be our absolute URL, which we don't have trivially in this generic module without request context.
   // We'll use a placeholder or read from env.
   const baseUrl = process.env.PUBLIC_APP_URL || "http://localhost:3000";

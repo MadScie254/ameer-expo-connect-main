@@ -32,3 +32,12 @@ dist-ssr
 *.sw?
 .env
 data/
+# AI tooling — never commit
+.agent/
+.claude/
+.cursor/
+.windsurf/
+.aider*
+CLAUDE.md
+AGENTS.md
+.github/copilot-instructions.md

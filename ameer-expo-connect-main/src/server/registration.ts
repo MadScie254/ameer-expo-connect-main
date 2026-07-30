@@ -56,7 +56,8 @@ export const submitRegistration = createServerFn({ method: "POST" })
   .validator((data: unknown) => RegistrationSchema.parse(data))
   .handler(async ({ data }) => {
     try {
-      const id = `AE26-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+      const id = crypto.randomUUID();
+      const referenceCode = `AE26-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       const payload = data;
 
       let redirectUrl = null;
@@ -87,6 +88,8 @@ export const submitRegistration = createServerFn({ method: "POST" })
       const { data: row, error: insertError } = await supabaseAdmin
         .from("registrations")
         .insert({
+          id,
+          reference_code: referenceCode,
           user_id: userId,
           first_name: data.firstName,
           last_name: data.lastName,
@@ -121,7 +124,7 @@ export const submitRegistration = createServerFn({ method: "POST" })
         });
       }
 
-      return { success: true, id: row.id, passType, redirectUrl };
+      return { success: true, id: row.id, referenceCode: row.reference_code, passType, redirectUrl };
     } catch (error) {
       console.error("Registration error:", error);
       throw new Error("Failed to save registration");
@@ -133,7 +136,7 @@ export const getRegistrationStatus = createServerFn({ method: "GET" })
   .handler(async ({ data: id }) => {
     const { data: row, error } = await supabaseAdmin
       .from("registrations")
-      .select("id, payment_status, pass_type, first_name")
+      .select("id, reference_code, payment_status, pass_type, first_name")
       .eq("id", id)
       .maybeSingle();
 
@@ -143,6 +146,7 @@ export const getRegistrationStatus = createServerFn({ method: "GET" })
     
     return {
       id: row.id as string,
+      referenceCode: row.reference_code as string,
       paymentStatus: row.payment_status as string,
       passType: row.pass_type as string,
       firstName: row.first_name as string,
