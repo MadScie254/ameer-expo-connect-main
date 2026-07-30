@@ -1,4 +1,3 @@
-
 # Terms & Conditions
 
 ## Ameer Expo Africa & Middle East 2026
@@ -135,8 +134,8 @@
 
 7.1. The Expo currently offers the following pass types, subject to change by the Organizer:
 
-| Pass Type              | Price                                           | Notes                                                                                                                                                                                                                                       |
-| ---------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pass Type        | Price                                           | Notes                                                                                                                                                                                                                                       |
+| ---------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **General Pass** | Free (KES 0)                                    | Provides standard access to the exhibition floor and public sessions during Event hours.                                                                                                                                                    |
 | **VIP Pass**     | KES 5,000 (or the amount displayed at checkout) | Provides enhanced access/benefits as described on the Website at the time of registration (e.g., priority entry, VIP lounge, networking benefits). Requires successful payment via the Website's payment flow before the pass is confirmed. |
 
@@ -356,7 +355,7 @@
 
 29.2. The parties agree to first attempt to resolve any dispute arising out of or relating to this Agreement through good-faith negotiation by notifying the other party in writing.
 
-29.3. If a dispute is not resolved within **[Insert number, e.g., 30]** days of such notice, the parties agree that the dispute shall be [subject to the exclusive jurisdiction of the courts of Kenya sitting in Nairobi] **OR** [referred to and finally resolved by arbitration in Nairobi under the Arbitration Act (Cap 49) of Kenya, before a single arbitrator, in the English language] — *[choose one approach with counsel and delete the other]*.
+29.3. If a dispute is not resolved within **[Insert number, e.g., 30]** days of such notice, the parties agree that the dispute shall be [subject to the exclusive jurisdiction of the courts of Kenya sitting in Nairobi] **OR** [referred to and finally resolved by arbitration in Nairobi under the Arbitration Act (Cap 49) of Kenya, before a single arbitrator, in the English language] — _[choose one approach with counsel and delete the other]_.
 
 29.4. Nothing in this Section prevents either party from seeking urgent injunctive or equitable relief from a court of competent jurisdiction where necessary to protect its rights.
 
@@ -386,13 +385,13 @@ For any questions about these Terms, your registration, or a request relating to
 
 **Ameer Group Ltd**
 Organizer of Ameer Expo Africa & Middle East 2026
-📍 Sarit Expo Centre, Westlands, Nairobi, Kenya *(registered office address: [Insert full registered/postal address])*
+📍 Sarit Expo Centre, Westlands, Nairobi, Kenya _(registered office address: [Insert full registered/postal address])_
 ✉️ General enquiries: **hello@ameergroupltd.com**
 ✉️ Registration/admin: **info@ameergroupltd.com**
 ☎️ **[Insert real phone number — currently a placeholder in the codebase]**
 🌐 [Insert final Website domain]
 
-*Company registration number: [Insert]. KRA PIN (if applicable for tax invoicing): [Insert].*
+_Company registration number: [Insert]. KRA PIN (if applicable for tax invoicing): [Insert]._
 
 ## 32. Acknowledgement
 
@@ -400,7 +399,7 @@ By checking "I agree to the Terms & Conditions" during registration, submitting 
 
 ---
 
-*Document generated as a comprehensive first draft aligned to the current `ameer-expo-connect-main` registration schema, pass structure, and payment/data flow. Replace all `[bracketed]` placeholders, confirm refund windows and dispute-resolution mechanism with the Organizer's management, and obtain legal sign-off before publishing.*
+_Document generated as a comprehensive first draft aligned to the current `ameer-expo-connect-main` registration schema, pass structure, and payment/data flow. Replace all `[bracketed]` placeholders, confirm refund windows and dispute-resolution mechanism with the Organizer's management, and obtain legal sign-off before publishing._
 
 ---
 
