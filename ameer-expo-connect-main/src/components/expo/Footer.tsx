@@ -38,13 +38,7 @@ export function Footer() {
         <div className="grid gap-10 lg:grid-cols-4">
           <div>
             <div className="flex items-center gap-3">
-              <img
-                src={logo}
-                alt=""
-                className="h-12 w-12 object-contain"
-                width={48}
-                height={48}
-              />
+              <img src={logo} alt="" className="h-12 w-12 object-contain" width={48} height={48} />
               <div>
                 <div className="font-display font-bold">Ameer Expo</div>
                 <div className="text-xs uppercase tracking-[0.18em] text-white/70">

@@ -26,7 +26,10 @@ export const submitExhibitorLead = createServerFn({ method: "POST" })
         .maybeSingle();
 
       if (recentLead) {
-        return { success: false, error: "Please wait 5 minutes before submitting another request." };
+        return {
+          success: false,
+          error: "Please wait 5 minutes before submitting another request.",
+        };
       }
 
       const { data: row, error } = await supabaseAdmin

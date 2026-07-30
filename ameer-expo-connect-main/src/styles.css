@@ -176,7 +176,7 @@
     -webkit-font-smoothing: antialiased;
     top: 0 !important;
   }
-  
+
   /* Hide Google Translate UI but keep it in DOM for initialization */
   #google_translate_element {
     position: absolute !important;
@@ -187,20 +187,20 @@
     overflow: hidden !important;
     opacity: 0 !important;
   }
-  
+
   .goog-te-banner-frame,
   .skiptranslate > iframe.goog-te-banner-frame {
     display: none !important;
   }
-  
+
   .goog-tooltip {
     display: none !important;
   }
-  
+
   .goog-tooltip:hover {
     display: none !important;
   }
-  
+
   .goog-text-highlight {
     background-color: transparent !important;
     border: none !important;

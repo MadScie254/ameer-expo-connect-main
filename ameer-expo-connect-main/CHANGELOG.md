@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Basic SEO files (`robots.txt` and `sitemap.xml`).
 - Confirmation emails to registrants using Resend.
 - Submission abuse throttling for registration and exhibitor lead endpoints.
@@ -17,10 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Language Switcher on the registration form.
 
 ### Changed
+
 - Refactored `Hero` and `Footer` components to extract external URLs to constants.
 - Updated registration flow to correctly use Supabase and handle Pesapal UUID mismatches.
 
 ### Fixed
+
 - Fixed eslint dependency version conflict.
 - Fixed registration confirmation polling by resolving the ID discrepancy (UUID vs Reference Code).
 - Replaced broken remote image references with locally hosted assets.

@@ -2,7 +2,13 @@ import { useState } from "react";
 import { Building2, Handshake, ArrowRight, Check } from "lucide-react";
 import { submitPartnerInquiry } from "@/server/partners";
 
-function PartnerForm({ type, defaultMessage = "" }: { type: "exhibitor" | "sponsor"; defaultMessage?: string }) {
+function PartnerForm({
+  type,
+  defaultMessage = "",
+}: {
+  type: "exhibitor" | "sponsor";
+  defaultMessage?: string;
+}) {
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -32,7 +38,9 @@ function PartnerForm({ type, defaultMessage = "" }: { type: "exhibitor" | "spons
   if (status === "success") {
     return (
       <div className="mt-8 rounded-2xl bg-green-500/10 p-6 border border-green-500/20 text-green-700 dark:text-green-400">
-        <div className="font-semibold flex items-center gap-2 text-lg"><Check size={20} /> Thanks, we'll be in touch!</div>
+        <div className="font-semibold flex items-center gap-2 text-lg">
+          <Check size={20} /> Thanks, we'll be in touch!
+        </div>
         <div className="text-sm mt-2">Your inquiry has been received.</div>
       </div>
     );
@@ -40,18 +48,53 @@ function PartnerForm({ type, defaultMessage = "" }: { type: "exhibitor" | "spons
 
   return (
     <form onSubmit={handleSubmit} className="mt-8 space-y-4 max-w-md">
-      {status === "error" && <div className="text-red-500 text-sm font-semibold">Something went wrong. Please try again.</div>}
+      {status === "error" && (
+        <div className="text-red-500 text-sm font-semibold">
+          Something went wrong. Please try again.
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-4">
-        <input required name="companyName" placeholder="Company Name" className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary" />
-        <input required name="contactName" placeholder="Contact Name" className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary" />
+        <input
+          required
+          name="companyName"
+          placeholder="Company Name"
+          className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+        />
+        <input
+          required
+          name="contactName"
+          placeholder="Contact Name"
+          className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+        />
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <input required type="email" name="email" placeholder="Email Address" className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary" />
-        <input name="phone" placeholder="Phone (optional)" className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary" />
+        <input
+          required
+          type="email"
+          name="email"
+          placeholder="Email Address"
+          className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+        />
+        <input
+          name="phone"
+          placeholder="Phone (optional)"
+          className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+        />
       </div>
-      <textarea name="message" defaultValue={defaultMessage} placeholder="Message (optional)" className="flex min-h-[80px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary" />
-      <button disabled={status === "submitting"} type="submit" className="inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-elegant hover:-translate-y-0.5 transition-transform disabled:opacity-50">
-        {status === "submitting" ? "Submitting..." : `Submit ${type === "exhibitor" ? "Booth Request" : "Sponsorship Inquiry"}`}
+      <textarea
+        name="message"
+        defaultValue={defaultMessage}
+        placeholder="Message (optional)"
+        className="flex min-h-[80px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
+      />
+      <button
+        disabled={status === "submitting"}
+        type="submit"
+        className="inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-elegant hover:-translate-y-0.5 transition-transform disabled:opacity-50"
+      >
+        {status === "submitting"
+          ? "Submitting..."
+          : `Submit ${type === "exhibitor" ? "Booth Request" : "Sponsorship Inquiry"}`}
         {!status.includes("submitting") && <ArrowRight size={16} />}
       </button>
     </form>
@@ -171,6 +214,16 @@ export function ExhibitorSponsor() {
                 {/* Replaced with inline form below */}
               </div>
             ))}
+          </div>
+
+          <div className="mt-16 max-w-xl mx-auto text-center">
+            <h3 className="font-display text-2xl font-bold">Inquire about sponsorship</h3>
+            <p className="mt-2 text-muted-foreground text-sm">
+              Tell us which package you're interested in.
+            </p>
+            <div className="text-left flex justify-center">
+              <PartnerForm type="sponsor" />
+            </div>
           </div>
         </div>
       </section>

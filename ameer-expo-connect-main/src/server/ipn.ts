@@ -52,7 +52,9 @@ export async function handleIpn(request: Request) {
 
     if (findError) {
       console.error("IPN Supabase lookup error:", findError);
-      return new Response(JSON.stringify({ error: "Failed to lookup registration" }), { status: 500 });
+      return new Response(JSON.stringify({ error: "Failed to lookup registration" }), {
+        status: 500,
+      });
     }
 
     if (!existingRow) {

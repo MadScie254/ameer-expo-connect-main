@@ -1,6 +1,7 @@
 # Deployment Guide
 
 ## Environment Variables
+
 The application requires the following environment variables to function correctly (as defined in `.env.example`):
 
 - `PESAPAL_CONSUMER_KEY`: Key for Pesapal API access.
@@ -14,6 +15,7 @@ The application requires the following environment variables to function correct
 - `ADMIN_NOTIFICATION_EMAIL`: Email address to receive notifications.
 
 ## Deployment Steps
+
 1. Configure environment variables on your hosting provider. Ensure `PESAPAL_ENV` is set to `production`.
 2. Run `npm run build` to generate the production build using Vite.
 3. Deploy the resulting build assets in `dist/` depending on your hosting provider (e.g., Vercel, Netlify).

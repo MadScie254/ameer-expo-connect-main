@@ -21,7 +21,10 @@ const RegistrationSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   gender: z.string(),
-  dob: z.string().min(1, "Date of birth is required").refine((val) => isAtLeast17(val), "You must be at least 17 years old to register"),
+  dob: z
+    .string()
+    .min(1, "Date of birth is required")
+    .refine((val) => isAtLeast17(val), "You must be at least 17 years old to register"),
   idNumber: z.string(),
   country: z.string().min(1, "Country is required"),
   city: z.string().min(1, "City is required"),
@@ -78,7 +81,10 @@ export const submitRegistration = createServerFn({ method: "POST" })
         .maybeSingle();
 
       if (recentReg) {
-        return { success: false, error: "Please wait 5 minutes before submitting another request." };
+        return {
+          success: false,
+          error: "Please wait 5 minutes before submitting another request.",
+        };
       }
 
       const id = crypto.randomUUID();
@@ -150,7 +156,7 @@ export const submitRegistration = createServerFn({ method: "POST" })
           amount: Number(row.amount),
           paymentStatus: row.payment_status,
         });
-        
+
         await sendRegistrantConfirmation({
           email: row.email,
           firstName: row.first_name,
@@ -159,7 +165,13 @@ export const submitRegistration = createServerFn({ method: "POST" })
         });
       }
 
-      return { success: true, id: row.id, referenceCode: row.reference_code, passType, redirectUrl };
+      return {
+        success: true,
+        id: row.id,
+        referenceCode: row.reference_code,
+        passType,
+        redirectUrl,
+      };
     } catch (error) {
       console.error("Registration error:", error);
       throw new Error("Failed to save registration");
@@ -178,7 +190,7 @@ export const getRegistrationStatus = createServerFn({ method: "GET" })
     if (error || !row) {
       return null;
     }
-    
+
     return {
       id: row.id as string,
       referenceCode: row.reference_code as string,

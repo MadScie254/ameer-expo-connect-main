@@ -73,8 +73,12 @@ function ExhibitPage() {
     <main className="min-h-screen bg-background px-4 py-16 sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-3xl flex-col gap-8 rounded-3xl border border-border/60 bg-card p-8 shadow-soft sm:p-10">
         <div className="space-y-3">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">Exhibit & Sponsor</p>
-          <h1 className="text-3xl font-semibold text-foreground sm:text-4xl">Tell us about your interest</h1>
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
+            Exhibit & Sponsor
+          </p>
+          <h1 className="text-3xl font-semibold text-foreground sm:text-4xl">
+            Tell us about your interest
+          </h1>
           <p className="text-base text-muted-foreground">
             Share your preferred booth or sponsorship package and our team will follow up directly.
           </p>
@@ -86,7 +90,11 @@ function ExhibitPage() {
           </div>
         ) : null}
 
-        {error ? <div className="rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">{error}</div> : null}
+        {error ? (
+          <div className="rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+            {error}
+          </div>
+        ) : null}
 
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div className="grid gap-5 md:grid-cols-2">
@@ -144,7 +152,9 @@ function ExhibitPage() {
               </select>
             </label>
             <label className="block text-sm font-medium text-foreground">
-              <span className="mb-2 block">{interest === "booth" ? "Booth size" : "Sponsorship tier"}</span>
+              <span className="mb-2 block">
+                {interest === "booth" ? "Booth size" : "Sponsorship tier"}
+              </span>
               <select
                 className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
                 value={tierOrSize}

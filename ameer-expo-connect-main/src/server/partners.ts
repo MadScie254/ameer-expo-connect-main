@@ -25,7 +25,10 @@ export const submitPartnerInquiry = createServerFn({ method: "POST" })
         .maybeSingle();
 
       if (recentInquiry) {
-        return { success: false, error: "Please wait 5 minutes before submitting another request." };
+        return {
+          success: false,
+          error: "Please wait 5 minutes before submitting another request.",
+        };
       }
 
       const id = crypto.randomUUID();
