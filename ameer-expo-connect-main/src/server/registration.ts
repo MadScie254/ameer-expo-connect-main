@@ -59,13 +59,43 @@ async function findOrCreateUserId(email: string, firstName: string, lastName: st
 
   if (existingProfile) return existingProfile.id;
 
-  const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
-    email,
-    email_confirm: true, // trust the registration form itself; don't send a confirmation email
-    user_metadata: { first_name: firstName, last_name: lastName },
-  });
-  if (error) throw error;
-  return created.user!.id;
+  try {
+    const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      email_confirm: true, // trust the registration form itself; don't send a confirmation email
+      user_metadata: { first_name: firstName, last_name: lastName },
+    });
+    if (error) throw error;
+    return created.user!.id;
+  } catch (err) {
+    const error = err as any;
+    if (error?.message?.includes("already been registered") || error?.status === 422) {
+      // Fallback: the user exists in auth.users, but not in public.profiles
+      const { data: authData, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+      if (listError) throw listError;
+
+      const matchedUser = authData.users.find((u) => u.email === email);
+      if (!matchedUser) {
+        throw new Error("User purportedly exists in auth but could not be found.");
+      }
+
+      const userId = matchedUser.id;
+
+      // Upsert into profiles since on_auth_user_created trigger won't fire again
+      const { error: upsertError } = await supabaseAdmin.from("profiles").upsert({
+        id: userId,
+        email,
+        first_name: firstName,
+        last_name: lastName,
+      });
+
+      if (upsertError) throw upsertError;
+
+      return userId;
+    }
+
+    throw error;
+  }
 }
 
 export const submitRegistration = createServerFn({ method: "POST" })
