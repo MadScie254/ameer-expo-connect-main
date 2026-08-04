@@ -1,5 +1,22 @@
 import "dotenv/config";
 
+// ─── Inline helpers ─────────────────────────────────────────────────────────
+
+function escapeHtml(str: string | null | undefined): string {
+  if (!str) return "";
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function yn(val: boolean | null | undefined): string {
+  return val ? "Yes" : "No";
+}
+
+// ─── Admin notification ──────────────────────────────────────────────────────
+
 export async function sendRegistrationNotification(registration: {
   id: string;
   firstName: string;
@@ -10,6 +27,7 @@ export async function sendRegistrationNotification(registration: {
   passType: string;
   amount: number;
   paymentStatus: string;
+  ticketNumber?: string | null;
 }) {
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.ADMIN_NOTIFICATION_EMAIL?.split(",")
@@ -32,14 +50,15 @@ export async function sendRegistrationNotification(registration: {
         subject: `New registration — ${registration.firstName} ${registration.lastName} (${registration.passType})`,
         html: `
           <h2>New Ameer Expo registration</h2>
-          <p><strong>Name:</strong> ${registration.firstName} ${registration.lastName}</p>
-          <p><strong>Email:</strong> ${registration.email}</p>
-          <p><strong>Phone:</strong> ${registration.phone ?? "—"}</p>
-          <p><strong>Company:</strong> ${registration.company ?? "—"}</p>
-          <p><strong>Pass type:</strong> ${registration.passType}</p>
+          <p><strong>Name:</strong> ${escapeHtml(registration.firstName)} ${escapeHtml(registration.lastName)}</p>
+          <p><strong>Email:</strong> ${escapeHtml(registration.email)}</p>
+          <p><strong>Phone:</strong> ${escapeHtml(registration.phone) || "—"}</p>
+          <p><strong>Company:</strong> ${escapeHtml(registration.company) || "—"}</p>
+          <p><strong>Pass type:</strong> ${escapeHtml(registration.passType)}</p>
           <p><strong>Amount:</strong> KES ${registration.amount}</p>
-          <p><strong>Payment status:</strong> ${registration.paymentStatus}</p>
-          <p><strong>Reference:</strong> ${registration.id}</p>
+          <p><strong>Payment status:</strong> ${escapeHtml(registration.paymentStatus)}</p>
+          <p><strong>Reference:</strong> ${escapeHtml(registration.id)}</p>
+          ${registration.ticketNumber ? `<p><strong>Ticket number:</strong> ${escapeHtml(registration.ticketNumber)}</p>` : ""}
         `,
       }),
     });
@@ -52,6 +71,8 @@ export async function sendRegistrationNotification(registration: {
     console.error("Failed to send registration notification", err);
   }
 }
+
+// ─── Exhibitor lead notification (legacy) ────────────────────────────────────
 
 export async function sendExhibitorLeadNotification(lead: {
   id: string;
@@ -83,15 +104,15 @@ export async function sendExhibitorLeadNotification(lead: {
         to,
         subject: `New ${lead.interest} enquiry — ${lead.company} (${lead.tierOrSize ?? "unspecified"})`,
         html: `
-          <h2>New Ameer Expo ${lead.interest} enquiry</h2>
-          <p><strong>Company:</strong> ${lead.company}</p>
-          <p><strong>Contact:</strong> ${lead.contactName}</p>
-          <p><strong>Email:</strong> ${lead.email}</p>
-          <p><strong>Phone:</strong> ${lead.phone ?? "—"}</p>
-          <p><strong>Interest:</strong> ${lead.interest}</p>
-          <p><strong>Tier / Size:</strong> ${lead.tierOrSize ?? "—"}</p>
-          <p><strong>Message:</strong> ${lead.message ?? "—"}</p>
-          <p><strong>Lead ID:</strong> ${lead.id}</p>
+          <h2>New Ameer Expo ${escapeHtml(lead.interest)} enquiry</h2>
+          <p><strong>Company:</strong> ${escapeHtml(lead.company)}</p>
+          <p><strong>Contact:</strong> ${escapeHtml(lead.contactName)}</p>
+          <p><strong>Email:</strong> ${escapeHtml(lead.email)}</p>
+          <p><strong>Phone:</strong> ${escapeHtml(lead.phone) || "—"}</p>
+          <p><strong>Interest:</strong> ${escapeHtml(lead.interest)}</p>
+          <p><strong>Tier / Size:</strong> ${escapeHtml(lead.tierOrSize) || "—"}</p>
+          <p><strong>Message:</strong> ${escapeHtml(lead.message) || "—"}</p>
+          <p><strong>Lead ID:</strong> ${escapeHtml(lead.id)}</p>
         `,
       }),
     });
@@ -105,6 +126,28 @@ export async function sendExhibitorLeadNotification(lead: {
   }
 }
 
+// ─── Registrant confirmation email ───────────────────────────────────────────
+
+/**
+ * Builds and sends the corporate confirmation email to the registrant.
+ *
+ * Design spec (Phase 3):
+ *   1. Header band — dark navy, AMEER EXPO wordmark
+ *   2. Greeting
+ *   3. Ticket card — ticket number badge + QR code (data-URI inline, plus attachment for Outlook)
+ *   4. Key facts table
+ *   5. Full registration details (two-column table)
+ *   6. Footer
+ *
+ * Email HTML uses inline hex colors (no CSS variables) and <table>-based 600px layout
+ * for maximum compatibility with Gmail, Outlook, and Apple Mail.
+ *
+ * QR code strategy:
+ *   - Resend does not support cid: inline references (no multipart/related API).
+ *   - We use a data: URI <img> for inline display (Gmail, Apple Mail, Thunderbird).
+ *   - The same PNG is also sent as an `attachments` entry so Outlook users can
+ *     open it as a file even if the data: URI is blocked.
+ */
 export async function sendRegistrantConfirmation(registration: {
   email: string;
   firstName: string;
@@ -122,12 +165,242 @@ export async function sendRegistrantConfirmation(registration: {
   dietary?: string | null;
   accessibility?: string | null;
   gender?: string | null;
+  ticketNumber?: string | null;
+  ticketQrBase64?: string | null;
 }) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     console.error("Confirmation skipped: missing RESEND_API_KEY");
     return;
   }
+
+  const firstName = escapeHtml(registration.firstName);
+  const lastName = escapeHtml(registration.lastName);
+  const fullName = [firstName, lastName].filter(Boolean).join(" ");
+  const passLabel =
+    registration.passType === "vip" ? "VIP Pass" : "General Admission (Free)";
+  const ticketNumber = registration.ticketNumber || registration.referenceCode;
+
+  // ── QR code section ────────────────────────────────────────────────────────
+  // If a base64 QR is supplied, embed inline AND attach for Outlook.
+  const qrSrc = registration.ticketQrBase64
+    ? `data:image/png;base64,${registration.ticketQrBase64}`
+    : null;
+
+  const ticketCardHtml = `
+    <table width="100%" cellpadding="0" cellspacing="0" border="0"
+      style="border:2px dashed #C8A94A;border-radius:12px;margin:24px 0;">
+      <tr>
+        <td align="center" style="padding:24px 20px;">
+          <div style="display:inline-block;background:#F0F7FF;border-radius:8px;
+            padding:10px 24px;font-family:'Courier New',Courier,monospace;
+            font-size:22px;font-weight:bold;letter-spacing:0.12em;color:#0C3E6F;">
+            ${escapeHtml(ticketNumber)}
+          </div>
+          ${
+            qrSrc
+              ? `<br/>
+            <img src="${qrSrc}" alt="QR code for ticket ${escapeHtml(ticketNumber)}"
+              width="160" height="160"
+              style="display:block;margin:16px auto 0;border-radius:8px;" />
+            <p style="margin:10px 0 0;font-size:12px;color:#6B7280;font-family:Arial,sans-serif;">
+              Scan at entry
+            </p>`
+              : ""
+          }
+        </td>
+      </tr>
+    </table>`;
+
+  // ── Details rows helper ────────────────────────────────────────────────────
+  function row(label: string, value: string | null | undefined): string {
+    if (!value) return "";
+    return `
+      <tr>
+        <td width="45%" style="padding:7px 12px 7px 0;vertical-align:top;
+          font-size:13px;color:#6B7280;font-family:Arial,sans-serif;border-bottom:1px solid #E5E7EB;">
+          ${label}
+        </td>
+        <td style="padding:7px 0 7px 12px;vertical-align:top;
+          font-size:13px;color:#111827;font-weight:500;font-family:Arial,sans-serif;border-bottom:1px solid #E5E7EB;">
+          ${escapeHtml(value)}
+        </td>
+      </tr>`;
+  }
+
+  const detailsHtml = `
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:8px;">
+      ${row("Full name", fullName || undefined)}
+      ${row("Gender", registration.gender)}
+      ${row("Company", registration.company)}
+      ${row("Job title", registration.jobTitle)}
+      ${row("Industry", registration.industry)}
+      ${row("Interests", registration.interests?.join(", "))}
+      ${row("Networking targets", registration.networkingTargets?.join(", "))}
+      ${row("Hotel assistance", registration.needsHotel != null ? yn(registration.needsHotel) : undefined)}
+      ${row("Airport pickup", registration.needsPickup != null ? yn(registration.needsPickup) : undefined)}
+      ${row("Visa assistance", registration.needsVisa != null ? yn(registration.needsVisa) : undefined)}
+      ${row("Dietary requirements", registration.dietary)}
+      ${row("Accessibility needs", registration.accessibility)}
+    </table>`;
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Ameer Expo Confirmation</title>
+</head>
+<body style="margin:0;padding:0;background:#F3F4F6;font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;">
+
+<!-- Wrapper -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0"
+  style="background:#F3F4F6;min-height:100vh;">
+  <tr>
+    <td align="center" style="padding:32px 16px;">
+
+      <!-- Card -->
+      <table width="600" cellpadding="0" cellspacing="0" border="0"
+        style="max-width:600px;width:100%;background:#FFFFFF;border-radius:16px;
+          overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+
+        <!-- ①  Header band -->
+        <tr>
+          <td style="background:#0C3E6F;padding:32px 40px;text-align:center;">
+            <p style="margin:0;font-size:11px;letter-spacing:0.22em;
+              text-transform:uppercase;color:#C8A94A;font-weight:600;">
+              Africa &amp; Middle East 2026
+            </p>
+            <h1 style="margin:8px 0 0;font-size:28px;font-weight:800;
+              letter-spacing:0.04em;color:#FFFFFF;line-height:1.1;">
+              AMEER EXPO
+            </h1>
+            <p style="margin:6px 0 0;font-size:13px;color:#93C5FD;">
+              18–20 September 2026 · Sarit Expo Centre, Nairobi
+            </p>
+          </td>
+        </tr>
+
+        <!-- ②  Greeting -->
+        <tr>
+          <td style="padding:32px 40px 0;">
+            <h2 style="margin:0;font-size:24px;font-weight:700;color:#0C3E6F;line-height:1.25;">
+              Hi ${firstName}, you&rsquo;re confirmed.
+            </h2>
+            <p style="margin:10px 0 0;font-size:15px;color:#374151;line-height:1.6;">
+              Welcome to Ameer Expo Africa &amp; Middle East 2026. Your registration is
+              confirmed — here&rsquo;s everything you need for the event.
+            </p>
+          </td>
+        </tr>
+
+        <!-- ③  Ticket card -->
+        <tr>
+          <td style="padding:24px 40px 0;">
+            <h3 style="margin:0 0 4px;font-size:13px;letter-spacing:0.14em;
+              text-transform:uppercase;color:#6B7280;font-weight:600;">
+              Your Entry Ticket
+            </h3>
+            ${ticketCardHtml}
+          </td>
+        </tr>
+
+        <!-- ④  Key facts -->
+        <tr>
+          <td style="padding:0 40px 24px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0"
+              style="background:#F0F7FF;border-radius:10px;padding:0;">
+              <tr>
+                <td style="padding:20px 24px;">
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td style="font-size:12px;color:#6B7280;font-weight:600;
+                        text-transform:uppercase;letter-spacing:0.1em;padding-bottom:4px;">
+                        Pass Type
+                      </td>
+                      <td style="font-size:12px;color:#6B7280;font-weight:600;
+                        text-transform:uppercase;letter-spacing:0.1em;padding-bottom:4px;">
+                        Dates
+                      </td>
+                      <td style="font-size:12px;color:#6B7280;font-weight:600;
+                        text-transform:uppercase;letter-spacing:0.1em;padding-bottom:4px;">
+                        Venue
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="font-size:14px;font-weight:700;color:#0C3E6F;padding-top:4px;">
+                        ${escapeHtml(passLabel)}
+                      </td>
+                      <td style="font-size:14px;font-weight:700;color:#0C3E6F;padding-top:4px;">
+                        18–20 Sept 2026
+                      </td>
+                      <td style="font-size:14px;font-weight:700;color:#0C3E6F;padding-top:4px;">
+                        Sarit Expo Centre,<br/>Westlands, Nairobi
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Divider -->
+        <tr>
+          <td style="padding:0 40px;">
+            <hr style="border:none;border-top:1px solid #E5E7EB;margin:0;" />
+          </td>
+        </tr>
+
+        <!-- ⑤  Registration details -->
+        <tr>
+          <td style="padding:24px 40px 0;">
+            <h3 style="margin:0 0 16px;font-size:15px;font-weight:700;color:#0C3E6F;">
+              Your registration details
+            </h3>
+            ${detailsHtml}
+          </td>
+        </tr>
+
+        <!-- ⑥  Footer -->
+        <tr>
+          <td style="padding:32px 40px;text-align:center;background:#F9FAFB;
+            border-top:1px solid #E5E7EB;margin-top:24px;">
+            <p style="margin:0;font-size:13px;font-weight:600;color:#0C3E6F;">
+              Ameer Group Ltd
+            </p>
+            <p style="margin:6px 0 0;font-size:12px;color:#9CA3AF;">
+              Questions? Email
+              <a href="mailto:info@ameergroupltd.com" style="color:#0C3E6F;text-decoration:none;">
+                info@ameergroupltd.com
+              </a>
+            </p>
+            <p style="margin:12px 0 0;font-size:11px;color:#9CA3AF;">
+              &copy; 2026 Ameer Group Ltd. All rights reserved.
+            </p>
+          </td>
+        </tr>
+
+      </table>
+      <!-- /Card -->
+
+    </td>
+  </tr>
+</table>
+<!-- /Wrapper -->
+
+</body>
+</html>`;
+
+  // Attachments: QR as downloadable PNG for Outlook
+  const attachments: Array<{ filename: string; content: string }> = [];
+  if (registration.ticketQrBase64) {
+    attachments.push({
+      filename: "ticket-qr.png",
+      content: registration.ticketQrBase64,
+    });
+  }
+
   try {
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -138,44 +411,9 @@ export async function sendRegistrantConfirmation(registration: {
       body: JSON.stringify({
         from: "Ameer Expo <notifications@ameergroupltd.com>",
         to: registration.email,
-        subject: `Registration Confirmed: Ameer Expo Africa & Middle East (${registration.referenceCode})`,
-        html: `
-          <h2>You're in, ${registration.firstName}!</h2>
-          <p>Your registration for Ameer Expo Africa & Middle East is confirmed.</p>
-          <p><strong>Registration Number:</strong> ${registration.referenceCode}</p>
-          <p><strong>Pass Type:</strong> ${registration.passType}</p>
-          <br/>
-          
-          <h3>Your Details</h3>
-          <p><strong>Name:</strong> ${registration.firstName} ${registration.lastName || ""}</p>
-          <p><strong>Gender:</strong> ${registration.gender || "—"}</p>
-          <br/>
-
-          <h3>Professional Background</h3>
-          <p><strong>Company:</strong> ${registration.company || "—"}</p>
-          <p><strong>Job Title:</strong> ${registration.jobTitle || "—"}</p>
-          <p><strong>Industry:</strong> ${registration.industry || "—"}</p>
-          <br/>
-
-          <h3>Your Interests & Networking Goals</h3>
-          <p><strong>Interests:</strong> ${registration.interests?.join(", ") || "—"}</p>
-          <p><strong>Networking Targets:</strong> ${registration.networkingTargets?.join(", ") || "—"}</p>
-          <br/>
-
-          <h3>Logistics</h3>
-          <p><strong>Hotel Assistance:</strong> ${registration.needsHotel ? "Yes" : "No"}</p>
-          <p><strong>Airport Pickup:</strong> ${registration.needsPickup ? "Yes" : "No"}</p>
-          <p><strong>Visa Assistance:</strong> ${registration.needsVisa ? "Yes" : "No"}</p>
-          <p><strong>Dietary Requirements:</strong> ${registration.dietary || "—"}</p>
-          <p><strong>Accessibility Needs:</strong> ${registration.accessibility || "—"}</p>
-          <br/>
-
-          <p><strong>Event Details:</strong></p>
-          <p>18-20 Sept 2026</p>
-          <p>Sarit Expo Centre, Nairobi</p>
-          <br/>
-          <p>We look forward to seeing you there.</p>
-        `,
+        subject: `You're confirmed — Ameer Expo 2026 (${ticketNumber})`,
+        html,
+        ...(attachments.length > 0 ? { attachments } : {}),
       }),
     });
     if (!response.ok) {
@@ -186,6 +424,8 @@ export async function sendRegistrantConfirmation(registration: {
     console.error("Failed to send registrant confirmation", err);
   }
 }
+
+// ─── Partner inquiry notification ────────────────────────────────────────────
 
 export async function sendPartnerNotification(inquiry: {
   id: string;
@@ -216,13 +456,13 @@ export async function sendPartnerNotification(inquiry: {
         to,
         subject: `New ${inquiry.type} inquiry — ${inquiry.companyName}`,
         html: `
-          <h2>New Ameer Expo ${inquiry.type} inquiry</h2>
-          <p><strong>Company:</strong> ${inquiry.companyName}</p>
-          <p><strong>Contact:</strong> ${inquiry.contactName}</p>
-          <p><strong>Email:</strong> ${inquiry.email}</p>
-          <p><strong>Phone:</strong> ${inquiry.phone ?? "—"}</p>
-          <p><strong>Message:</strong> ${inquiry.message ?? "—"}</p>
-          <p><strong>Inquiry ID:</strong> ${inquiry.id}</p>
+          <h2>New Ameer Expo ${escapeHtml(inquiry.type)} inquiry</h2>
+          <p><strong>Company:</strong> ${escapeHtml(inquiry.companyName)}</p>
+          <p><strong>Contact:</strong> ${escapeHtml(inquiry.contactName)}</p>
+          <p><strong>Email:</strong> ${escapeHtml(inquiry.email)}</p>
+          <p><strong>Phone:</strong> ${escapeHtml(inquiry.phone) || "—"}</p>
+          <p><strong>Message:</strong> ${escapeHtml(inquiry.message) || "—"}</p>
+          <p><strong>Inquiry ID:</strong> ${escapeHtml(inquiry.id)}</p>
         `,
       }),
     });

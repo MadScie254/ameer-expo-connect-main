@@ -13,6 +13,11 @@ const ExhibitorLeadSchema = z.object({
   message: z.string().optional(),
 });
 
+/**
+ * @deprecated Use `submitPartnerInquiry` from `src/server/partners.ts` instead.
+ * The `exhibitor_leads` table may still contain historical data; do NOT drop it.
+ * The `/exhibit` route has been updated to write to `partner_inquiries` instead.
+ */
 export const submitExhibitorLead = createServerFn({ method: "POST" })
   .validator((data: unknown) => ExhibitorLeadSchema.parse(data))
   .handler(async ({ data }) => {

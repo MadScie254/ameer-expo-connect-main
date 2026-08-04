@@ -62,7 +62,10 @@ function ExhibitPage() {
         },
       });
       if (!result.success) {
-        setError((result as { success: false; error?: string }).error || "Unable to submit your request right now.");
+        setError(
+          (result as { success: false; error?: string }).error ||
+            "Unable to submit your request right now.",
+        );
         return;
       }
       setSuccess(true);

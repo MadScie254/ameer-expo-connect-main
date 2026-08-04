@@ -3,6 +3,7 @@ import { z } from "zod";
 import { supabaseAdmin } from "../lib/supabase-server";
 import { getPesapalToken, submitPesapalOrder } from "./pesapal";
 import { sendRegistrationNotification, sendRegistrantConfirmation } from "../lib/notify";
+import { generateTicketNumber, generateTicketQrPng } from "../lib/ticket";
 
 function isAtLeast17(value: string) {
   const d = new Date(value);
@@ -48,6 +49,7 @@ const RegistrationSchema = z.object({
   accessibility: z.string(),
   terms: z.boolean().refine((val) => val === true, "Must accept terms"),
   passType: z.string().optional(),
+  turnstileToken: z.string().optional(),
 });
 
 async function findOrCreateUserId(email: string, firstName: string, lastName: string) {
@@ -98,10 +100,48 @@ async function findOrCreateUserId(email: string, firstName: string, lastName: st
   }
 }
 
+/**
+ * Verify a Cloudflare Turnstile token server-side.
+ * Returns true if verification passes OR if no secret key is configured
+ * (graceful degradation when Turnstile hasn't been set up yet).
+ */
+async function verifyTurnstile(token: string | undefined): Promise<boolean> {
+  const secret = process.env.TURNSTILE_SECRET_KEY;
+  if (!secret) {
+    // Turnstile not configured — fall through (5-minute throttle is the backstop)
+    return true;
+  }
+  if (!token) return false;
+
+  try {
+    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ secret, response: token }),
+    });
+    const data = (await res.json()) as { success: boolean };
+    return data.success === true;
+  } catch {
+    // Network failure — don't block the user, log and allow
+    console.error("Turnstile verification request failed");
+    return true;
+  }
+}
+
 export const submitRegistration = createServerFn({ method: "POST" })
   .validator((data: unknown) => RegistrationSchema.parse(data))
   .handler(async ({ data }) => {
     try {
+      // ── Turnstile check ─────────────────────────────────────────────────
+      const turnstileOk = await verifyTurnstile(data.turnstileToken);
+      if (!turnstileOk) {
+        return {
+          success: false,
+          error: "CAPTCHA verification failed. Please refresh and try again.",
+        };
+      }
+
+      // ── 5-minute same-email throttle (backstop) ──────────────────────────
       const fiveMinsAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
       const { data: recentReg } = await supabaseAdmin
         .from("registrations")
@@ -144,6 +184,28 @@ export const submitRegistration = createServerFn({ method: "POST" })
         orderTrackingId = pesapalRes.order_tracking_id;
       }
 
+      // ── Generate ticket for free registrations immediately ───────────────
+      let ticketNumber: string | null = null;
+      let ticketIssuedAt: string | null = null;
+      if (paymentStatus === "free") {
+        // Retry up to 3 times on unique-constraint collision
+        for (let attempt = 0; attempt < 3; attempt++) {
+          ticketNumber = generateTicketNumber();
+          // Pre-check uniqueness to avoid relying solely on DB error parsing
+          const { data: existing } = await supabaseAdmin
+            .from("registrations")
+            .select("id")
+            .eq("ticket_number", ticketNumber)
+            .maybeSingle();
+          if (!existing) break;
+          // Collision — try again
+          if (attempt === 2) ticketNumber = null; // give up; row will still insert without ticket
+        }
+        if (ticketNumber) {
+          ticketIssuedAt = new Date().toISOString();
+        }
+      }
+
       const userId = await findOrCreateUserId(data.email, data.firstName, data.lastName);
 
       const { data: row, error: insertError } = await supabaseAdmin
@@ -182,6 +244,8 @@ export const submitRegistration = createServerFn({ method: "POST" })
           needs_visa: data.visa,
           dietary: data.dietary,
           accessibility: data.accessibility,
+          ticket_number: ticketNumber,
+          ticket_issued_at: ticketIssuedAt,
         })
         .select()
         .single();
@@ -191,6 +255,17 @@ export const submitRegistration = createServerFn({ method: "POST" })
       }
 
       if (paymentStatus === "free") {
+        // Generate QR PNG for the confirmation email
+        let ticketQrBase64: string | null = null;
+        if (row.ticket_number) {
+          try {
+            const qrBuffer = await generateTicketQrPng(row.ticket_number);
+            ticketQrBase64 = qrBuffer.toString("base64");
+          } catch (qrErr) {
+            console.error("QR generation failed (non-fatal):", qrErr);
+          }
+        }
+
         await sendRegistrationNotification({
           id: row.id,
           firstName: row.first_name,
@@ -201,6 +276,7 @@ export const submitRegistration = createServerFn({ method: "POST" })
           passType: row.pass_type,
           amount: Number(row.amount),
           paymentStatus: row.payment_status,
+          ticketNumber: row.ticket_number,
         });
 
         await sendRegistrantConfirmation({
@@ -220,6 +296,8 @@ export const submitRegistration = createServerFn({ method: "POST" })
           dietary: row.dietary,
           accessibility: row.accessibility,
           gender: row.gender,
+          ticketNumber: row.ticket_number,
+          ticketQrBase64,
         });
       }
 
@@ -229,6 +307,7 @@ export const submitRegistration = createServerFn({ method: "POST" })
         referenceCode: row.reference_code,
         passType,
         redirectUrl,
+        ticketNumber: row.ticket_number as string | null,
       };
     } catch (error) {
       console.error("Registration error:", error);
@@ -241,7 +320,7 @@ export const getRegistrationStatus = createServerFn({ method: "GET" })
   .handler(async ({ data: id }) => {
     const { data: row, error } = await supabaseAdmin
       .from("registrations")
-      .select("id, reference_code, payment_status, pass_type, first_name")
+      .select("id, reference_code, payment_status, pass_type, first_name, ticket_number")
       .eq("id", id)
       .maybeSingle();
 
@@ -255,5 +334,6 @@ export const getRegistrationStatus = createServerFn({ method: "GET" })
       paymentStatus: row.payment_status as string,
       passType: row.pass_type as string,
       firstName: row.first_name as string,
+      ticketNumber: row.ticket_number as string | null,
     };
   });
