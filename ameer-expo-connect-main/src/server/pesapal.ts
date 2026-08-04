@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-const PESAPAL_BASE_URL =
+export const PESAPAL_BASE_URL =
   process.env.PESAPAL_ENV === "production"
     ? "https://pay.pesapal.com/v3/api"
     : "https://cybqa.pesapal.com/pesapalv3/api";

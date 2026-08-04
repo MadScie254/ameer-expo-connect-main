@@ -1,8 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { submitExhibitorLead } from "../server/exhibitor-lead";
+import { submitPartnerInquiry } from "../server/partners";
 
 // Lead-capture flow by design: no payment is collected here; booth/sponsorship deals are negotiated manually after the team follows up.
+// NOTE: this route previously wrote to `exhibitor_leads` via `submitExhibitorLead`.
+//       It now writes to `partner_inquiries` (the single source of truth, also used by the
+//       homepage #exhibit / #sponsor anchors). The /exhibit URL is intentionally preserved
+//       to avoid breaking any bookmarked or indexed links.
 
 export const Route = createFileRoute("/exhibit")({
   component: ExhibitPage,
@@ -39,19 +43,26 @@ function ExhibitPage() {
     setIsSubmitting(true);
 
     try {
-      const result = await submitExhibitorLead({
+      // Map booth/sponsorship interest → exhibitor/sponsor type used by partner_inquiries.
+      // Append the selected tier or booth size to the message so it isn't lost.
+      const type: "exhibitor" | "sponsor" = interest === "booth" ? "exhibitor" : "sponsor";
+      const tierLine = tierOrSize
+        ? `\n[${interest === "booth" ? "Booth size" : "Sponsorship tier"}: ${tierOrSize}]`
+        : "";
+      const fullMessage = message ? `${message}${tierLine}` : tierLine.trim();
+
+      const result = await submitPartnerInquiry({
         data: {
-          company,
+          type,
+          companyName: company,
           contactName,
           email,
           phone,
-          interest,
-          tierOrSize,
-          message,
+          message: fullMessage || undefined,
         },
       });
       if (!result.success) {
-        setError(result.error || "Unable to submit your request right now.");
+        setError((result as { success: false; error?: string }).error || "Unable to submit your request right now.");
         return;
       }
       setSuccess(true);
@@ -74,7 +85,7 @@ function ExhibitPage() {
       <div className="mx-auto flex max-w-3xl flex-col gap-8 rounded-3xl border border-border/60 bg-card p-8 shadow-soft sm:p-10">
         <div className="space-y-3">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">
-            Exhibit & Sponsor
+            Exhibit &amp; Sponsor
           </p>
           <h1 className="text-3xl font-semibold text-foreground sm:text-4xl">
             Tell us about your interest
