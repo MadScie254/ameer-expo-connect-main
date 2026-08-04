@@ -10,12 +10,17 @@ import {
   Briefcase,
   Sparkles,
   Users,
-  Hotel,
+  MapPin,
+  Ticket,
   ClipboardCheck,
   PartyPopper,
-  Star,
   Download,
   Calendar,
+  Loader2,
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle2,
+  Crown,
 } from "lucide-react";
 import logo from "@/assets/ameer-expo-logo.png";
 import { VideoEmbed } from "../components/expo/VideoEmbed";
@@ -45,8 +50,8 @@ const steps = [
   { key: "professional", label: "Professional", icon: Briefcase },
   { key: "interests", label: "Interests", icon: Sparkles },
   { key: "networking", label: "Networking", icon: Users },
-  { key: "logistics", label: "Logistics", icon: Hotel },
-  { key: "passType", label: "Pass Type", icon: Star },
+  { key: "logistics", label: "Logistics", icon: MapPin },
+  { key: "passType", label: "Pass Type", icon: Ticket },
   { key: "review", label: "Review", icon: ClipboardCheck },
 ];
 
@@ -174,7 +179,12 @@ function Field({
         {required && <span className="text-destructive">*</span>}
       </span>
       <div className="mt-2">{children}</div>
-      {error ? <p className="mt-2 text-sm text-destructive">{error}</p> : null}
+      {error ? (
+        <p className="mt-2 flex items-center gap-1.5 text-sm text-destructive">
+          <AlertCircle size={14} className="shrink-0" />
+          {error}
+        </p>
+      ) : null}
     </label>
   );
 }
@@ -244,6 +254,75 @@ function getPersonalStepErrors(form: FormState) {
   return errors;
 }
 
+// ──────────────────────────────────────────────────────────────────────────────
+// Step Progress Indicator
+// ──────────────────────────────────────────────────────────────────────────────
+function StepIndicator({ currentStep }: { currentStep: number }) {
+  return (
+    <>
+      {/* Desktop: full horizontal row */}
+      <div className="hidden md:flex items-center">
+        {steps.map((s, i) => {
+          const done = i < currentStep;
+          const active = i === currentStep;
+          const StepIcon = s.icon;
+          return (
+            <div key={s.key} className="flex items-center">
+              <div className="flex flex-col items-center gap-1.5">
+                <div
+                  className={`grid h-10 w-10 place-items-center rounded-full transition-all duration-300 ${
+                    done
+                      ? "bg-gradient-gold text-gold-foreground shadow-glow"
+                      : active
+                        ? "border-2 border-primary text-primary bg-card shadow-soft"
+                        : "border-2 border-border/60 text-muted-foreground bg-card"
+                  }`}
+                >
+                  {done ? <Check size={16} strokeWidth={2.5} /> : <StepIcon size={16} />}
+                </div>
+                <span
+                  className={`text-[10px] font-semibold uppercase tracking-wider transition-colors ${
+                    active ? "text-foreground" : done ? "text-primary" : "text-muted-foreground"
+                  }`}
+                >
+                  {s.label}
+                </span>
+              </div>
+              {i < steps.length - 1 && (
+                <div className="mx-2 mb-4 h-px flex-1 min-w-[20px] overflow-hidden rounded-full bg-border/60">
+                  <div
+                    className="h-full rounded-full bg-gradient-gold transition-all duration-500"
+                    style={{ width: i < currentStep ? "100%" : "0%" }}
+                  />
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Mobile: compact "Step X of Y — Label" + progress bar */}
+      <div className="md:hidden">
+        <div className="flex items-center justify-between text-sm mb-2">
+          <span className="font-semibold text-foreground">
+            Step {currentStep + 1} of {steps.length}
+          </span>
+          <span className="text-muted-foreground">{steps[currentStep].label}</span>
+        </div>
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+          <div
+            className="h-full rounded-full bg-gradient-gold transition-all duration-500"
+            style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+          />
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Main component
+// ──────────────────────────────────────────────────────────────────────────────
 function Register() {
   const [step, setStep] = useState(0);
   const [f, setF] = useState<FormState>(initial);
@@ -252,6 +331,7 @@ function Register() {
   const [resumedAt, setResumedAt] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [confirmingRid, setConfirmingRid] = useState<string | null>(null);
   const [pendingRid, setPendingRid] = useState<string | null>(null);
@@ -397,7 +477,6 @@ function Register() {
     setSavedAt(null);
   };
 
-  const progress = useMemo(() => ((step + 1) / steps.length) * 100, [step]);
   const personalErrors = useMemo(() => (step === 0 ? getPersonalStepErrors(f) : {}), [f, step]);
 
   const showPersonalError = (field: "dob" | "country" | "city") => {
@@ -415,22 +494,12 @@ function Register() {
     return true;
   };
 
-  const handleContinue = () => {
-    if (step === 0) {
-      setPersonalValidationAttempted(true);
-    }
-    if (canNext()) {
-      setStep((s) => s + 1);
-    }
-  };
-
   const submit = async () => {
     setIsSubmitting(true);
     setSubmitError(null);
     try {
       if (pendingRid) {
-        // If we are retrying a payment that timed out/failed, resume polling
-        // rather than creating a new registration
+        // Resume polling the existing registration instead of creating a duplicate
         setConfirmingRid(pendingRid);
         return;
       }
@@ -442,6 +511,7 @@ function Register() {
       }
 
       if (result.redirectUrl) {
+        setIsRedirecting(true);
         setPendingRid(result.id);
         window.location.href = result.redirectUrl;
         return;
@@ -474,19 +544,19 @@ function Register() {
     }
   };
 
-  if (confirmingRid) {
+  // ── Redirect loading overlay ────────────────────────────────────────────────
+  if (isRedirecting) {
     return (
       <div className="min-h-screen bg-secondary/40">
         <TopBar />
         <div className="mx-auto max-w-2xl px-4 py-24">
-          <div className="rounded-3xl bg-card p-10 text-center shadow-elegant border border-border/60">
-            <div className="mx-auto mb-6 flex h-16 w-16 animate-pulse items-center justify-center rounded-full bg-gold/20 text-gold">
-              <Star size={32} />
+          <div className="rounded-2xl md:rounded-3xl bg-card p-10 text-center shadow-elegant border border-border/60">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Loader2 size={32} className="animate-spin" />
             </div>
-            <h2 className="mb-4 font-display text-3xl font-bold">Confirming Payment...</h2>
-            <p className="mb-8 text-muted-foreground">
-              Please wait while we verify your payment with Pesapal. This usually takes a few
-              seconds.
+            <h2 className="mb-2 font-display text-2xl font-bold">Redirecting to Payment</h2>
+            <p className="text-sm text-muted-foreground">
+              You're being sent to Pesapal to complete your VIP pass purchase.
             </p>
           </div>
         </div>
@@ -494,19 +564,40 @@ function Register() {
     );
   }
 
+  // ── Payment polling screen ──────────────────────────────────────────────────
+  if (confirmingRid) {
+    return (
+      <div className="min-h-screen bg-secondary/40">
+        <TopBar />
+        <div className="mx-auto max-w-2xl px-4 py-24">
+          <div className="rounded-2xl md:rounded-3xl bg-card p-10 text-center shadow-elegant border border-border/60">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Loader2 size={32} className="animate-spin" />
+            </div>
+            <h2 className="mb-2 font-display text-2xl font-bold">Confirming your payment</h2>
+            <p className="text-sm text-muted-foreground">
+              This usually takes a few seconds. Please don't close this page.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Poll timeout screen ─────────────────────────────────────────────────────
   if (pollTimeout) {
     return (
       <div className="min-h-screen bg-secondary/40">
         <TopBar />
         <div className="mx-auto max-w-2xl px-4 py-24">
-          <div className="rounded-3xl bg-card p-10 text-center shadow-elegant border border-border/60">
-            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/20 text-primary">
-              <Check size={32} />
+          <div className="rounded-2xl md:rounded-3xl bg-card p-10 text-center shadow-elegant border border-border/60">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <AlertTriangle size={32} />
             </div>
-            <h2 className="mb-4 font-display text-3xl font-bold">Payment Processing</h2>
-            <p className="mb-8 text-muted-foreground">
-              Your payment is taking longer than usual to confirm. Don't worry — we'll email your
-              confirmation and VIP pass once it goes through.
+            <h2 className="mb-2 font-display text-2xl font-bold">Payment Processing</h2>
+            <p className="mb-8 text-sm text-muted-foreground">
+              Your payment is taking longer than usual. We'll email your confirmation and VIP pass
+              once it goes through.
             </p>
             <button
               onClick={() => {
@@ -523,16 +614,20 @@ function Register() {
     );
   }
 
+  // ── Payment failed screen ───────────────────────────────────────────────────
   if (pollError) {
     return (
       <div className="min-h-screen bg-secondary/40">
         <TopBar />
         <div className="mx-auto max-w-2xl px-4 py-24">
-          <div className="rounded-3xl bg-card p-10 text-center shadow-elegant border border-destructive/60">
-            <h2 className="mb-4 font-display text-3xl font-bold text-destructive">
+          <div className="rounded-2xl md:rounded-3xl bg-card p-10 text-center shadow-elegant border border-destructive/60">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+              <AlertCircle size={32} />
+            </div>
+            <h2 className="mb-2 font-display text-2xl font-bold text-destructive">
               Payment Failed
             </h2>
-            <p className="mb-8 text-muted-foreground">{pollError}</p>
+            <p className="mb-8 text-sm text-muted-foreground">{pollError}</p>
             <button
               onClick={() => {
                 setPollError(null);
@@ -548,28 +643,79 @@ function Register() {
     );
   }
 
+  // ── Success / Boarding-pass screen ──────────────────────────────────────────
   if (submitted) {
     return (
       <div className="min-h-screen bg-secondary/40">
         <TopBar />
-        <div className="mx-auto max-w-2xl px-4 py-24">
-          <div className="rounded-3xl bg-card p-10 text-center shadow-elegant border border-border/60">
-            <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-gradient-gold text-gold-foreground shadow-glow">
-              <PartyPopper size={30} />
-            </div>
-            <h1 className="mt-6 font-display text-3xl font-bold">You're in.</h1>
-            <p className="mt-2 text-muted-foreground">
-              A confirmation email and QR badge are on the way.
-            </p>
-            <div className="mt-8 rounded-2xl bg-secondary/60 p-5">
-              <div className="text-xs uppercase tracking-widest text-muted-foreground">
-                Ticket Number
+        <div className="mx-auto max-w-lg px-4 py-16">
+          {/* Ticket stub card */}
+          <div className="rounded-2xl md:rounded-3xl bg-card shadow-elegant border border-border/60 overflow-hidden">
+            {/* Header strip */}
+            <div className="bg-gradient-primary px-8 pt-8 pb-6 text-center">
+              <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-gradient-gold shadow-glow">
+                <PartyPopper size={26} className="text-gold-foreground" />
               </div>
-              <div className="mt-1 font-mono text-2xl font-bold text-primary">{submitted}</div>
+              <h1 className="font-display text-2xl font-bold text-primary-foreground">
+                You're in!
+              </h1>
+              <p className="mt-1 text-sm text-primary-foreground/70">
+                A confirmation email and QR badge are on their way.
+              </p>
             </div>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+
+            {/* Dashed divider — ticket tear */}
+            <div className="relative border-t border-dashed border-border/60">
+              <span className="absolute -left-3.5 top-1/2 h-7 w-7 -translate-y-1/2 rounded-full bg-secondary/40" />
+              <span className="absolute -right-3.5 top-1/2 h-7 w-7 -translate-y-1/2 rounded-full bg-secondary/40" />
+            </div>
+
+            {/* QR + ticket number body */}
+            <div className="px-8 py-8 text-center flex flex-col items-center gap-5">
+              {/* QR placeholder – shown when we have the ticket number */}
+              <div className="rounded-2xl border border-border/60 bg-secondary/30 p-3 shadow-soft">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://ameerexpo.com/verify/${submitted}&color=0C3E6F&bgcolor=FFFFFF`}
+                  alt={`QR code for ticket ${submitted}`}
+                  width={180}
+                  height={180}
+                  className="rounded-xl"
+                />
+              </div>
+
+              {/* Ticket number badge */}
+              <div className="rounded-xl border border-border/60 bg-card px-5 py-3">
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
+                  Ticket Number
+                </div>
+                <div className="font-mono text-xl font-bold text-primary tracking-wider">
+                  {submitted}
+                </div>
+              </div>
+
+              {/* Event details */}
+              <div className="w-full rounded-xl bg-secondary/40 px-4 py-3 text-sm text-muted-foreground text-left space-y-1">
+                <div className="flex items-center gap-2">
+                  <Calendar size={14} className="text-primary shrink-0" />
+                  <span>18–20 September 2026</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin size={14} className="text-primary shrink-0" />
+                  <span>Sarit Expo Centre, Westlands, Nairobi</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Dashed divider */}
+            <div className="relative border-t border-dashed border-border/60">
+              <span className="absolute -left-3.5 top-1/2 h-7 w-7 -translate-y-1/2 rounded-full bg-secondary/40" />
+              <span className="absolute -right-3.5 top-1/2 h-7 w-7 -translate-y-1/2 rounded-full bg-secondary/40" />
+            </div>
+
+            {/* Action buttons */}
+            <div className="px-8 py-7 flex flex-col items-center gap-3">
               {submittedId && (
-                <>
+                <div className="flex flex-wrap justify-center gap-3 w-full">
                   <button
                     onClick={async () => {
                       try {
@@ -587,9 +733,9 @@ function Register() {
                         alert("Failed to download PDF ticket. Please try again.");
                       }
                     }}
-                    className="inline-flex items-center gap-2 rounded-xl bg-gradient-gold px-6 py-3 text-sm font-semibold text-gold-foreground shadow-glow hover:-translate-y-0.5 transition-all"
+                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-gold px-5 py-3 text-sm font-semibold text-gold-foreground shadow-glow hover:-translate-y-0.5 transition-all"
                   >
-                    <Download size={16} /> Download Ticket (PDF)
+                    <Download size={16} /> Download PDF
                   </button>
                   <button
                     onClick={async () => {
@@ -613,11 +759,11 @@ function Register() {
                         alert("Failed to download calendar event. Please try again.");
                       }
                     }}
-                    className="inline-flex items-center gap-2 rounded-xl bg-gradient-gold px-6 py-3 text-sm font-semibold text-gold-foreground shadow-glow hover:-translate-y-0.5 transition-all"
+                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-gold px-5 py-3 text-sm font-semibold text-gold-foreground shadow-glow hover:-translate-y-0.5 transition-all"
                   >
                     <Calendar size={16} /> Add to Calendar
                   </button>
-                </>
+                </div>
               )}
               <Link
                 to="/"
@@ -626,9 +772,9 @@ function Register() {
                   setSubmitted(null);
                   setSubmittedId(null);
                 }}
-                className="inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:-translate-y-0.5 transition-all"
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
               >
-                <ArrowLeft size={16} /> Back to home
+                Back to home
               </Link>
             </div>
           </div>
@@ -637,16 +783,20 @@ function Register() {
     );
   }
 
+  // ── Main registration form ──────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-secondary/40">
       <TopBar />
       <div className="mx-auto max-w-5xl px-4 py-10 sm:py-16">
         {resumedAt && (
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-primary/30 bg-primary/5 px-5 py-3 text-sm">
-            <div className="text-foreground">
-              <span className="font-semibold">Welcome back.</span>{" "}
-              <span className="text-muted-foreground">
-                We restored your progress from {new Date(resumedAt).toLocaleString()}.
+            <div className="flex items-center gap-2 text-foreground">
+              <CheckCircle2 size={15} className="text-primary shrink-0" />
+              <span>
+                <span className="font-semibold">Welcome back.</span>{" "}
+                <span className="text-muted-foreground">
+                  Progress restored from {new Date(resumedAt).toLocaleString()}.
+                </span>
               </span>
             </div>
             <button
@@ -660,53 +810,25 @@ function Register() {
             </button>
           </div>
         )}
+
         <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_340px]">
           <div className="flex flex-col gap-6">
-            {/* Stepper */}
-            <div className="rounded-3xl glass shadow-soft border border-border/60 p-6 sm:p-8">
-              <div className="flex items-center justify-between gap-2 overflow-x-auto">
-                {steps.map((s, i) => {
-                  const active = i === step;
-                  const done = i < step;
-                  return (
-                    <div key={s.key} className="flex items-center gap-2 min-w-fit">
-                      <div
-                        className={`grid h-10 w-10 place-items-center rounded-full text-sm font-semibold transition-all ${
-                          done
-                            ? "bg-gradient-primary text-primary-foreground"
-                            : active
-                              ? "bg-gradient-gold text-gold-foreground shadow-glow"
-                              : "bg-secondary text-muted-foreground"
-                        }`}
-                      >
-                        {done ? <Check size={16} /> : <s.icon size={16} />}
-                      </div>
-                      <span
-                        className={`hidden sm:inline text-xs font-medium ${
-                          active ? "text-foreground" : "text-muted-foreground"
-                        }`}
-                      >
-                        {s.label}
-                      </span>
-                      {i < steps.length - 1 && (
-                        <div className="hidden sm:block h-px w-6 bg-border" />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="mt-6 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
-                <div
-                  className="h-full rounded-full bg-gradient-gold transition-all duration-500"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
+            {/* Progress Indicator */}
+            <div className="rounded-2xl md:rounded-3xl glass shadow-soft border border-border/60 p-5 sm:p-7">
+              <StepIndicator currentStep={step} />
             </div>
 
-            {/* Step content */}
-            <div className="rounded-3xl bg-card border border-border/60 shadow-soft p-6 sm:p-10">
+            {/* Step content card */}
+            <div
+              className="rounded-2xl md:rounded-3xl bg-card border border-border/60 shadow-soft p-6 sm:p-10"
+              key={step}
+            >
               {step === 0 && (
-                <StepBlock title="Personal information" subtitle="Tell us who's attending.">
+                <StepBlock
+                  title="Personal information"
+                  subtitle="Tell us who's attending."
+                  icon={User}
+                >
                   <div className="grid gap-5 sm:grid-cols-2">
                     <Field label="First Name" required>
                       <input
@@ -832,7 +954,11 @@ function Register() {
               )}
 
               {step === 1 && (
-                <StepBlock title="Professional information" subtitle="Where do you work?">
+                <StepBlock
+                  title="Professional information"
+                  subtitle="Where do you work?"
+                  icon={Briefcase}
+                >
                   <div className="grid gap-5 sm:grid-cols-2">
                     <Field label="Company Name" required>
                       <input
@@ -897,6 +1023,7 @@ function Register() {
                 <StepBlock
                   title="Areas of interest"
                   subtitle="Pick everything you'd like to explore."
+                  icon={Sparkles}
                 >
                   <div className="flex flex-wrap gap-2">
                     {industries.map((i) => (
@@ -916,6 +1043,7 @@ function Register() {
                 <StepBlock
                   title="Networking preferences"
                   subtitle="We'll match you with the right people."
+                  icon={Users}
                 >
                   <div className="space-y-6">
                     <Field label="Would you like to schedule B2B meetings?">
@@ -945,7 +1073,11 @@ function Register() {
               )}
 
               {step === 4 && (
-                <StepBlock title="Logistics & accommodation" subtitle="We'll handle the details.">
+                <StepBlock
+                  title="Logistics & accommodation"
+                  subtitle="We'll handle the details."
+                  icon={MapPin}
+                >
                   <div className="grid gap-4 sm:grid-cols-3">
                     {[
                       { k: "hotel", label: "Need hotel booking?" },
@@ -997,51 +1129,117 @@ function Register() {
               )}
 
               {step === 5 && (
-                <StepBlock title="Select your pass" subtitle="Choose your experience for the expo.">
+                <StepBlock
+                  title="Select your pass"
+                  subtitle="Choose your experience for the expo."
+                  icon={Ticket}
+                >
                   <div className="grid gap-4 sm:grid-cols-2">
-                    {[
-                      {
-                        id: "general",
-                        title: "General (Free)",
-                        desc: "Access to the main exhibition floor and open sessions.",
-                        price: 0,
-                      },
-                      {
-                        id: "vip",
-                        title: "VIP Pass",
-                        desc: "VIP lounge access, fast-track badge, gala dinner, and concierge.",
-                        price: 5000,
-                      },
-                    ].map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => set("passType", p.id)}
-                        className={`cursor-pointer rounded-2xl border p-5 text-left transition-all ${
-                          f.passType === p.id
-                            ? "border-primary bg-primary/5 shadow-soft ring-1 ring-primary"
-                            : "border-border bg-card hover:border-primary/40"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-display font-semibold">{p.title}</span>
-                          <span
-                            className={`h-5 w-5 grid place-items-center rounded-full border ${f.passType === p.id ? "bg-primary border-primary text-primary-foreground" : "border-border"}`}
-                          >
-                            {f.passType === p.id && <Check size={12} />}
-                          </span>
+                    {/* General Pass */}
+                    <button
+                      onClick={() => set("passType", "general")}
+                      className={`relative cursor-pointer rounded-2xl border p-6 text-left transition-all duration-200 ${
+                        f.passType === "general"
+                          ? "border-primary bg-primary/5 shadow-soft ring-1 ring-primary"
+                          : "border-border bg-card hover:border-primary/40 hover:shadow-soft"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div
+                          className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                            f.passType === "general"
+                              ? "bg-primary/10 text-primary"
+                              : "bg-secondary text-muted-foreground"
+                          }`}
+                        >
+                          <Ticket size={20} />
                         </div>
-                        <p className="mt-2 text-sm text-muted-foreground">{p.desc}</p>
-                        <div className="mt-4 font-bold text-foreground">
-                          {p.price === 0 ? "Free" : `KES ${p.price.toLocaleString()}`}
+                        <span
+                          className={`h-5 w-5 mt-0.5 grid place-items-center rounded-full border transition-all ${
+                            f.passType === "general"
+                              ? "bg-primary border-primary text-primary-foreground"
+                              : "border-border"
+                          }`}
+                        >
+                          {f.passType === "general" && <Check size={11} />}
+                        </span>
+                      </div>
+                      <div className="font-display text-lg font-semibold">General</div>
+                      <div className="mt-0.5 mb-4 text-xl font-bold text-primary">Free</div>
+                      <ul className="space-y-2">
+                        {[
+                          "Exhibition floor access",
+                          "Open conference sessions",
+                          "Networking events",
+                        ].map((b) => (
+                          <li key={b} className="flex items-center gap-2 text-sm text-foreground">
+                            <CheckCircle2 size={15} className="shrink-0 text-primary" />
+                            {b}
+                          </li>
+                        ))}
+                      </ul>
+                    </button>
+
+                    {/* VIP Pass */}
+                    <button
+                      onClick={() => set("passType", "vip")}
+                      className={`relative cursor-pointer rounded-2xl border-2 p-6 text-left transition-all duration-200 ${
+                        f.passType === "vip"
+                          ? "border-primary bg-primary/5 shadow-soft ring-1 ring-primary"
+                          : "border-border/80 bg-card hover:border-primary/40 hover:shadow-soft"
+                      }`}
+                    >
+                      {/* Subtle gold accent bar */}
+                      <div className="absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-gold opacity-80" />
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div
+                          className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                            f.passType === "vip"
+                              ? "bg-gradient-gold text-gold-foreground shadow-glow"
+                              : "bg-secondary text-muted-foreground"
+                          }`}
+                        >
+                          <Crown size={20} />
                         </div>
-                      </button>
-                    ))}
+                        <span
+                          className={`h-5 w-5 mt-0.5 grid place-items-center rounded-full border transition-all ${
+                            f.passType === "vip"
+                              ? "bg-primary border-primary text-primary-foreground"
+                              : "border-border"
+                          }`}
+                        >
+                          {f.passType === "vip" && <Check size={11} />}
+                        </span>
+                      </div>
+                      <div className="font-display text-lg font-semibold">VIP Pass</div>
+                      <div className="mt-0.5 mb-4 text-xl font-bold text-primary">
+                        KES 5,000
+                      </div>
+                      <ul className="space-y-2">
+                        {[
+                          "Everything in General",
+                          "VIP lounge access",
+                          "Fast-track badge",
+                          "Gala dinner invitation",
+                          "Dedicated concierge",
+                        ].map((b) => (
+                          <li key={b} className="flex items-center gap-2 text-sm text-foreground">
+                            <CheckCircle2 size={15} className="shrink-0 text-primary" />
+                            {b}
+                          </li>
+                        ))}
+                      </ul>
+                    </button>
                   </div>
                 </StepBlock>
               )}
 
               {step === 6 && (
-                <StepBlock title="Review & confirm" subtitle="Everything look right?">
+                <StepBlock
+                  title="Review & confirm"
+                  subtitle="Everything look right?"
+                  icon={ClipboardCheck}
+                >
                   <div className="rounded-2xl bg-secondary/50 p-5 sm:p-6 grid gap-4 sm:grid-cols-2 text-sm">
                     <Sum label="Name" value={`${f.firstName} ${f.lastName}`} />
                     <Sum label="Email" value={f.email} />
@@ -1113,28 +1311,37 @@ function Register() {
                 </button>
                 {step < steps.length - 1 ? (
                   <button
-                    onClick={() => canNext() && setStep((s) => s + 1)}
+                    onClick={() => {
+                      if (step === 0) setPersonalValidationAttempted(true);
+                      if (canNext()) setStep((s) => s + 1);
+                    }}
                     disabled={!canNext()}
                     className="inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-50 shadow-soft hover:-translate-y-0.5 transition-all"
                   >
                     Continue <ArrowRight size={16} />
                   </button>
                 ) : (
-                  <div className="flex items-center gap-4">
+                  <div className="flex flex-col items-end gap-2">
                     {submitError && (
-                      <span className="text-sm font-medium text-destructive">{submitError}</span>
+                      <span className="flex items-center gap-1.5 text-sm font-medium text-destructive">
+                        <AlertCircle size={14} className="shrink-0" />
+                        {submitError}
+                      </span>
                     )}
                     <button
                       onClick={submit}
                       disabled={!f.terms || isSubmitting}
                       className="inline-flex items-center gap-2 rounded-xl bg-gradient-gold px-6 py-3 text-sm font-semibold text-gold-foreground shadow-glow disabled:opacity-50 hover:-translate-y-0.5 transition-all"
                     >
-                      {isSubmitting
-                        ? "Submitting..."
-                        : f.passType === "vip"
-                          ? "Proceed to Payment"
-                          : "Complete Registration"}{" "}
-                      <Check size={16} />
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 size={16} className="animate-spin" /> Submitting…
+                        </>
+                      ) : f.passType === "vip" ? (
+                        "Proceed to Payment"
+                      ) : (
+                        "Complete Registration"
+                      )}
                     </button>
                   </div>
                 )}
@@ -1148,7 +1355,7 @@ function Register() {
           </div>
 
           <div className="order-first lg:order-last">
-            <div className="sticky top-24 rounded-3xl bg-card border border-border/60 shadow-soft p-6">
+            <div className="sticky top-24 rounded-2xl md:rounded-3xl bg-card border border-border/60 shadow-soft p-6">
               <h3 className="font-display font-semibold mb-4 text-lg text-foreground">
                 Experience Ameer Expo
               </h3>
@@ -1170,19 +1377,27 @@ function Register() {
   );
 }
 
+// ──────────────────────────────────────────────────────────────────────────────
+// Sub-components
+// ──────────────────────────────────────────────────────────────────────────────
 function StepBlock({
   title,
   subtitle,
+  icon: Icon,
   children,
 }: {
   title: string;
   subtitle: string;
+  icon: React.ElementType;
   children: React.ReactNode;
 }) {
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-      <h2 className="font-display text-2xl sm:text-3xl font-bold text-foreground">{title}</h2>
-      <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+    <div className="animate-in fade-in slide-in-from-bottom-1 duration-200">
+      <div className="flex items-center gap-3 mb-1">
+        <Icon size={24} className="text-primary shrink-0" />
+        <h2 className="font-display text-2xl sm:text-3xl font-bold text-foreground">{title}</h2>
+      </div>
+      <p className="ml-9 text-sm text-muted-foreground">{subtitle}</p>
       <div className="mt-8">{children}</div>
     </div>
   );
