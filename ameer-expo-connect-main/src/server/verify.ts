@@ -1,0 +1,93 @@
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import { supabaseAdmin } from "../lib/supabase-server";
+
+// ──────────────────────────────────────────────────────────────────────────────
+// getTicketStatus — PUBLIC, read-only.
+// Safe for link-preview bots and unauthenticated users. Returns ONLY the
+// minimal fields required to display the ticket state. Never returns PII.
+// ──────────────────────────────────────────────────────────────────────────────
+export const getTicketStatus = createServerFn({ method: "GET" })
+  .validator((ticketNumber: unknown) => z.string().min(1).parse(ticketNumber))
+  .handler(async ({ data: ticketNumber }) => {
+    const { data: row, error } = await supabaseAdmin
+      .from("registrations")
+      .select("first_name, last_name, pass_type, payment_status, checked_in_at")
+      .eq("ticket_number", ticketNumber)
+      .maybeSingle();
+
+    if (error || !row) {
+      return { found: false as const };
+    }
+
+    const paymentStatus = row.payment_status as string;
+    const eventValid = paymentStatus === "free" || paymentStatus === "paid";
+
+    return {
+      found: true as const,
+      firstName: row.first_name as string,
+      lastName: (row.last_name ?? "") as string,
+      passType: row.pass_type as string,
+      eventValid,
+      checkedIn: !!row.checked_in_at,
+      checkedInAt: row.checked_in_at as string | null,
+    };
+  });
+
+// ──────────────────────────────────────────────────────────────────────────────
+// confirmCheckIn — STAFF-GATED, the ONLY function that writes to the DB.
+// Requires a valid STAFF_CHECKIN_PIN. Uses an atomic conditional update
+// (WHERE checked_in_at IS NULL) to prevent double-check-in races.
+// ──────────────────────────────────────────────────────────────────────────────
+export const confirmCheckIn = createServerFn({ method: "POST" })
+  .validator((d: unknown) =>
+    z.object({ ticketNumber: z.string().min(1), pin: z.string().min(1) }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { ticketNumber, pin } = data;
+
+    // 1. PIN gate — checked server-side; PIN never leaves the server.
+    const expectedPin = process.env.STAFF_CHECKIN_PIN;
+    if (!expectedPin || pin !== expectedPin) {
+      return { success: false as const, reason: "invalid_pin" as const };
+    }
+
+    // 2. Atomic conditional update — only succeeds when checked_in_at IS NULL.
+    //    This is the race-condition guard against two staff scanning simultaneously.
+    const { data: updated, error: updateError } = await supabaseAdmin
+      .from("registrations")
+      .update({
+        checked_in_at: new Date().toISOString(),
+        checked_in_by: "door-staff",
+      })
+      .eq("ticket_number", ticketNumber)
+      .is("checked_in_at", null)
+      .select("checked_in_at")
+      .maybeSingle();
+
+    if (updateError) {
+      return { success: false as const, reason: "db_error" as const };
+    }
+
+    // 3. Row was updated successfully — first valid check-in.
+    if (updated) {
+      return {
+        success: true as const,
+        checkedInAt: updated.checked_in_at as string,
+      };
+    }
+
+    // 4. Update affected 0 rows — ticket was already checked in.
+    //    Fetch the existing timestamp to return it to the UI.
+    const { data: existing } = await supabaseAdmin
+      .from("registrations")
+      .select("checked_in_at")
+      .eq("ticket_number", ticketNumber)
+      .maybeSingle();
+
+    return {
+      success: false as const,
+      reason: "already_checked_in" as const,
+      checkedInAt: existing?.checked_in_at as string | null,
+    };
+  });

@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ExhibitRouteImport } from './routes/exhibit'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as VerifyTicketNumberRouteImport } from './routes/verify.$ticketNumber'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,18 +35,25 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VerifyTicketNumberRoute = VerifyTicketNumberRouteImport.update({
+  id: '/verify/$ticketNumber',
+  path: '/verify/$ticketNumber',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/exhibit': typeof ExhibitRoute
   '/register': typeof RegisterRoute
   '/terms': typeof TermsRoute
+  '/verify/$ticketNumber': typeof VerifyTicketNumberRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/exhibit': typeof ExhibitRoute
   '/register': typeof RegisterRoute
   '/terms': typeof TermsRoute
+  '/verify/$ticketNumber': typeof VerifyTicketNumberRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,20 @@ export interface FileRoutesById {
   '/exhibit': typeof ExhibitRoute
   '/register': typeof RegisterRoute
   '/terms': typeof TermsRoute
+  '/verify/$ticketNumber': typeof VerifyTicketNumberRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/exhibit' | '/register' | '/terms'
+  fullPaths: '/' | '/exhibit' | '/register' | '/terms' | '/verify/$ticketNumber'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/exhibit' | '/register' | '/terms'
-  id: '__root__' | '/' | '/exhibit' | '/register' | '/terms'
+  to: '/' | '/exhibit' | '/register' | '/terms' | '/verify/$ticketNumber'
+  id:
+    | '__root__'
+    | '/'
+    | '/exhibit'
+    | '/register'
+    | '/terms'
+    | '/verify/$ticketNumber'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +82,7 @@ export interface RootRouteChildren {
   ExhibitRoute: typeof ExhibitRoute
   RegisterRoute: typeof RegisterRoute
   TermsRoute: typeof TermsRoute
+  VerifyTicketNumberRoute: typeof VerifyTicketNumberRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +115,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/verify/$ticketNumber': {
+      id: '/verify/$ticketNumber'
+      path: '/verify/$ticketNumber'
+      fullPath: '/verify/$ticketNumber'
+      preLoaderRoute: typeof VerifyTicketNumberRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,6 +130,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExhibitRoute: ExhibitRoute,
   RegisterRoute: RegisterRoute,
   TermsRoute: TermsRoute,
+  VerifyTicketNumberRoute: VerifyTicketNumberRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
