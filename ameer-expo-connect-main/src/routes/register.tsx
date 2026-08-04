@@ -251,6 +251,7 @@ function Register() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [confirmingRid, setConfirmingRid] = useState<string | null>(null);
+  const [pendingRid, setPendingRid] = useState<string | null>(null);
   const [pollTimeout, setPollTimeout] = useState(false);
   const [pollError, setPollError] = useState<string | null>(null);
   const [personalTouchedFields, setPersonalTouchedFields] = useState<Record<string, boolean>>({});
@@ -262,6 +263,7 @@ function Register() {
     const rid = searchParams.get("rid");
     if (rid) {
       setConfirmingRid(rid);
+      setPendingRid(rid);
       // Remove rid from URL to prevent polling again on refresh
       window.history.replaceState({}, document.title, window.location.pathname);
     }
@@ -281,12 +283,12 @@ function Register() {
         if (!isSubscribed) return;
 
         if (result && result.paymentStatus === "paid") {
-          setSubmitted(result.referenceCode);
+          setSubmitted(result.ticketNumber || result.referenceCode);
           try {
             localStorage.setItem(
               STORAGE_KEY,
               JSON.stringify({
-                submitted: result.referenceCode,
+                submitted: result.ticketNumber || result.referenceCode,
                 savedAt: new Date().toISOString(),
               }),
             );
@@ -419,6 +421,13 @@ function Register() {
     setIsSubmitting(true);
     setSubmitError(null);
     try {
+      if (pendingRid) {
+        // If we are retrying a payment that timed out/failed, resume polling
+        // rather than creating a new registration
+        setConfirmingRid(pendingRid);
+        return;
+      }
+
       const result = await submitRegistration({ data: f });
       if (!result.success) {
         setSubmitError(result.error || "Registration failed. Please try again.");
@@ -426,18 +435,22 @@ function Register() {
       }
 
       if (result.redirectUrl) {
+        setPendingRid(result.id);
         window.location.href = result.redirectUrl;
         return;
       }
       try {
         localStorage.setItem(
           STORAGE_KEY,
-          JSON.stringify({ submitted: result.referenceCode, savedAt: new Date().toISOString() }),
+          JSON.stringify({
+            submitted: result.ticketNumber || result.referenceCode,
+            savedAt: new Date().toISOString(),
+          }),
         );
       } catch {
         /* ignore */
       }
-      setSubmitted(result.referenceCode);
+      setSubmitted(result.ticketNumber || result.referenceCode);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Registration failed. Please try again.";
       console.error("Registration error:", err);
@@ -542,7 +555,7 @@ function Register() {
             </p>
             <div className="mt-8 rounded-2xl bg-secondary/60 p-5">
               <div className="text-xs uppercase tracking-widest text-muted-foreground">
-                Registration Number
+                Ticket Number
               </div>
               <div className="mt-1 font-mono text-2xl font-bold text-primary">{submitted}</div>
             </div>
@@ -1010,9 +1023,20 @@ function Register() {
                       and consent to receive event communications.
                     </span>
                   </label>
-                  <div className="mt-4 rounded-xl border border-dashed border-border bg-secondary/40 px-4 py-3 text-xs text-muted-foreground">
-                    Protected by CAPTCHA · Your data is encrypted in transit.
-                  </div>
+
+                  {import.meta.env.VITE_TURNSTILE_SITE_KEY ? (
+                    <div className="mt-6">
+                      <div
+                        className="cf-turnstile"
+                        data-sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                        data-callback="onTurnstileSuccess"
+                      />
+                    </div>
+                  ) : (
+                    <div className="mt-4 rounded-xl border border-dashed border-border bg-secondary/40 px-4 py-3 text-xs text-muted-foreground">
+                      Your data is encrypted in transit.
+                    </div>
+                  )}
                 </StepBlock>
               )}
 

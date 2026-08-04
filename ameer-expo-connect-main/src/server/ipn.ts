@@ -67,7 +67,7 @@ export async function handleIpn(request: Request) {
     // 4. Generate ticket if transitioning to paid
     let ticketNumber: string | null = null;
     let ticketIssuedAt: string | null = null;
-    
+
     if (internalStatus === "paid" && !wasPaid) {
       // Retry up to 3 times on unique-constraint collision
       for (let attempt = 0; attempt < 3; attempt++) {
@@ -86,7 +86,7 @@ export async function handleIpn(request: Request) {
     }
 
     // 5. Update DB
-    const updateData: any = { payment_status: internalStatus };
+    const updateData: Record<string, string | null> = { payment_status: internalStatus };
     if (ticketNumber) {
       updateData.ticket_number = ticketNumber;
       updateData.ticket_issued_at = ticketIssuedAt;
