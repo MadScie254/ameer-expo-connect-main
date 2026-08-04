@@ -69,8 +69,8 @@ async function findOrCreateUserId(email: string, firstName: string, lastName: st
     });
     if (error) throw error;
     return created.user!.id;
-  } catch (err) {
-    const error = err as any;
+  } catch (err: unknown) {
+    const error = err as { message?: string; status?: number };
     if (error?.message?.includes("already been registered") || error?.status === 422) {
       // Fallback: the user exists in auth.users, but not in public.profiles
       const { data: authData, error: listError } = await supabaseAdmin.auth.admin.listUsers();
