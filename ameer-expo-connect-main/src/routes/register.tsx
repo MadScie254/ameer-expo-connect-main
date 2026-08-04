@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { submitRegistration, getRegistrationStatus } from "../server/registration";
+import { downloadTicketPdf, downloadTicketIcs } from "../server/ticket";
 import {
   ArrowLeft,
   ArrowRight,
@@ -13,6 +14,8 @@ import {
   ClipboardCheck,
   PartyPopper,
   Star,
+  Download,
+  Calendar,
 } from "lucide-react";
 import logo from "@/assets/ameer-expo-logo.png";
 import { VideoEmbed } from "../components/expo/VideoEmbed";
@@ -252,6 +255,7 @@ function Register() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [confirmingRid, setConfirmingRid] = useState<string | null>(null);
   const [pendingRid, setPendingRid] = useState<string | null>(null);
+  const [submittedId, setSubmittedId] = useState<string | null>(null);
   const [pollTimeout, setPollTimeout] = useState(false);
   const [pollError, setPollError] = useState<string | null>(null);
   const [personalTouchedFields, setPersonalTouchedFields] = useState<Record<string, boolean>>({});
@@ -284,6 +288,7 @@ function Register() {
 
         if (result && result.paymentStatus === "paid") {
           setSubmitted(result.ticketNumber || result.referenceCode);
+          setSubmittedId(confirmingRid);
           try {
             localStorage.setItem(
               STORAGE_KEY,
@@ -339,6 +344,8 @@ function Register() {
         };
         if (parsed.submitted) {
           setSubmitted(parsed.submitted);
+          // Note: we can't restore submittedId from localStorage right now,
+          // so download buttons won't appear on a hard refresh after success.
         } else {
           if (parsed.form) setF({ ...initial, ...parsed.form });
           if (typeof parsed.step === "number") {
@@ -451,6 +458,7 @@ function Register() {
         /* ignore */
       }
       setSubmitted(result.ticketNumber || result.referenceCode);
+      setSubmittedId(result.id);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Registration failed. Please try again.";
       console.error("Registration error:", err);
@@ -559,16 +567,70 @@ function Register() {
               </div>
               <div className="mt-1 font-mono text-2xl font-bold text-primary">{submitted}</div>
             </div>
-            <Link
-              to="/"
-              onClick={() => {
-                clearDraft();
-                setSubmitted(null);
-              }}
-              className="mt-8 inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-6 py-3 text-sm font-semibold text-primary-foreground"
-            >
-              <ArrowLeft size={16} /> Back to home
-            </Link>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+              {submittedId && (
+                <>
+                  <button
+                    onClick={async () => {
+                      try {
+                        const res = await downloadTicketPdf({ data: { id: submittedId } });
+                        if (res.success && res.base64) {
+                          const link = document.createElement("a");
+                          link.href = `data:application/pdf;base64,${res.base64}`;
+                          link.download = res.filename || `AmeerExpo-${submitted}.pdf`;
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                        }
+                      } catch (err) {
+                        console.error(err);
+                        alert("Failed to download PDF ticket. Please try again.");
+                      }
+                    }}
+                    className="inline-flex items-center gap-2 rounded-xl bg-gradient-gold px-6 py-3 text-sm font-semibold text-gold-foreground shadow-glow hover:-translate-y-0.5 transition-all"
+                  >
+                    <Download size={16} /> Download Ticket (PDF)
+                  </button>
+                  <button
+                    onClick={async () => {
+                      try {
+                        const res = await downloadTicketIcs({ data: { id: submittedId } });
+                        if (res.success && res.text) {
+                          const blob = new Blob([res.text], {
+                            type: "text/calendar;charset=utf-8",
+                          });
+                          const url = URL.createObjectURL(blob);
+                          const link = document.createElement("a");
+                          link.href = url;
+                          link.download = res.filename || "AmeerExpo2026.ics";
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                          URL.revokeObjectURL(url);
+                        }
+                      } catch (err) {
+                        console.error(err);
+                        alert("Failed to download calendar event. Please try again.");
+                      }
+                    }}
+                    className="inline-flex items-center gap-2 rounded-xl bg-gradient-gold px-6 py-3 text-sm font-semibold text-gold-foreground shadow-glow hover:-translate-y-0.5 transition-all"
+                  >
+                    <Calendar size={16} /> Add to Calendar
+                  </button>
+                </>
+              )}
+              <Link
+                to="/"
+                onClick={() => {
+                  clearDraft();
+                  setSubmitted(null);
+                  setSubmittedId(null);
+                }}
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:-translate-y-0.5 transition-all"
+              >
+                <ArrowLeft size={16} /> Back to home
+              </Link>
+            </div>
           </div>
         </div>
       </div>
