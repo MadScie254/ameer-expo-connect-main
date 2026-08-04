@@ -117,7 +117,10 @@ function VerifyPage() {
         });
       } catch {
         if (cancelled) return;
-        setScreen({ kind: "error", message: "Could not load ticket. Please check your connection." });
+        setScreen({
+          kind: "error",
+          message: "Could not load ticket. Please check your connection.",
+        });
       }
     })();
     return () => {
@@ -373,7 +376,9 @@ function StatusCard({
     <div
       className={`rounded-2xl bg-card border shadow-elegant p-10 text-center max-w-sm w-full ${borderClass}`}
     >
-      <div className={`mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full ${iconClass}`}>
+      <div
+        className={`mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full ${iconClass}`}
+      >
         <Icon size={32} />
       </div>
       <h1 className="font-display text-2xl font-bold text-foreground mb-2">{title}</h1>
