@@ -118,16 +118,48 @@ function AdminDashboard() {
           (window.location.hostname === "localhost" ||
             window.location.hostname === "127.0.0.1");
         if (isDev) {
-          console.warn(
-            "No auth session — allowing admin access for local development.",
-          );
+          console.warn("No auth session — allowing admin access for local development.");
           setIsAdmin(true);
+          // Skip profile check (no session.user.id) and go straight to loading data
+          try {
+            const { data: registrations } = await supabase
+              .from("registrations")
+              .select("id, first_name, last_name, email, phone, company, pass_type, amount, payment_status, created_at, ticket_number")
+              .order("created_at", { ascending: false });
+
+            if (registrations) {
+              const revenue = registrations.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+              setStats({
+                totalRegistrations: registrations.length,
+                totalRevenue: revenue,
+                vipCount: registrations.filter((r) => r.pass_type === "vip").length,
+                generalCount: registrations.filter((r) => r.pass_type === "general").length,
+                paidCount: registrations.filter((r) => r.payment_status === "paid" || r.payment_status === "free").length,
+                pendingCount: registrations.filter((r) => r.payment_status === "pending").length,
+                checkedInCount: 0,
+              });
+              setAllRegistrations(registrations as Registration[]);
+            }
+
+            const { data: sessionsData } = await supabase
+              .from("sessions")
+              .select("*")
+              .order("start_time", { ascending: true });
+
+            if (sessionsData) setSessions(sessionsData as Session[]);
+          } catch (err) {
+            console.error("Failed to load admin data:", err);
+          } finally {
+            setLoading(false);
+          }
+          return;
         } else {
           setIsAdmin(false);
           setLoading(false);
           return;
         }
       }
+
 
       // Check if admin
       const { data: profile } = await supabase
