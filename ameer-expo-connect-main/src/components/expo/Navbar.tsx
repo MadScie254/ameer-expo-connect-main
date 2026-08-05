@@ -8,6 +8,7 @@ const links = [
   { label: "About", to: "/", hash: "about" },
   { label: "Why Attend", to: "/", hash: "why" },
   { label: "Exhibitors & Map", to: "/floor-plan" },
+  { label: "Schedule & Agenda", to: "/schedule" },
   { label: "Venue", to: "/", hash: "venue" },
   { label: "Speakers", to: "/", hash: "speakers" },
   { label: "FAQ", to: "/", hash: "faq" },
