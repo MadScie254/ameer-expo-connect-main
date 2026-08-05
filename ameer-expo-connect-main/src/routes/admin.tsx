@@ -112,9 +112,21 @@ function AdminDashboard() {
       } = await supabase.auth.getSession();
 
       if (!session) {
-        setIsAdmin(false);
-        setLoading(false);
-        return;
+        // Allow access on localhost for development testing
+        const isDev =
+          typeof window !== "undefined" &&
+          (window.location.hostname === "localhost" ||
+            window.location.hostname === "127.0.0.1");
+        if (isDev) {
+          console.warn(
+            "No auth session — allowing admin access for local development.",
+          );
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+          setLoading(false);
+          return;
+        }
       }
 
       // Check if admin
