@@ -183,18 +183,24 @@ export const submitRegistration = createServerFn({ method: "POST" })
 
       if (passType === "vip") {
         paymentStatus = "pending";
-        // Fetch pesapal token and submit order
-        const token = await getPesapalToken();
-        const pesapalRes = await submitPesapalOrder(token, {
-          id,
-          amount,
-          email: data.email,
-          phone: data.phone,
-          firstName: data.firstName,
-          lastName: data.lastName,
-        });
-        redirectUrl = pesapalRes.redirect_url;
-        orderTrackingId = pesapalRes.order_tracking_id;
+        try {
+          // Fetch pesapal token and submit order
+          const token = await getPesapalToken();
+          const pesapalRes = await submitPesapalOrder(token, {
+            id,
+            amount,
+            email: data.email,
+            phone: data.phone,
+            firstName: data.firstName,
+            lastName: data.lastName,
+          });
+          redirectUrl = pesapalRes.redirect_url;
+          orderTrackingId = pesapalRes.order_tracking_id;
+        } catch (pesapalErr) {
+          console.error("Pesapal integration failed. Missing IPN ID or sandbox error. Falling back.", pesapalErr);
+          // Provide a fallback redirect to avoid breaking the registration flow in development
+          redirectUrl = `/?payment_pending=true&id=${id}`;
+        }
       }
 
       // ── Generate ticket for free registrations immediately ───────────────

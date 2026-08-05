@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/expo/Navbar";
 import { Footer } from "@/components/expo/Footer";
-import { Search, Briefcase, Handshake, CheckCircle2, MessageCircle, XCircle } from "lucide-react";
+import { Search, Briefcase, Handshake, CheckCircle2, MessageCircle, XCircle, Clock } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/attendees")({
@@ -30,42 +30,10 @@ type Profile = {
   is_public: boolean;
 };
 
-// Fallback mock data
-const MOCK_ATTENDEES: Profile[] = [
-  {
-    id: "m1",
-    first_name: "Sarah",
-    last_name: "Jenkins",
-    company: "TechNova Solutions",
-    job_title: "Product Manager",
-    industry: "Technology",
-    bio: "Looking to connect with startup founders and investors in the SaaS space.",
-    is_public: true,
-  },
-  {
-    id: "m2",
-    first_name: "Ahmed",
-    last_name: "Al-Sayed",
-    company: "Global Logistics Ltd",
-    job_title: "Director of Operations",
-    industry: "Logistics",
-    bio: "Interested in supply chain innovations and B2B trade partnerships.",
-    is_public: true,
-  },
-  {
-    id: "m3",
-    first_name: "Grace",
-    last_name: "Odinga",
-    company: "AgriGrow Kenya",
-    job_title: "CEO",
-    industry: "Agriculture",
-    bio: "Scaling sustainable farming solutions. Seeking agritech partnerships.",
-    is_public: true,
-  },
-];
+
 
 function Attendees() {
-  const [attendees, setAttendees] = useState<Profile[]>(MOCK_ATTENDEES);
+  const [attendees, setAttendees] = useState<Profile[]>([]);
   const [search, setSearch] = useState("");
   const [user, setUser] = useState<any>(null);
   const [myProfile, setMyProfile] = useState<Profile | null>(null);
@@ -123,11 +91,11 @@ function Attendees() {
           .eq("is_public", true)
           .neq("id", currentUser?.id || "00000000-0000-0000-0000-000000000000");
 
-        if (publicProfiles && publicProfiles.length > 0) {
+        if (publicProfiles) {
           setAttendees(publicProfiles);
         }
       } catch (err) {
-        console.error("Failed to load attendees from DB, using mock data", err);
+        console.error("Failed to load attendees from DB", err);
       } finally {
         setLoading(false);
       }
