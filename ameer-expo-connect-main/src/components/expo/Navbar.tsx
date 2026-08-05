@@ -10,6 +10,7 @@ const links = [
   { label: "Exhibitors & Map", to: "/floor-plan" },
   { label: "Schedule & Agenda", to: "/schedule" },
   { label: "Networking", to: "/attendees" },
+  { label: "Resources", to: "/resources" },
   { label: "Venue", to: "/", hash: "venue" },
   { label: "Speakers", to: "/", hash: "speakers" },
   { label: "FAQ", to: "/", hash: "faq" },

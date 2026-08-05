@@ -18,7 +18,7 @@ export function GlobalAnnouncements() {
         },
         (payload) => {
           const { title, message } = payload.new;
-          
+
           toast(title, {
             description: message,
             duration: 10000,
@@ -31,9 +31,9 @@ export function GlobalAnnouncements() {
               backgroundColor: "hsl(var(--primary))",
               color: "hsl(var(--primary-foreground))",
               border: "none",
-            }
+            },
           });
-        }
+        },
       )
       .subscribe();
 

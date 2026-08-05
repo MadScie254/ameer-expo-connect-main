@@ -108,15 +108,17 @@ function AdminDashboard() {
     if (!notificationTitle || !notificationMessage) return;
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       const { error } = await supabase.from("announcements").insert({
         title: notificationTitle,
         message: notificationMessage,
-        created_by: session?.user?.id
+        created_by: session?.user?.id,
       });
 
       if (error) throw error;
-      
+
       alert("Announcement sent successfully!");
       setNotificationTitle("");
       setNotificationMessage("");
@@ -287,8 +289,8 @@ function AdminDashboard() {
                 </p>
                 <form onSubmit={sendNotification} className="space-y-4">
                   <div>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       placeholder="Notification Title"
                       value={notificationTitle}
                       onChange={(e) => setNotificationTitle(e.target.value)}
@@ -297,8 +299,8 @@ function AdminDashboard() {
                     />
                   </div>
                   <div>
-                    <textarea 
-                      placeholder="Message content..." 
+                    <textarea
+                      placeholder="Message content..."
                       value={notificationMessage}
                       onChange={(e) => setNotificationMessage(e.target.value)}
                       className="w-full rounded-xl border border-border bg-secondary/50 px-4 py-2.5 text-sm outline-none focus:border-primary min-h-[100px]"
