@@ -5,7 +5,6 @@ async function seed() {
 
   const mockUsers = [
     {
-      id: "00000000-0000-4000-a000-000000000001",
       email: "sarah.jenkins@technova.com",
       first_name: "Sarah",
       last_name: "Jenkins",
@@ -15,7 +14,6 @@ async function seed() {
       is_public: true,
     },
     {
-      id: "00000000-0000-4000-a000-000000000002",
       email: "ahmed.sayed@globallogistics.com",
       first_name: "Ahmed",
       last_name: "Al-Sayed",
@@ -25,7 +23,6 @@ async function seed() {
       is_public: true,
     },
     {
-      id: "00000000-0000-4000-a000-000000000003",
       email: "grace.o@agrigrow.ke",
       first_name: "Grace",
       last_name: "Odinga",
@@ -33,15 +30,52 @@ async function seed() {
       job_title: "CEO",
       industry: "Agriculture",
       is_public: true,
-    }
+    },
   ];
 
   for (const u of mockUsers) {
-    const { error: insertErr } = await supabaseAdmin.from("profiles").upsert(u);
-    if (insertErr) {
-      console.error("Error inserting", u.first_name, insertErr);
-    } else {
-      console.log("Inserted", u.first_name);
+    try {
+      // Create user in auth.users (the trigger will create a profile row)
+      const { data: created, error: createErr } =
+        await supabaseAdmin.auth.admin.createUser({
+          email: u.email,
+          email_confirm: true,
+          user_metadata: { first_name: u.first_name, last_name: u.last_name },
+        });
+
+      let userId: string;
+      if (createErr) {
+        // User may already exist — look them up
+        console.log(`Auth user may exist for ${u.email}, looking up...`);
+        const { data: listData } = await supabaseAdmin.auth.admin.listUsers();
+        const existing = listData?.users?.find((usr) => usr.email === u.email);
+        if (!existing) {
+          console.error(`Could not find or create user for ${u.email}`);
+          continue;
+        }
+        userId = existing.id;
+      } else {
+        userId = created.user.id;
+      }
+
+      // Update profile with networking fields
+      const { error: updateErr } = await supabaseAdmin
+        .from("profiles")
+        .update({
+          company: u.company,
+          job_title: u.job_title,
+          industry: u.industry,
+          is_public: u.is_public,
+        })
+        .eq("id", userId);
+
+      if (updateErr) {
+        console.error(`Failed to update profile for ${u.first_name}:`, updateErr);
+      } else {
+        console.log(`✓ Seeded ${u.first_name} ${u.last_name} (${userId})`);
+      }
+    } catch (err) {
+      console.error(`Error seeding ${u.first_name}:`, err);
     }
   }
   console.log("Done.");
