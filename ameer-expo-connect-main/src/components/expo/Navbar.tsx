@@ -5,11 +5,12 @@ import { Menu, X } from "lucide-react";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 
 const links = [
-  { label: "About", hash: "about" },
-  { label: "Why Attend", hash: "why" },
-  { label: "Venue", hash: "venue" },
-  { label: "Speakers", hash: "speakers" },
-  { label: "FAQ", hash: "faq" },
+  { label: "About", to: "/", hash: "about" },
+  { label: "Why Attend", to: "/", hash: "why" },
+  { label: "Exhibitors & Map", to: "/floor-plan" },
+  { label: "Venue", to: "/", hash: "venue" },
+  { label: "Speakers", to: "/", hash: "speakers" },
+  { label: "FAQ", to: "/", hash: "faq" },
 ];
 
 export function Navbar() {
@@ -75,8 +76,8 @@ export function Navbar() {
           <div className="hidden lg:flex items-center gap-1">
             {links.map((l) => (
               <Link
-                key={l.hash}
-                to="/"
+                key={l.label}
+                to={l.to}
                 hash={l.hash}
                 className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   scrolled
@@ -149,8 +150,8 @@ export function Navbar() {
               <div className="flex flex-col gap-2">
                 {links.map((l) => (
                   <Link
-                    key={l.hash}
-                    to="/"
+                    key={l.label}
+                    to={l.to}
                     hash={l.hash}
                     onClick={() => setOpen(false)}
                     className="block px-4 py-4 rounded-xl text-lg font-semibold text-foreground hover:bg-accent/50 transition-colors"

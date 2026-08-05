@@ -9,7 +9,6 @@
 **Dates:** 18–20 September 2026, 9:00 AM – 6:00 PM daily
 **Website:** www.ameerexpo.com
 
-
 ---
 
 ## Table of Contents
@@ -392,4 +391,3 @@ Website: www.ameerexpo.com
 ## 32. Acknowledgement
 
 By checking "I agree to the Terms & Conditions" during registration, submitting an Exhibitor or Sponsor inquiry, completing payment for a VIP Pass, or attending Ameer Expo Africa & Middle East 2026, you acknowledge that you have read, understood, and agree to be bound by these Terms & Conditions in full.
-
