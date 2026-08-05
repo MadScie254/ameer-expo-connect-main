@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { getTicketStatus, confirmCheckIn } from "../server/verify";
+import { getTicketStatus, confirmCheckIn, undoCheckIn } from "../server/verify";
 import {
   ShieldX,
   ShieldAlert,
@@ -75,6 +75,13 @@ function VerifyPage() {
   const [isChecking, setIsChecking] = useState(false);
   const [pinError, setPinError] = useState<string | null>(null);
   const pinInputRef = useRef<HTMLInputElement>(null);
+
+  // Undo check-in state
+  const [showUndo, setShowUndo] = useState(false);
+  const [adminPin, setAdminPin] = useState("");
+  const [isUndoing, setIsUndoing] = useState(false);
+  const [undoError, setUndoError] = useState<string | null>(null);
+  const adminPinInputRef = useRef<HTMLInputElement>(null);
 
   // ── Load cached PIN from session on mount ───────────────────────────────────
   useEffect(() => {
@@ -174,6 +181,38 @@ function VerifyPage() {
     }
   };
 
+  // ── Undo check-in handler (ADMIN-GATED) ──────────────────────────────────────
+  const handleUndoCheckIn = async () => {
+    if (!adminPin.trim()) {
+      setUndoError("Enter admin PIN to continue.");
+      adminPinInputRef.current?.focus();
+      return;
+    }
+    setUndoError(null);
+    setIsUndoing(true);
+
+    try {
+      const result = await undoCheckIn({ data: { ticketNumber, adminPin } });
+
+      if (result.success) {
+        // Reload the page to reset state and fetch the ticket again
+        window.location.reload();
+        return;
+      }
+
+      if (result.reason === "invalid_pin") {
+        setUndoError("Incorrect Admin PIN. Please try again.");
+        return;
+      }
+
+      setUndoError("Undo failed. Please try again.");
+    } catch {
+      setUndoError("Network error. Please try again.");
+    } finally {
+      setIsUndoing(false);
+    }
+  };
+
   // ─────────────────────────────────────────────────────────────────────────────
   // Render
   // ─────────────────────────────────────────────────────────────────────────────
@@ -245,6 +284,66 @@ function VerifyPage() {
           <p className="mt-5 text-xs text-muted-foreground">
             Do not admit this person — the ticket has already been used.
           </p>
+          <div className="mt-8 border-t border-border/60 pt-6">
+            {!showUndo ? (
+              <button
+                onClick={() => setShowUndo(true)}
+                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Supervisor override
+              </button>
+            ) : (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                <div className="space-y-2 text-left">
+                  <label
+                    htmlFor="admin-pin"
+                    className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                  >
+                    <KeyRound size={13} />
+                    Admin PIN
+                  </label>
+                  <input
+                    id="admin-pin"
+                    ref={adminPinInputRef}
+                    type="password"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    value={adminPin}
+                    onChange={(e) => {
+                      setAdminPin(e.target.value);
+                      setUndoError(null);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleUndoCheckIn();
+                    }}
+                    placeholder="Enter admin PIN"
+                    className="w-full rounded-xl border border-input bg-secondary/50 px-4 py-3 text-sm font-mono text-foreground shadow-sm outline-none transition-all focus:border-destructive focus:ring-4 focus:ring-destructive/10 placeholder:text-muted-foreground/50"
+                  />
+                  {undoError && (
+                    <p className="flex items-center gap-1.5 text-sm text-destructive">
+                      <ShieldX size={13} className="shrink-0" />
+                      {undoError}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setShowUndo(false)}
+                    className="flex-1 rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium hover:border-foreground/20 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleUndoCheckIn}
+                    disabled={isUndoing}
+                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-destructive px-4 py-3 text-sm font-semibold text-destructive-foreground shadow-sm disabled:opacity-60 hover:-translate-y-0.5 transition-all"
+                  >
+                    {isUndoing ? <Loader2 size={16} className="animate-spin" /> : "Undo Check-In"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

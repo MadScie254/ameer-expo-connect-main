@@ -1212,9 +1212,7 @@ function Register() {
                         </span>
                       </div>
                       <div className="font-display text-lg font-semibold">VIP Pass</div>
-                      <div className="mt-0.5 mb-4 text-xl font-bold text-primary">
-                        KES 5,000
-                      </div>
+                      <div className="mt-0.5 mb-4 text-xl font-bold text-primary">KES 5,000</div>
                       <ul className="space-y-2">
                         {[
                           "Everything in General",

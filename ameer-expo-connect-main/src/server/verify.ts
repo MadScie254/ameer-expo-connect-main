@@ -71,6 +71,11 @@ export const confirmCheckIn = createServerFn({ method: "POST" })
 
     // 3. Row was updated successfully — first valid check-in.
     if (updated) {
+      await supabaseAdmin.from("ticket_checkin_log").insert({
+        ticket_number: ticketNumber,
+        action: "check_in",
+      });
+
       return {
         success: true as const,
         checkedInAt: updated.checked_in_at as string,
@@ -90,4 +95,40 @@ export const confirmCheckIn = createServerFn({ method: "POST" })
       reason: "already_checked_in" as const,
       checkedInAt: existing?.checked_in_at as string | null,
     };
+  });
+
+// ──────────────────────────────────────────────────────────────────────────────
+// undoCheckIn — ADMIN-GATED. Reverts a mistaken check-in.
+// Requires a valid ADMIN_OVERRIDE_PIN. Logs the undo action.
+// ──────────────────────────────────────────────────────────────────────────────
+export const undoCheckIn = createServerFn({ method: "POST" })
+  .validator((d: unknown) =>
+    z.object({ ticketNumber: z.string().min(1), adminPin: z.string().min(1) }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    const { ticketNumber, adminPin } = data;
+
+    const expectedPin = process.env.ADMIN_OVERRIDE_PIN;
+    if (!expectedPin || adminPin !== expectedPin) {
+      return { success: false as const, reason: "invalid_pin" as const };
+    }
+
+    const { error: updateError } = await supabaseAdmin
+      .from("registrations")
+      .update({
+        checked_in_at: null,
+        checked_in_by: null,
+      })
+      .eq("ticket_number", ticketNumber);
+
+    if (updateError) {
+      return { success: false as const, reason: "db_error" as const };
+    }
+
+    await supabaseAdmin.from("ticket_checkin_log").insert({
+      ticket_number: ticketNumber,
+      action: "undo",
+    });
+
+    return { success: true as const };
   });
