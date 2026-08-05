@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getTicketStatus, confirmCheckIn, undoCheckIn } from "../server/verify";
 import {
   ShieldX,
@@ -45,6 +45,96 @@ function passLabel(passType: string): string {
   return passType === "vip" ? "VIP Pass" : "General Admission";
 }
 
+// ── Audio feedback (Web Audio API — no file assets) ──────────────────────────
+function playSuccessChime() {
+  try {
+    const ctx = new AudioContext();
+    const gain = ctx.createGain();
+    gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(0.18, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+
+    // Rising two-tone: C5 then E5
+    const osc1 = ctx.createOscillator();
+    osc1.type = "sine";
+    osc1.frequency.setValueAtTime(523.25, ctx.currentTime);
+    osc1.connect(gain);
+    osc1.start(ctx.currentTime);
+    osc1.stop(ctx.currentTime + 0.15);
+
+    const gain2 = ctx.createGain();
+    gain2.connect(ctx.destination);
+    gain2.gain.setValueAtTime(0.18, ctx.currentTime + 0.12);
+    gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+
+    const osc2 = ctx.createOscillator();
+    osc2.type = "sine";
+    osc2.frequency.setValueAtTime(659.25, ctx.currentTime + 0.12);
+    osc2.connect(gain2);
+    osc2.start(ctx.currentTime + 0.12);
+    osc2.stop(ctx.currentTime + 0.45);
+
+    // Clean up
+    setTimeout(() => ctx.close(), 600);
+  } catch {
+    /* Web Audio unavailable — silent no-op */
+  }
+}
+
+function playErrorBuzz() {
+  try {
+    const ctx = new AudioContext();
+    const gain = ctx.createGain();
+    gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(0.12, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+
+    const osc = ctx.createOscillator();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(150, ctx.currentTime);
+    osc.connect(gain);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.3);
+
+    setTimeout(() => ctx.close(), 500);
+  } catch {
+    /* silent no-op */
+  }
+}
+
+// ── Haptic feedback ──────────────────────────────────────────────────────────
+function vibrateSuccess() {
+  try {
+    navigator.vibrate?.(80);
+  } catch {
+    /* no-op */
+  }
+}
+
+function vibrateError() {
+  try {
+    navigator.vibrate?.([60, 80, 60]);
+  } catch {
+    /* no-op */
+  }
+}
+
+// ── Background wash per state ────────────────────────────────────────────────
+function bgWash(kind: Screen["kind"]): string {
+  switch (kind) {
+    case "success":
+      return "bg-[radial-gradient(ellipse_at_center,_hsl(142_76%_36%/0.06)_0%,_transparent_70%)]";
+    case "already_used":
+    case "not_valid":
+      return "bg-[radial-gradient(ellipse_at_center,_hsl(38_92%_50%/0.06)_0%,_transparent_70%)]";
+    case "not_found":
+    case "error":
+      return "bg-[radial-gradient(ellipse_at_center,_hsl(0_84%_60%/0.06)_0%,_transparent_70%)]";
+    default:
+      return "";
+  }
+}
+
 // ── Screen state machine ──────────────────────────────────────────────────────
 type Screen =
   | { kind: "loading" }
@@ -74,6 +164,38 @@ function VerifyPage() {
   const [pin, setPin] = useState("");
   const [isChecking, setIsChecking] = useState(false);
   const [pinError, setPinError] = useState<string | null>(null);
+
+  // ── Force light theme on this route for outdoor readability ────────────────
+  useEffect(() => {
+    const root = document.documentElement;
+    const prev = root.classList.contains("dark");
+    root.classList.remove("dark");
+    root.style.colorScheme = "light";
+    return () => {
+      if (prev) root.classList.add("dark");
+      root.style.colorScheme = "";
+    };
+  }, []);
+
+  // ── Fire audio + haptic whenever state changes to a terminal screen ───────
+  const prevKindRef = useRef(screen.kind);
+  useEffect(() => {
+    if (prevKindRef.current === screen.kind) return;
+    prevKindRef.current = screen.kind;
+
+    if (screen.kind === "success") {
+      playSuccessChime();
+      vibrateSuccess();
+    } else if (
+      screen.kind === "already_used" ||
+      screen.kind === "not_found" ||
+      screen.kind === "not_valid" ||
+      screen.kind === "error"
+    ) {
+      playErrorBuzz();
+      vibrateError();
+    }
+  }, [screen.kind]);
   const pinInputRef = useRef<HTMLInputElement>(null);
 
   // Undo check-in state
@@ -217,7 +339,9 @@ function VerifyPage() {
   // Render
   // ─────────────────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-secondary/40 flex flex-col items-center justify-center px-4 py-12">
+    <div
+      className={`min-h-screen bg-white flex flex-col items-center justify-center px-4 py-12 transition-colors duration-500 ${bgWash(screen.kind)}`}
+    >
       {/* ── Loading ── */}
       {screen.kind === "loading" && (
         <div className="rounded-2xl bg-card border border-border/60 shadow-elegant p-10 text-center max-w-sm w-full">
@@ -432,8 +556,8 @@ function VerifyPage() {
 
       {/* ── Success (full-screen, unmissable) ── */}
       {screen.kind === "success" && (
-        <div className="rounded-2xl bg-card border border-border/60 shadow-elegant p-10 text-center max-w-sm w-full">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-primary shadow-glow">
+        <div className="rounded-2xl bg-card border border-border/60 shadow-elegant p-10 text-center max-w-sm w-full animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-primary shadow-glow animate-[check-pop_0.45s_ease-out_both]">
             <CheckCircle2 size={40} className="text-primary-foreground" />
           </div>
           <h1 className="font-display text-4xl font-bold text-foreground leading-tight">

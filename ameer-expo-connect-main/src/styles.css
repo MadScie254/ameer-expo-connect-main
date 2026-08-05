@@ -247,3 +247,22 @@
   background-size: 200% 100%;
   animation: shimmer 3s linear infinite;
 }
+
+/* Check-in success icon pop — scale-in with slight overshoot */
+@keyframes check-pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  80% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
