@@ -51,7 +51,7 @@ export function Navbar() {
             open ? "opacity-0 pointer-events-none" : scrolled ? "glass shadow-soft" : "glass-dark"
           }`}
         >
-          <Link to="/" className="flex items-center gap-3 min-w-0">
+          <Link to="/" className="flex items-center gap-3 shrink-0 mr-4">
             <img
               src={logo}
               alt="Ameer Expo"
@@ -77,13 +77,13 @@ export function Navbar() {
             </div>
           </Link>
 
-          <div className="hidden lg:flex items-center gap-1">
+          <div className="hidden xl:flex flex-1 items-center justify-center gap-0.5 px-2 overflow-hidden">
             {links.map((l) => (
               <Link
                 key={l.label}
                 to={l.to}
                 hash={l.hash}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`whitespace-nowrap shrink-0 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-colors ${
                   scrolled
                     ? "text-foreground/80 hover:text-primary hover:bg-primary/5"
                     : "text-white/85 hover:text-white hover:bg-white/10"
@@ -94,19 +94,19 @@ export function Navbar() {
             ))}
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="hidden lg:block">
+          <div className="flex items-center gap-3 shrink-0 ml-4">
+            <div className="hidden xl:block">
               <LanguageSwitcher />
             </div>
             <Link
               to="/register"
-              className="hidden sm:inline-flex items-center rounded-xl bg-gradient-gold px-5 py-2.5 text-sm font-semibold text-gold-foreground shadow-glow hover:shadow-elegant transition-all hover:-translate-y-0.5"
+              className="hidden sm:inline-flex shrink-0 items-center rounded-xl bg-gradient-gold px-5 py-2.5 text-sm font-semibold text-gold-foreground shadow-glow hover:shadow-elegant transition-all hover:-translate-y-0.5"
             >
               Visitor Pass
             </Link>
             <button
               onClick={() => setOpen(true)}
-              className={`lg:hidden p-2 rounded-lg ${scrolled ? "text-foreground" : "text-white"}`}
+              className={`xl:hidden p-2 rounded-lg ${scrolled ? "text-foreground" : "text-white"}`}
               aria-label="Menu"
             >
               <Menu size={22} />
