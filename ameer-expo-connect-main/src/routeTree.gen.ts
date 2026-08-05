@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AttendeesRouteImport } from './routes/attendees'
 import { Route as ExhibitRouteImport } from './routes/exhibit'
 import { Route as FloorPlanRouteImport } from './routes/floor-plan'
 import { Route as RegisterRouteImport } from './routes/register'
@@ -20,6 +21,11 @@ import { Route as VerifyTicketNumberRouteImport } from './routes/verify.$ticketN
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AttendeesRoute = AttendeesRouteImport.update({
+  id: '/attendees',
+  path: '/attendees',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExhibitRoute = ExhibitRouteImport.update({
@@ -55,6 +61,7 @@ const VerifyTicketNumberRoute = VerifyTicketNumberRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/attendees': typeof AttendeesRoute
   '/exhibit': typeof ExhibitRoute
   '/floor-plan': typeof FloorPlanRoute
   '/register': typeof RegisterRoute
@@ -64,6 +71,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/attendees': typeof AttendeesRoute
   '/exhibit': typeof ExhibitRoute
   '/floor-plan': typeof FloorPlanRoute
   '/register': typeof RegisterRoute
@@ -74,6 +82,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/attendees': typeof AttendeesRoute
   '/exhibit': typeof ExhibitRoute
   '/floor-plan': typeof FloorPlanRoute
   '/register': typeof RegisterRoute
@@ -85,6 +94,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/attendees'
     | '/exhibit'
     | '/floor-plan'
     | '/register'
@@ -94,6 +104,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/attendees'
     | '/exhibit'
     | '/floor-plan'
     | '/register'
@@ -103,6 +114,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/attendees'
     | '/exhibit'
     | '/floor-plan'
     | '/register'
@@ -113,6 +125,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AttendeesRoute: typeof AttendeesRoute
   ExhibitRoute: typeof ExhibitRoute
   FloorPlanRoute: typeof FloorPlanRoute
   RegisterRoute: typeof RegisterRoute
@@ -128,6 +141,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/attendees': {
+      id: '/attendees'
+      path: '/attendees'
+      fullPath: '/attendees'
+      preLoaderRoute: typeof AttendeesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/exhibit': {
@@ -177,6 +197,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AttendeesRoute: AttendeesRoute,
   ExhibitRoute: ExhibitRoute,
   FloorPlanRoute: FloorPlanRoute,
   RegisterRoute: RegisterRoute,
