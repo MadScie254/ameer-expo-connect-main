@@ -45,7 +45,7 @@ export function Navbar() {
         open ? "z-[100]" : "z-50"
       } ${scrolled && !open ? "py-2" : "py-4"}`}
     >
-      <div className="mx-auto max-w-7xl px-4">
+      <div className="mx-auto w-full max-w-[1600px] px-4">
         <nav
           className={`flex items-center justify-between rounded-2xl px-4 sm:px-6 py-3 transition-all ${
             open ? "opacity-0 pointer-events-none" : scrolled ? "glass shadow-soft" : "glass-dark"
@@ -61,7 +61,7 @@ export function Navbar() {
             />
             <div className="min-w-0 leading-tight">
               <div
-                className={`font-display font-bold text-sm sm:text-base truncate ${
+                className={`font-display font-bold text-sm sm:text-base ${
                   scrolled ? "text-foreground" : "text-white"
                 }`}
               >
@@ -77,13 +77,13 @@ export function Navbar() {
             </div>
           </Link>
 
-          <div className="hidden xl:flex flex-1 items-center justify-center gap-0.5 px-2 overflow-hidden">
+          <div className="hidden xl:flex flex-1 items-center justify-center gap-1 px-4">
             {links.map((l) => (
               <Link
                 key={l.label}
                 to={l.to}
                 hash={l.hash}
-                className={`whitespace-nowrap shrink-0 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-colors ${
+                className={`px-3 py-2 rounded-lg text-[13px] font-medium transition-colors text-center leading-tight ${
                   scrolled
                     ? "text-foreground/80 hover:text-primary hover:bg-primary/5"
                     : "text-white/85 hover:text-white hover:bg-white/10"
