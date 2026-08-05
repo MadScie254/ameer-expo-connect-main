@@ -182,7 +182,6 @@ export const submitRegistration = createServerFn({ method: "POST" })
       const amount = passType === "vip" ? 5000 : 0;
 
       if (passType === "vip") {
-        paymentStatus = "pending";
         try {
           // Fetch pesapal token and submit order
           const token = await getPesapalToken();
@@ -194,12 +193,15 @@ export const submitRegistration = createServerFn({ method: "POST" })
             firstName: data.firstName,
             lastName: data.lastName,
           });
+
+          // Only mark as pending after we have a real Pesapal response
+          paymentStatus = "pending";
           redirectUrl = pesapalRes.redirect_url;
           orderTrackingId = pesapalRes.order_tracking_id;
         } catch (pesapalErr) {
-          console.error("Pesapal integration failed. Missing IPN ID or sandbox error. Falling back.", pesapalErr);
-          // Provide a fallback redirect to avoid breaking the registration flow in development
-          redirectUrl = `/?payment_pending=true&id=${id}`;
+          console.error("Pesapal integration failed:", pesapalErr);
+          // Do not create any registration row when payment setup fails — nothing to resume.
+          return { success: false, error: "Payment setup failed. Please try again in a moment." };
         }
       }
 
