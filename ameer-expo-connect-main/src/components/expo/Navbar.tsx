@@ -13,6 +13,7 @@ const links = [
   { label: "Venue", to: "/", hash: "venue" },
   { label: "Speakers", to: "/", hash: "speakers" },
   { label: "FAQ", to: "/", hash: "faq" },
+  { label: "Admin", to: "/admin" },
 ];
 
 export function Navbar() {
