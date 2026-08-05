@@ -32,7 +32,7 @@ export function LanguageSwitcher() {
         setCurrentLang(parts[2]);
       }
     }
-    
+
     const clickHandler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setIsOpen(false);

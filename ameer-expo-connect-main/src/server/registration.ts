@@ -141,6 +141,19 @@ export const submitRegistration = createServerFn({ method: "POST" })
         };
       }
 
+      // ── Detect pending VIP payment ───────────────────────────────────────────
+      const { data: pendingVip } = await supabaseAdmin
+        .from("registrations")
+        .select("id")
+        .eq("email", data.email)
+        .eq("pass_type", "vip")
+        .eq("payment_status", "pending")
+        .maybeSingle();
+
+      if (pendingVip) {
+        return { pendingRegistration: true, id: pendingVip.id };
+      }
+
       // ── 5-minute same-email throttle (backstop) ──────────────────────────
       const fiveMinsAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
       const { data: recentReg } = await supabaseAdmin
@@ -312,6 +325,49 @@ export const submitRegistration = createServerFn({ method: "POST" })
     } catch (error) {
       console.error("Registration error:", error);
       throw new Error("Failed to save registration");
+    }
+  });
+
+export const resumeRegistrationPayment = createServerFn({ method: "POST" })
+  .validator((data: string) => data) // takes the registration ID
+  .handler(async ({ data: id }) => {
+    try {
+      // 1. Fetch the registration
+      const { data: reg, error } = await supabaseAdmin
+        .from("registrations")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+
+      if (!reg || reg.payment_status !== "pending") {
+        return { success: false, error: "Registration not found or already paid." };
+      }
+
+      // 2. Create new pesapal order with new reference
+      const token = await getPesapalToken();
+      const newMerchantRef = crypto.randomUUID();
+      const pesapalRes = await submitPesapalOrder(token, {
+        id: reg.id,
+        merchantReference: newMerchantRef,
+        amount: 5000,
+        email: reg.email,
+        phone: reg.phone,
+        firstName: reg.first_name,
+        lastName: reg.last_name,
+      });
+
+      // 3. Update DB with new tracking ID
+      const { error: updateError } = await supabaseAdmin
+        .from("registrations")
+        .update({ order_tracking_id: pesapalRes.order_tracking_id })
+        .eq("id", reg.id);
+
+      if (updateError) throw updateError;
+
+      return { success: true, redirectUrl: pesapalRes.redirect_url, id: reg.id };
+    } catch (err: unknown) {
+      console.error("Resume payment error:", err);
+      return { success: false, error: "Failed to resume payment. Please try again." };
     }
   });
 

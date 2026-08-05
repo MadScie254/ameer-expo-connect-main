@@ -1,6 +1,10 @@
 import { getPesapalToken, PESAPAL_BASE_URL } from "./pesapal";
 import { supabaseAdmin } from "../lib/supabase-server";
-import { sendRegistrationNotification, sendRegistrantConfirmation } from "../lib/notify";
+import {
+  sendRegistrationNotification,
+  sendRegistrantConfirmation,
+  sendPaymentReceivedEmail,
+} from "../lib/notify";
 import { generateTicketNumber, generateTicketQrPng } from "../lib/ticket";
 
 export async function handleIpn(request: Request) {
@@ -69,6 +73,13 @@ export async function handleIpn(request: Request) {
     let ticketIssuedAt: string | null = null;
 
     if (internalStatus === "paid" && !wasPaid) {
+      // Send immediate payment received email before ticket generation
+      void sendPaymentReceivedEmail({
+        email: existingRow.email,
+        firstName: existingRow.first_name,
+        amount: existingRow.amount,
+      });
+
       // Retry up to 3 times on unique-constraint collision
       for (let attempt = 0; attempt < 3; attempt++) {
         ticketNumber = generateTicketNumber();

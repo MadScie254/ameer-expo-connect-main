@@ -1,6 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { submitRegistration, getRegistrationStatus } from "../server/registration";
+import {
+  submitRegistration,
+  getRegistrationStatus,
+  resumeRegistrationPayment,
+} from "../server/registration";
 import { downloadTicketPdf, downloadTicketIcs } from "../server/ticket";
 import {
   ArrowLeft,
@@ -340,6 +344,8 @@ function Register() {
   const [pollError, setPollError] = useState<string | null>(null);
   const [personalTouchedFields, setPersonalTouchedFields] = useState<Record<string, boolean>>({});
   const [personalValidationAttempted, setPersonalValidationAttempted] = useState(false);
+  const [resumeId, setResumeId] = useState<string | null>(null);
+  const [isResuming, setIsResuming] = useState(false);
 
   // Check for rid in URL on mount
   useEffect(() => {
@@ -505,6 +511,12 @@ function Register() {
       }
 
       const result = await submitRegistration({ data: f });
+
+      if (result.pendingRegistration) {
+        setResumeId(result.id);
+        return;
+      }
+
       if (!result.success) {
         setSubmitError(result.error || "Registration failed. Please try again.");
         return;
@@ -566,6 +578,64 @@ function Register() {
     );
   }
 
+  // ── Resume Payment Screen ───────────────────────────────────────────────────
+  if (resumeId) {
+    return (
+      <div className="min-h-screen bg-secondary/40">
+        <TopBar />
+        <div className="mx-auto max-w-2xl px-4 py-24">
+          <div className="rounded-2xl md:rounded-3xl bg-card p-10 text-center shadow-elegant border border-border/60">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Ticket size={32} />
+            </div>
+            <h2 className="mb-2 font-display text-2xl font-bold">Resume Payment?</h2>
+            <p className="mb-8 text-sm text-muted-foreground">
+              We found a pending VIP pass registration for this email. Would you like to resume your
+              payment?
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={async () => {
+                  setIsResuming(true);
+                  setSubmitError(null);
+                  try {
+                    const res = await resumeRegistrationPayment({ data: resumeId });
+                    if (res.success && res.redirectUrl) {
+                      setIsRedirecting(true);
+                      setPendingRid(res.id);
+                      setTimeout(() => {
+                        window.location.href = res.redirectUrl!;
+                      }, 800);
+                    } else {
+                      setSubmitError(res.error || "Failed to resume payment.");
+                      setResumeId(null);
+                    }
+                  } catch {
+                    setSubmitError("Failed to resume payment.");
+                    setResumeId(null);
+                  } finally {
+                    setIsResuming(false);
+                  }
+                }}
+                disabled={isResuming}
+                className="rounded-xl bg-gradient-primary px-8 py-4 font-semibold text-primary-foreground shadow-glow hover:-translate-y-1 transition-all disabled:opacity-50"
+              >
+                {isResuming ? <Loader2 className="animate-spin inline mr-2" size={18} /> : null}
+                Yes, resume payment
+              </button>
+              <button
+                onClick={() => setResumeId(null)}
+                className="rounded-xl border border-border bg-card px-8 py-4 font-medium hover:bg-secondary/50 transition-colors"
+              >
+                No, go back
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // ── Payment polling screen ──────────────────────────────────────────────────
   if (confirmingRid) {
     return (
@@ -609,7 +679,10 @@ function Register() {
                 check status manually
               </button>{" "}
               or{" "}
-              <a href="mailto:info@ameergroupltd.com" className="font-medium text-primary hover:underline">
+              <a
+                href="mailto:info@ameergroupltd.com"
+                className="font-medium text-primary hover:underline"
+              >
                 contact us
               </a>
               .
@@ -1219,7 +1292,9 @@ function Register() {
                       </div>
                       <div className="font-display text-lg font-semibold">VIP Pass</div>
                       <div className="mt-0.5 mb-1 text-xl font-bold text-primary">KES 5,000</div>
-                      <div className="mb-4 text-xs font-medium text-muted-foreground/80">Pay via M-Pesa or card</div>
+                      <div className="mb-4 text-xs font-medium text-muted-foreground/80">
+                        Pay via M-Pesa or card
+                      </div>
                       <ul className="space-y-2">
                         {[
                           "Everything in General",

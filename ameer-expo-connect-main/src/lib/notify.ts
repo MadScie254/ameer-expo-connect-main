@@ -177,8 +177,7 @@ export async function sendRegistrantConfirmation(registration: {
   const firstName = escapeHtml(registration.firstName);
   const lastName = escapeHtml(registration.lastName);
   const fullName = [firstName, lastName].filter(Boolean).join(" ");
-  const passLabel =
-    registration.passType === "vip" ? "VIP Pass" : "General Admission (Free)";
+  const passLabel = registration.passType === "vip" ? "VIP Pass" : "General Admission (Free)";
   const ticketNumber = registration.ticketNumber || registration.referenceCode;
 
   // ── QR code section ────────────────────────────────────────────────────────
@@ -472,5 +471,49 @@ export async function sendPartnerNotification(inquiry: {
     }
   } catch (err) {
     console.error("Failed to send partner notification", err);
+  }
+}
+
+// ─── Payment Received Notification ───────────────────────────────────────────
+
+export async function sendPaymentReceivedEmail(registration: {
+  email: string;
+  firstName: string;
+  amount: number;
+}) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.error("Notification skipped: missing RESEND_API_KEY");
+    return;
+  }
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "Ameer Expo <notifications@ameergroupltd.com>",
+        to: registration.email,
+        subject: "Payment Received — Ameer Expo 2026",
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a;">
+            <h2>Payment Received!</h2>
+            <p>Hi ${escapeHtml(registration.firstName)},</p>
+            <p>We've successfully received your payment of <strong>KES ${registration.amount}</strong> for your VIP Pass.</p>
+            <p>Your official ticket and QR code are being generated right now and will be sent to you in a separate email shortly.</p>
+            <br />
+            <p>Best,<br/>The Ameer Expo Team</p>
+          </div>
+        `,
+      }),
+    });
+    if (!response.ok) {
+      const text = await response.text();
+      console.error("Resend error (payment received):", text);
+    }
+  } catch (err) {
+    console.error("Failed to send payment received notification", err);
   }
 }

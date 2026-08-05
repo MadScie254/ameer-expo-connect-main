@@ -72,9 +72,7 @@ export function Hero() {
 
           <div className="lg:pl-6">
             <div className="glass-dark rounded-3xl p-6 sm:p-8 shadow-elegant">
-              <div className="text-xs uppercase tracking-[0.24em] text-gold">
-                Event starts in
-              </div>
+              <div className="text-xs uppercase tracking-[0.24em] text-gold">Event starts in</div>
               <div className="mt-4">
                 <Countdown />
               </div>

@@ -32,6 +32,7 @@ export const submitPesapalOrder = async (
     phone: string;
     firstName: string;
     lastName: string;
+    merchantReference?: string;
   },
 ) => {
   const url = `${PESAPAL_BASE_URL}/Transactions/SubmitOrderRequest`;
@@ -40,7 +41,7 @@ export const submitPesapalOrder = async (
   const baseUrl = process.env.PUBLIC_APP_URL || "http://localhost:3000";
 
   const payload = {
-    id: options.id,
+    id: options.merchantReference || options.id,
     currency: "KES",
     amount: options.amount,
     description: "Ameer Expo VIP Pass",
