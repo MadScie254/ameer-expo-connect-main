@@ -100,9 +100,30 @@ function AdminDashboard() {
     checkAdminAndLoadData();
   }, []);
 
-  const sendNotification = (e: React.FormEvent) => {
+  const [notificationTitle, setNotificationTitle] = useState("");
+  const [notificationMessage, setNotificationMessage] = useState("");
+
+  const sendNotification = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Global notification broadcast triggered! (Mock implementation)");
+    if (!notificationTitle || !notificationMessage) return;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const { error } = await supabase.from("announcements").insert({
+        title: notificationTitle,
+        message: notificationMessage,
+        created_by: session?.user?.id
+      });
+
+      if (error) throw error;
+      
+      alert("Announcement sent successfully!");
+      setNotificationTitle("");
+      setNotificationMessage("");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to send announcement.");
+    }
   };
 
   if (loading) {
@@ -266,16 +287,20 @@ function AdminDashboard() {
                 </p>
                 <form onSubmit={sendNotification} className="space-y-4">
                   <div>
-                    <input
-                      type="text"
+                    <input 
+                      type="text" 
                       placeholder="Notification Title"
+                      value={notificationTitle}
+                      onChange={(e) => setNotificationTitle(e.target.value)}
                       className="w-full rounded-xl border border-border bg-secondary/50 px-4 py-2.5 text-sm outline-none focus:border-primary"
                       required
                     />
                   </div>
                   <div>
-                    <textarea
-                      placeholder="Message content..."
+                    <textarea 
+                      placeholder="Message content..." 
+                      value={notificationMessage}
+                      onChange={(e) => setNotificationMessage(e.target.value)}
                       className="w-full rounded-xl border border-border bg-secondary/50 px-4 py-2.5 text-sm outline-none focus:border-primary min-h-[100px]"
                       required
                     />

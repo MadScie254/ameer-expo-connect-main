@@ -10,6 +10,8 @@ import {
 import { useEffect, type ReactNode } from "react";
 import "../lib/google-translate-patch";
 
+import { Toaster } from "@/components/ui/sonner";
+import { GlobalAnnouncements } from "@/components/expo/GlobalAnnouncements";
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
@@ -139,6 +141,8 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      <GlobalAnnouncements />
+      <Toaster position="top-right" />
     </QueryClientProvider>
   );
 }
