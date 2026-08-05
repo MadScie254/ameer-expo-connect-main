@@ -1440,8 +1440,9 @@ function Register() {
                 Experience Ameer Expo
               </h3>
               <VideoEmbed
-                youtubeId="1wxUUTY-c48"
-                caption="Join industry leaders in shaping the future."
+                youtubeId="jNQXAC9IVRw"
+                caption="Ameer Expo Africa & Middle East Highlights"
+                autoPlay
               />
               <div className="mt-6 rounded-2xl bg-secondary/50 p-4 text-sm text-muted-foreground">
                 <p>

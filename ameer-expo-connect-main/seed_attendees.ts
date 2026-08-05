@@ -12,7 +12,6 @@ async function seed() {
       company: "TechNova Solutions",
       job_title: "Product Manager",
       industry: "Technology",
-      bio: "Looking to connect with startup founders and investors in the SaaS space.",
       is_public: true,
     },
     {
@@ -23,7 +22,6 @@ async function seed() {
       company: "Global Logistics Ltd",
       job_title: "Director of Operations",
       industry: "Logistics",
-      bio: "Interested in supply chain innovations and B2B trade partnerships.",
       is_public: true,
     },
     {
@@ -34,7 +32,6 @@ async function seed() {
       company: "AgriGrow Kenya",
       job_title: "CEO",
       industry: "Agriculture",
-      bio: "Scaling sustainable farming solutions. Seeking agritech partnerships.",
       is_public: true,
     }
   ];
