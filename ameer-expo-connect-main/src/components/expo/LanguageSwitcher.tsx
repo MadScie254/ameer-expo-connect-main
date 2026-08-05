@@ -7,15 +7,6 @@ const LANGUAGES = [
   { code: "so", label: "Somali", country: "so" },
   { code: "sw", label: "Swahili", country: "ke" },
   { code: "tr", label: "Turkish", country: "tr" },
-  { code: "fr", label: "French", country: "fr" },
-  { code: "de", label: "German", country: "de" },
-  { code: "it", label: "Italian", country: "it" },
-  { code: "es", label: "Spanish", country: "es" },
-  { code: "pt", label: "Portuguese", country: "pt" },
-  { code: "nl", label: "Dutch", country: "nl" },
-  { code: "el", label: "Greek", country: "gr" },
-  { code: "ru", label: "Russian", country: "ru" },
-  { code: "zh-CN", label: "Chinese", country: "cn" },
 ];
 
 export function LanguageSwitcher() {
