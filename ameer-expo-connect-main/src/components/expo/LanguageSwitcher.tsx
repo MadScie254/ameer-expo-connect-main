@@ -1,57 +1,38 @@
 import { Globe, Check } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
+import i18n from "../../lib/i18n";
+import { useTranslation } from "react-i18next";
 
 const LANGUAGES = [
   { code: "en", label: "English", country: "gb" },
   { code: "ar", label: "Arabic", country: "sa" },
-  { code: "so", label: "Somali", country: "so" },
   { code: "sw", label: "Swahili", country: "ke" },
-  { code: "tr", label: "Turkish", country: "tr" },
   { code: "fr", label: "French", country: "fr" },
-  { code: "de", label: "German", country: "de" },
-  { code: "it", label: "Italian", country: "it" },
-  { code: "es", label: "Spanish", country: "es" },
-  { code: "pt", label: "Portuguese", country: "pt" },
-  { code: "nl", label: "Dutch", country: "nl" },
-  { code: "el", label: "Greek", country: "gr" },
-  { code: "ru", label: "Russian", country: "ru" },
-  { code: "zh-CN", label: "Chinese", country: "cn" },
 ];
 
 export function LanguageSwitcher() {
-  const [currentLang, setCurrentLang] = useState("en");
+  const { i18n: i18nInstance } = useTranslation();
+  const [currentLang, setCurrentLang] = useState(i18nInstance.language || "en");
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Load language from cookie if available and inject script
   useEffect(() => {
-    // Inject Google Translate script safely
-    if (!document.getElementById("google-translate-script")) {
-      (window as any).googleTranslateElementInit = function () {
-        new (window as any).google.translate.TranslateElement(
-          {
-            pageLanguage: "en",
-            includedLanguages: "en,ar,so,sw,tr,fr,de,it,es,pt,nl,el,ru,zh-CN",
-            layout: (window as any).google.translate.TranslateElement.InlineLayout.SIMPLE,
-            autoDisplay: false,
-          },
-          "google_translate_element",
-        );
-      };
+    // Sync React state when i18n language changes
+    const handleLangChange = (lng: string) => {
+      setCurrentLang(lng);
+      document.documentElement.lang = lng;
+    };
 
-      const script = document.createElement("script");
-      script.id = "google-translate-script";
-      script.src =
-        "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
-      script.async = true;
-      document.body.appendChild(script);
-    }
+    i18nInstance.on("languageChanged", handleLangChange);
 
-    const match = document.cookie.match(/(?:^|;)\s*googtrans=([^;]*)/);
-    if (match) {
-      const parts = match[1].split("/");
-      if (parts.length > 2) {
-        setCurrentLang(parts[2]);
+    // Load initial from cookie
+    const match = document.cookie.match(/(?:^|;)\s*AMEER_LANG=([^;]*)/);
+    if (match && match[1]) {
+      const lng = match[1];
+      if (lng !== i18nInstance.language) {
+        i18nInstance.changeLanguage(lng);
+      } else {
+        document.documentElement.lang = lng;
       }
     }
 
@@ -61,45 +42,21 @@ export function LanguageSwitcher() {
       }
     };
     document.addEventListener("mousedown", clickHandler);
-    return () => document.removeEventListener("mousedown", clickHandler);
-  }, []);
+    return () => {
+      document.removeEventListener("mousedown", clickHandler);
+      i18nInstance.off("languageChanged", handleLangChange);
+    };
+  }, [i18nInstance]);
 
   const changeLanguage = (code: string) => {
-    if (code === "en") {
-      // Reset logic
-      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-      document.cookie =
-        "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=." +
-        window.location.hostname +
-        ";";
-      document.documentElement.dir = "ltr";
-      window.location.reload();
-      return;
-    }
-
-    // Set the Google Translate cookie manually for guaranteed initialization
-    document.cookie = `googtrans=/en/${code}; path=/`;
-    document.cookie = `googtrans=/en/${code}; path=/; domain=.${window.location.hostname}`;
-
-    setCurrentLang(code);
-
-    // Keep LTR even for Arabic to preserve existing spacing/alignment
-    // Note: Full RTL support is a separate future task.
-    document.documentElement.dir = "ltr";
+    document.cookie = `AMEER_LANG=${code}; path=/; max-age=31536000`;
+    document.documentElement.lang = code;
+    i18nInstance.changeLanguage(code);
     setIsOpen(false);
-
-    // Reload to let the Google Translate script pick up the new cookie and apply cleanly
-    window.location.reload();
   };
 
   return (
     <div className="relative flex items-center" ref={dropdownRef}>
-      {/* 
-        Note for testing: 
-        After selecting a language, navigate between routes using the app links
-        to confirm Google Translate catches the new DOM rendered by TanStack Router.
-      */}
-
       {/* Inline Strip for xl screens */}
       <div className="hidden xl:flex items-center gap-1 bg-white/5 p-1 rounded-full border border-border/40">
         {LANGUAGES.map((lang) => (

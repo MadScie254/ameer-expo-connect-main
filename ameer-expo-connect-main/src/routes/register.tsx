@@ -25,6 +25,7 @@ import {
 import logo from "@/assets/ameer-expo-logo.png";
 import { VideoEmbed } from "../components/expo/VideoEmbed";
 import { LanguageSwitcher } from "../components/expo/LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/register")({
   component: Register,
@@ -324,6 +325,7 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
 // Main component
 // ──────────────────────────────────────────────────────────────────────────────
 function Register() {
+  const { t } = useTranslation();
   const [step, setStep] = useState(0);
   const [f, setF] = useState<FormState>(initial);
   const [submitted, setSubmitted] = useState<string | null>(null);
@@ -1305,7 +1307,7 @@ function Register() {
                   disabled={step === 0}
                   className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-5 py-3 text-sm font-medium disabled:opacity-40 hover:border-primary/40 transition-colors"
                 >
-                  <ArrowLeft size={16} /> Back
+                  <ArrowLeft size={16} /> {t("Back")}
                 </button>
                 {step < steps.length - 1 ? (
                   <button
@@ -1316,7 +1318,7 @@ function Register() {
                     disabled={!canNext()}
                     className="inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-6 py-3 text-sm font-semibold text-primary-foreground disabled:opacity-50 shadow-soft hover:-translate-y-0.5 transition-all"
                   >
-                    Continue <ArrowRight size={16} />
+                    {t("Continue")} <ArrowRight size={16} />
                   </button>
                 ) : (
                   <div className="flex flex-col items-end gap-2">
@@ -1333,12 +1335,12 @@ function Register() {
                     >
                       {isSubmitting ? (
                         <>
-                          <Loader2 size={16} className="animate-spin" /> Submitting…
+                          <Loader2 size={16} className="animate-spin" /> {t("Submitting…")}
                         </>
                       ) : f.passType === "vip" ? (
-                        "Proceed to Payment"
+                        t("Proceed to Payment")
                       ) : (
-                        "Complete Registration"
+                        t("Complete Registration")
                       )}
                     </button>
                   </div>
@@ -1389,13 +1391,14 @@ function StepBlock({
   icon: React.ElementType;
   children: React.ReactNode;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="animate-in fade-in slide-in-from-bottom-1 duration-200">
       <div className="flex items-center gap-3 mb-1">
         <Icon size={24} className="text-primary shrink-0" />
-        <h2 className="font-display text-2xl sm:text-3xl font-bold text-foreground">{title}</h2>
+        <h2 className="font-display text-2xl sm:text-3xl font-bold text-foreground">{t(title)}</h2>
       </div>
-      <p className="ml-9 text-sm text-muted-foreground">{subtitle}</p>
+      <p className="ml-9 text-sm text-muted-foreground">{t(subtitle)}</p>
       <div className="mt-8">{children}</div>
     </div>
   );

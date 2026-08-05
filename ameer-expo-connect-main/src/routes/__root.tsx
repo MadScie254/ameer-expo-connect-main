@@ -8,7 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
-import "../lib/google-translate-patch";
+import "../lib/i18n";
 
 import appCss from "../styles.css?url";
 
