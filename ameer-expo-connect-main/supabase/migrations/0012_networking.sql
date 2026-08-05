@@ -36,7 +36,7 @@ create policy "Targets can update connection status" on public.connections
 -- Re-declare profile view policy for public profiles
 -- Note: if 0001_init.sql had a restrictive policy, this adds an OR condition via the union.
 create policy "Anyone can view public profiles" on public.profiles
-  for select to authenticated
+  for select to public
   using (is_public = true);
 
 -- Profile update policy
