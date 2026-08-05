@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AdminLoginRouteImport } from './routes/admin-login'
+import { Route as AdminSetupRouteImport } from './routes/admin-setup'
 import { Route as AttendeesRouteImport } from './routes/attendees'
 import { Route as ExhibitRouteImport } from './routes/exhibit'
 import { Route as FloorPlanRouteImport } from './routes/floor-plan'
@@ -28,6 +30,16 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin-login',
+  path: '/admin-login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSetupRoute = AdminSetupRouteImport.update({
+  id: '/admin-setup',
+  path: '/admin-setup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AttendeesRoute = AttendeesRouteImport.update({
@@ -74,6 +86,8 @@ const VerifyTicketNumberRoute = VerifyTicketNumberRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/admin-login': typeof AdminLoginRoute
+  '/admin-setup': typeof AdminSetupRoute
   '/attendees': typeof AttendeesRoute
   '/exhibit': typeof ExhibitRoute
   '/floor-plan': typeof FloorPlanRoute
@@ -86,6 +100,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/admin-login': typeof AdminLoginRoute
+  '/admin-setup': typeof AdminSetupRoute
   '/attendees': typeof AttendeesRoute
   '/exhibit': typeof ExhibitRoute
   '/floor-plan': typeof FloorPlanRoute
@@ -99,6 +115,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/admin-login': typeof AdminLoginRoute
+  '/admin-setup': typeof AdminSetupRoute
   '/attendees': typeof AttendeesRoute
   '/exhibit': typeof ExhibitRoute
   '/floor-plan': typeof FloorPlanRoute
@@ -113,6 +131,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/admin-login'
+    | '/admin-setup'
     | '/attendees'
     | '/exhibit'
     | '/floor-plan'
@@ -125,6 +145,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/admin-login'
+    | '/admin-setup'
     | '/attendees'
     | '/exhibit'
     | '/floor-plan'
@@ -137,6 +159,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/admin-login'
+    | '/admin-setup'
     | '/attendees'
     | '/exhibit'
     | '/floor-plan'
@@ -150,6 +174,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  AdminLoginRoute: typeof AdminLoginRoute
+  AdminSetupRoute: typeof AdminSetupRoute
   AttendeesRoute: typeof AttendeesRoute
   ExhibitRoute: typeof ExhibitRoute
   FloorPlanRoute: typeof FloorPlanRoute
@@ -174,6 +200,20 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin-login': {
+      id: '/admin-login'
+      path: '/admin-login'
+      fullPath: '/admin-login'
+      preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin-setup': {
+      id: '/admin-setup'
+      path: '/admin-setup'
+      fullPath: '/admin-setup'
+      preLoaderRoute: typeof AdminSetupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/attendees': {
@@ -238,6 +278,8 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  AdminLoginRoute: AdminLoginRoute,
+  AdminSetupRoute: AdminSetupRoute,
   AttendeesRoute: AttendeesRoute,
   ExhibitRoute: ExhibitRoute,
   FloorPlanRoute: FloorPlanRoute,
