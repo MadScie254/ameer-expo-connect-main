@@ -111,53 +111,11 @@ function AdminDashboard() {
         data: { session },
       } = await supabase.auth.getSession();
 
+      // If there is no active session, do not grant admin access or load data.
       if (!session) {
-        // Allow access on localhost for development testing
-        const isDev =
-          typeof window !== "undefined" &&
-          (window.location.hostname === "localhost" ||
-            window.location.hostname === "127.0.0.1");
-        if (isDev) {
-          console.warn("No auth session — allowing admin access for local development.");
-          setIsAdmin(true);
-          // Skip profile check (no session.user.id) and go straight to loading data
-          try {
-            const { data: registrations } = await supabase
-              .from("registrations")
-              .select("id, first_name, last_name, email, phone, company, pass_type, amount, payment_status, created_at, ticket_number")
-              .order("created_at", { ascending: false });
-
-            if (registrations) {
-              const revenue = registrations.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
-              setStats({
-                totalRegistrations: registrations.length,
-                totalRevenue: revenue,
-                vipCount: registrations.filter((r) => r.pass_type === "vip").length,
-                generalCount: registrations.filter((r) => r.pass_type === "general").length,
-                paidCount: registrations.filter((r) => r.payment_status === "paid" || r.payment_status === "free").length,
-                pendingCount: registrations.filter((r) => r.payment_status === "pending").length,
-                checkedInCount: 0,
-              });
-              setAllRegistrations(registrations as Registration[]);
-            }
-
-            const { data: sessionsData } = await supabase
-              .from("sessions")
-              .select("*")
-              .order("start_time", { ascending: true });
-
-            if (sessionsData) setSessions(sessionsData as Session[]);
-          } catch (err) {
-            console.error("Failed to load admin data:", err);
-          } finally {
-            setLoading(false);
-          }
-          return;
-        } else {
-          setIsAdmin(false);
-          setLoading(false);
-          return;
-        }
+        setIsAdmin(false);
+        setLoading(false);
+        return;
       }
 
 
@@ -168,21 +126,17 @@ function AdminDashboard() {
         .eq("id", session.user.id)
         .maybeSingle();
 
-      // For local testing purposes without having run migrations, we'll allow access if no profile exists
-      // or if we fail to fetch (but we'll show a warning).
-      // In production, this should strictly check profile.is_admin === true.
+      // Check admin flag on profile; deny access if not admin
       if (profile?.is_admin) {
         setIsAdmin(true);
       } else {
-        // Fallback for development if migration hasn't run yet
-        console.warn(
-          "User is not admin or migration 0013 hasn't run. Allowing mock access for dev.",
-        );
-        setIsAdmin(true);
+        setIsAdmin(false);
+        setLoading(false);
+        return;
       }
 
       try {
-        // Load all registrations
+        // Load all registrations (only after we've confirmed admin access)
         const { data: registrations } = await supabase
           .from("registrations")
           .select(
@@ -195,18 +149,12 @@ function AdminDashboard() {
             (acc, curr) => acc + (Number(curr.amount) || 0),
             0,
           );
-          const vip = registrations.filter(
-            (r) => r.pass_type === "vip",
-          ).length;
-          const gen = registrations.filter(
-            (r) => r.pass_type === "general",
-          ).length;
+          const vip = registrations.filter((r) => r.pass_type === "vip").length;
+          const gen = registrations.filter((r) => r.pass_type === "general").length;
           const paid = registrations.filter(
             (r) => r.payment_status === "paid" || r.payment_status === "free",
           ).length;
-          const pending = registrations.filter(
-            (r) => r.payment_status === "pending",
-          ).length;
+          const pending = registrations.filter((r) => r.payment_status === "pending").length;
 
           setStats({
             totalRegistrations: registrations.length,
