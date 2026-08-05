@@ -8,7 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
-import "../lib/i18n";
+import "../lib/google-translate-patch";
 
 import appCss from "../styles.css?url";
 
@@ -112,6 +112,16 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `function googleTranslateElementInit() { new window.google.translate.TranslateElement({ pageLanguage: 'en', autoDisplay: false }, 'google_translate_element'); }`,
+          }}
+        />
+        <script
+          src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+          async
+          defer
+        />
       </head>
       <body>
         <div id="google_translate_element" className="hidden"></div>

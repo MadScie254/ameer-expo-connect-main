@@ -25,8 +25,6 @@ import {
 import logo from "@/assets/ameer-expo-logo.png";
 import { VideoEmbed } from "../components/expo/VideoEmbed";
 import { LanguageSwitcher } from "../components/expo/LanguageSwitcher";
-import { useTranslation } from "react-i18next";
-
 export const Route = createFileRoute("/register")({
   component: Register,
   head: () => ({
@@ -325,7 +323,7 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
 // Main component
 // ──────────────────────────────────────────────────────────────────────────────
 function Register() {
-  const { t } = useTranslation();
+  const t = (str: string) => str;
   const [step, setStep] = useState(0);
   const [f, setF] = useState<FormState>(initial);
   const [submitted, setSubmitted] = useState<string | null>(null);
@@ -515,7 +513,9 @@ function Register() {
       if (result.redirectUrl) {
         setIsRedirecting(true);
         setPendingRid(result.id);
-        window.location.href = result.redirectUrl;
+        setTimeout(() => {
+          window.location.href = result.redirectUrl!;
+        }, 800);
         return;
       }
       try {
@@ -597,19 +597,23 @@ function Register() {
               <AlertTriangle size={32} />
             </div>
             <h2 className="mb-2 font-display text-2xl font-bold">Payment Processing</h2>
-            <p className="mb-8 text-sm text-muted-foreground">
-              Your payment is taking longer than usual. We'll email your confirmation and VIP pass
-              once it goes through.
+            <p className="mb-8 text-sm text-muted-foreground leading-relaxed">
+              Still processing? This can take a few minutes for M-Pesa. You can also{" "}
+              <button
+                onClick={() => {
+                  setPollTimeout(false);
+                  setConfirmingRid(pendingRid);
+                }}
+                className="font-medium text-primary hover:underline"
+              >
+                check status manually
+              </button>{" "}
+              or{" "}
+              <a href="mailto:info@ameergroupltd.com" className="font-medium text-primary hover:underline">
+                contact us
+              </a>
+              .
             </p>
-            <button
-              onClick={() => {
-                setPollTimeout(false);
-                submit();
-              }}
-              className="mt-4 rounded-xl bg-gradient-primary px-8 py-4 font-semibold text-primary-foreground shadow-glow hover:-translate-y-1 transition-all"
-            >
-              Try payment again
-            </button>
           </div>
         </div>
       </div>
@@ -1214,7 +1218,8 @@ function Register() {
                         </span>
                       </div>
                       <div className="font-display text-lg font-semibold">VIP Pass</div>
-                      <div className="mt-0.5 mb-4 text-xl font-bold text-primary">KES 5,000</div>
+                      <div className="mt-0.5 mb-1 text-xl font-bold text-primary">KES 5,000</div>
+                      <div className="mb-4 text-xs font-medium text-muted-foreground/80">Pay via M-Pesa or card</div>
                       <ul className="space-y-2">
                         {[
                           "Everything in General",
@@ -1391,7 +1396,7 @@ function StepBlock({
   icon: React.ElementType;
   children: React.ReactNode;
 }) {
-  const { t } = useTranslation();
+  const t = (s: string) => s;
   return (
     <div className="animate-in fade-in slide-in-from-bottom-1 duration-200">
       <div className="flex items-center gap-3 mb-1">

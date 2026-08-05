@@ -1,58 +1,73 @@
 import { Globe, Check } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import i18n from "../../lib/i18n";
-import { useTranslation } from "react-i18next";
 
 const LANGUAGES = [
-  { code: "en", label: "English", country: "gb" },
-  { code: "ar", label: "Arabic", country: "sa" },
-  { code: "sw", label: "Swahili", country: "ke" },
-  { code: "fr", label: "French", country: "fr" },
+  { code: "en", label: "English", flag: "🇬🇧" },
+  { code: "ar", label: "Arabic", flag: "🇸🇦" },
+  { code: "so", label: "Somali", flag: "🇸🇴" },
+  { code: "sw", label: "Swahili", flag: "🇰🇪" },
+  { code: "tr", label: "Turkish", flag: "🇹🇷" },
+  { code: "fr", label: "French", flag: "🇫🇷" },
+  { code: "de", label: "German", flag: "🇩🇪" },
+  { code: "it", label: "Italian", flag: "🇮🇹" },
+  { code: "es", label: "Spanish", flag: "🇪🇸" },
+  { code: "pt", label: "Portuguese", flag: "🇵🇹" },
+  { code: "nl", label: "Dutch", flag: "🇳🇱" },
+  { code: "el", label: "Greek", flag: "🇬🇷" },
+  { code: "ru", label: "Russian", flag: "🇷🇺" },
+  { code: "zh-CN", label: "Chinese", flag: "🇨🇳" },
 ];
 
 export function LanguageSwitcher() {
-  const { i18n: i18nInstance } = useTranslation();
-  const [currentLang, setCurrentLang] = useState(i18nInstance.language || "en");
+  const [currentLang, setCurrentLang] = useState("en");
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Load language from cookie if available
   useEffect(() => {
-    // Sync React state when i18n language changes
-    const handleLangChange = (lng: string) => {
-      setCurrentLang(lng);
-      document.documentElement.lang = lng;
-    };
-
-    i18nInstance.on("languageChanged", handleLangChange);
-
-    // Load initial from cookie
-    const match = document.cookie.match(/(?:^|;)\s*AMEER_LANG=([^;]*)/);
-    if (match && match[1]) {
-      const lng = match[1];
-      if (lng !== i18nInstance.language) {
-        i18nInstance.changeLanguage(lng);
-      } else {
-        document.documentElement.lang = lng;
+    const match = document.cookie.match(/(?:^|;)\s*googtrans=([^;]*)/);
+    if (match) {
+      const parts = match[1].split("/");
+      if (parts.length > 2) {
+        setCurrentLang(parts[2]);
       }
     }
-
+    
     const clickHandler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setIsOpen(false);
       }
     };
     document.addEventListener("mousedown", clickHandler);
-    return () => {
-      document.removeEventListener("mousedown", clickHandler);
-      i18nInstance.off("languageChanged", handleLangChange);
-    };
-  }, [i18nInstance]);
+    return () => document.removeEventListener("mousedown", clickHandler);
+  }, []);
 
   const changeLanguage = (code: string) => {
-    document.cookie = `AMEER_LANG=${code}; path=/; max-age=31536000`;
-    document.documentElement.lang = code;
-    i18nInstance.changeLanguage(code);
-    setIsOpen(false);
+    if (code === "en") {
+      // Reset logic
+      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      document.cookie =
+        "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=." +
+        window.location.hostname +
+        ";";
+      document.documentElement.dir = "ltr";
+      window.location.reload();
+      return;
+    }
+
+    const select = document.querySelector("select.goog-te-combo") as HTMLSelectElement;
+    if (select) {
+      select.value = code;
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+      setCurrentLang(code);
+      // Keep LTR even for Arabic to preserve existing spacing/alignment
+      // Note: Full RTL support is a separate future task.
+      document.documentElement.dir = "ltr";
+      setIsOpen(false);
+    } else {
+      // If the script hasn't loaded yet, try again in a moment
+      setTimeout(() => changeLanguage(code), 500);
+    }
   };
 
   return (
@@ -64,17 +79,13 @@ export function LanguageSwitcher() {
             key={lang.code}
             onClick={() => changeLanguage(lang.code)}
             title={lang.label}
-            className={`w-7 h-7 rounded-full flex items-center justify-center transition-all overflow-hidden border border-border/20 ${
+            className={`w-7 h-7 rounded-full flex items-center justify-center text-sm transition-all ${
               currentLang === lang.code
-                ? "shadow-glow scale-110 border-primary"
-                : "opacity-70 hover:opacity-100"
+                ? "bg-primary text-primary-foreground shadow-glow scale-110"
+                : "hover:bg-white/10 opacity-70 hover:opacity-100"
             }`}
           >
-            <img
-              src={`https://flagcdn.com/w40/${lang.country}.png`}
-              alt={lang.label}
-              className="w-full h-full object-cover"
-            />
+            {lang.flag}
           </button>
         ))}
       </div>
@@ -89,11 +100,7 @@ export function LanguageSwitcher() {
           {currentLang === "en" ? (
             <Globe size={18} className="text-foreground" />
           ) : (
-            <img
-              src={`https://flagcdn.com/w40/${LANGUAGES.find((l) => l.code === currentLang)?.country}.png`}
-              alt={currentLang}
-              className="w-6 h-6 rounded-full object-cover"
-            />
+            LANGUAGES.find((l) => l.code === currentLang)?.flag || <Globe size={18} />
           )}
         </button>
 
@@ -109,11 +116,7 @@ export function LanguageSwitcher() {
                     : "text-foreground"
                 }`}
               >
-                <img
-                  src={`https://flagcdn.com/w40/${lang.country}.png`}
-                  alt={lang.label}
-                  className="w-5 h-5 rounded-full object-cover border border-border/20"
-                />
+                <span className="text-lg">{lang.flag}</span>
                 <span className="flex-1">{lang.label}</span>
                 {currentLang === lang.code && <Check size={16} />}
               </button>
