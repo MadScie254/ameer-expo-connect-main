@@ -45,7 +45,9 @@ export const setAdminPassword = createServerFn({ method: "POST" })
         .gte("created_at", fiveMinsAgo);
 
       if (recentAttempts && recentAttempts.length >= 20) {
-        await supabaseAdmin.from("admin_setup_audit").insert({ email, success: false, error: "rate_limited" });
+        await supabaseAdmin
+          .from("admin_setup_audit")
+          .insert({ email, success: false, error: "rate_limited" });
         return { success: false as const, error: "rate_limited" as const };
       }
 
@@ -64,13 +66,17 @@ export const setAdminPassword = createServerFn({ method: "POST" })
         const { data: usersData, error: listErr } = await supabaseAdmin.auth.admin.listUsers();
         if (listErr) {
           console.error("listUsers failed:", listErr);
-          await supabaseAdmin.from("admin_setup_audit").insert({ email, success: false, error: "list_users_failed" });
+          await supabaseAdmin
+            .from("admin_setup_audit")
+            .insert({ email, success: false, error: "list_users_failed" });
           return { success: false as const, error: "failed" as const };
         }
 
         const match = usersData.users.find((u) => u.email === email);
         if (!match) {
-          await supabaseAdmin.from("admin_setup_audit").insert({ email, success: false, error: "user_not_found" });
+          await supabaseAdmin
+            .from("admin_setup_audit")
+            .insert({ email, success: false, error: "user_not_found" });
           return { success: false as const, error: "user_not_found" as const };
         }
 
@@ -84,7 +90,9 @@ export const setAdminPassword = createServerFn({ method: "POST" })
 
       if (updateErr) {
         console.error("updateUserById error:", updateErr);
-        await supabaseAdmin.from("admin_setup_audit").insert({ email, success: false, error: "update_failed" });
+        await supabaseAdmin
+          .from("admin_setup_audit")
+          .insert({ email, success: false, error: "update_failed" });
         return { success: false as const, error: "failed" as const };
       }
 

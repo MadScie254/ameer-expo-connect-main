@@ -1,5 +1,7 @@
 -- Migration: add admin_setup_audit table to record admin setup attempts
 -- This table helps enforce one-time bootstrap and provides an audit trail.
+-- Ensure UUID generator is available
+create extension if not exists pgcrypto;
 CREATE TABLE IF NOT EXISTS public.admin_setup_audit (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   email text NOT NULL,
