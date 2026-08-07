@@ -21,7 +21,12 @@ function AdminSetup() {
     try {
       const res = await setAdminPassword({ data: { email, password, pin } });
       if (!res.success) {
-        setMessage((res as any).error || "Failed");
+        const err = (res as any).error;
+        if (err === "invalid_pin") setMessage("Incorrect setup PIN.");
+        else if (err === "already_used") setMessage("Admin setup has already been completed.");
+        else if (err === "rate_limited") setMessage("Too many attempts. Try again later.");
+        else if (err === "user_not_found") setMessage("No account found for that email.");
+        else setMessage("Failed to set password. Check server logs.");
       } else {
         setMessage("Password set successfully. You may now sign in at /admin-login.");
       }
