@@ -48,7 +48,10 @@ export function RegistrationTypeGate({
   useEffect(() => {
     if (!selected) return;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ type: selected, savedAt: new Date().toISOString() }));
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ type: selected, savedAt: new Date().toISOString() }),
+      );
       setSavedAt(new Date());
     } catch {
       /* ignore */
@@ -76,7 +79,13 @@ export function RegistrationTypeGate({
       <div className="border-b border-border/60 bg-card/80 backdrop-blur">
         <div className="mx-auto max-w-5xl px-4 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
-            <img src={logo} alt="Ameer Expo" className="h-9 w-9 object-contain" width={36} height={36} />
+            <img
+              src={logo}
+              alt="Ameer Expo"
+              className="h-9 w-9 object-contain"
+              width={36}
+              height={36}
+            />
             <div className="leading-tight">
               <div className="font-display font-bold text-sm">Ameer Expo</div>
               <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -84,7 +93,10 @@ export function RegistrationTypeGate({
               </div>
             </div>
           </Link>
-          <Link to="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+          <Link
+            to="/"
+            className="text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
             Exit
           </Link>
         </div>
@@ -112,7 +124,10 @@ export function RegistrationTypeGate({
           </p>
           {/* Progress bar */}
           <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
-            <div className="h-full rounded-full bg-gradient-gold transition-all duration-500" style={{ width: "33.33%" }} />
+            <div
+              className="h-full rounded-full bg-gradient-gold transition-all duration-500"
+              style={{ width: "33.33%" }}
+            />
           </div>
         </div>
 
@@ -145,7 +160,9 @@ export function RegistrationTypeGate({
                       Selected
                     </span>
                   )}
-                  <div className={`grid h-14 w-14 place-items-center rounded-2xl transition-all ${isActive ? "bg-gradient-primary text-primary-foreground shadow-soft" : "bg-secondary text-muted-foreground"}`}>
+                  <div
+                    className={`grid h-14 w-14 place-items-center rounded-2xl transition-all ${isActive ? "bg-gradient-primary text-primary-foreground shadow-soft" : "bg-secondary text-muted-foreground"}`}
+                  >
                     <Icon size={24} />
                   </div>
                   <div className="mt-4 font-display text-base font-bold tracking-wide text-foreground">

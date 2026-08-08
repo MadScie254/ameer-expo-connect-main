@@ -176,7 +176,13 @@ function TopBar() {
     <div className="border-b border-border/60 bg-card/80 backdrop-blur">
       <div className="mx-auto max-w-5xl px-4 py-4 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3">
-          <img src={logo} alt="Ameer Expo" className="h-9 w-9 object-contain" width={36} height={36} />
+          <img
+            src={logo}
+            alt="Ameer Expo"
+            className="h-9 w-9 object-contain"
+            width={36}
+            height={36}
+          />
           <div className="leading-tight">
             <div className="font-display font-bold text-sm">Ameer Expo</div>
             <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -270,7 +276,9 @@ function ExhibitPage() {
   });
 
   const [savedAt, setSavedAt] = useState<Date | null>(null);
-  const [submitStatus, setSubmitStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [submitStatus, setSubmitStatus] = useState<"idle" | "submitting" | "success" | "error">(
+    "idle",
+  );
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
@@ -278,7 +286,10 @@ function ExhibitPage() {
   useEffect(() => {
     const t = setTimeout(() => {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...wizardState, savedAt: new Date().toISOString() }));
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({ ...wizardState, savedAt: new Date().toISOString() }),
+        );
         setSavedAt(new Date());
       } catch {
         /* ignore */
@@ -333,13 +344,17 @@ function ExhibitPage() {
             <div className="px-8 py-8 text-center">
               <p className="text-sm text-muted-foreground">
                 Your {wizardState.type === "exhibitor" ? "booth" : "sponsorship"} inquiry for{" "}
-                <strong className="text-foreground">{wizardState.selection}</strong> has been received.
-                Our team will review your submission and contact you shortly.
+                <strong className="text-foreground">{wizardState.selection}</strong> has been
+                received. Our team will review your submission and contact you shortly.
               </p>
               <Link
                 to="/"
                 onClick={() => {
-                  try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
+                  try {
+                    localStorage.removeItem(STORAGE_KEY);
+                  } catch {
+                    /* ignore */
+                  }
                 }}
                 className="mt-8 inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-soft hover:-translate-y-0.5 transition-all"
               >
@@ -373,7 +388,10 @@ function ExhibitPage() {
                 <button
                   key={b.name}
                   type="button"
-                  onClick={() => { setField("selection", b.name); setField("amount", b.amount); }}
+                  onClick={() => {
+                    setField("selection", b.name);
+                    setField("amount", b.amount);
+                  }}
                   className={`relative text-left rounded-2xl border-2 p-5 transition-all duration-200 hover:-translate-y-0.5 ${
                     isActive
                       ? "border-primary bg-primary/5 shadow-elegant ring-2 ring-primary/20"
@@ -399,7 +417,10 @@ function ExhibitPage() {
           </p>
           <NavButtons
             onBack={() => setStep(1)}
-            onNext={() => { if (!wizardState.selection) return; setStep(3); }}
+            onNext={() => {
+              if (!wizardState.selection) return;
+              setStep(3);
+            }}
             nextDisabled={!wizardState.selection}
             savedAt={savedAt}
           />
@@ -417,7 +438,8 @@ function ExhibitPage() {
           </h2>
         </div>
         <p className="ml-9 text-sm text-muted-foreground">
-          Premium packages with Citizen TV coverage, property show exposure, and targeted regional reach.
+          Premium packages with Citizen TV coverage, property show exposure, and targeted regional
+          reach.
         </p>
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           {packages.map((p) => {
@@ -426,7 +448,10 @@ function ExhibitPage() {
               <button
                 key={p.tier}
                 type="button"
-                onClick={() => { setField("selection", p.tier); setField("amount", p.amount); }}
+                onClick={() => {
+                  setField("selection", p.tier);
+                  setField("amount", p.amount);
+                }}
                 className={`relative flex flex-col text-left rounded-2xl border-2 p-5 transition-all duration-200 hover:-translate-y-0.5 ${
                   isActive
                     ? "border-primary bg-primary/5 shadow-elegant ring-2 ring-primary/20"
@@ -453,7 +478,9 @@ function ExhibitPage() {
                     </li>
                   ))}
                   {p.perks.length > 4 && (
-                    <li className="text-muted-foreground/60">+{p.perks.length - 4} more included</li>
+                    <li className="text-muted-foreground/60">
+                      +{p.perks.length - 4} more included
+                    </li>
                   )}
                 </ul>
               </button>
@@ -462,7 +489,10 @@ function ExhibitPage() {
         </div>
         <NavButtons
           onBack={() => setStep(1)}
-          onNext={() => { if (!wizardState.selection) return; setStep(3); }}
+          onNext={() => {
+            if (!wizardState.selection) return;
+            setStep(3);
+          }}
           nextDisabled={!wizardState.selection}
           savedAt={savedAt}
         />
@@ -477,14 +507,18 @@ function ExhibitPage() {
       if (!wizardState.companyName.trim()) errs.companyName = "Company name is required";
       if (!wizardState.contactName.trim()) errs.contactName = "Contact name is required";
       if (!wizardState.email.trim()) errs.email = "Email is required";
-      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(wizardState.email)) errs.email = "Invalid email address";
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(wizardState.email))
+        errs.email = "Invalid email address";
       return errs;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       const errs = validate();
-      if (Object.keys(errs).length > 0) { setFormErrors(errs); return; }
+      if (Object.keys(errs).length > 0) {
+        setFormErrors(errs);
+        return;
+      }
       setFormErrors({});
       setSubmitStatus("submitting");
       setSubmitError(null);
@@ -502,19 +536,27 @@ function ExhibitPage() {
           },
         });
         if (!result.success) {
-          setSubmitError((result as { success: false; error?: string }).error ?? "Unable to submit your request right now.");
+          setSubmitError(
+            (result as { success: false; error?: string }).error ??
+              "Unable to submit your request right now.",
+          );
           setSubmitStatus("error");
           return;
         }
         setSubmitStatus("success");
       } catch (err) {
-        setSubmitError(err instanceof Error ? err.message : "Unable to submit your request right now.");
+        setSubmitError(
+          err instanceof Error ? err.message : "Unable to submit your request right now.",
+        );
         setSubmitStatus("error");
       }
     };
 
     return (
-      <form onSubmit={handleSubmit} className="rounded-2xl bg-card border border-border/60 shadow-soft p-6 sm:p-10">
+      <form
+        onSubmit={handleSubmit}
+        className="rounded-2xl bg-card border border-border/60 shadow-soft p-6 sm:p-10"
+      >
         <div className="flex items-center gap-3 mb-1">
           <ClipboardCheck size={24} className="text-primary shrink-0" />
           <h2 className="font-display text-2xl sm:text-3xl font-bold text-foreground">
@@ -528,7 +570,9 @@ function ExhibitPage() {
 
         {/* Review summary */}
         <div className="mb-8 rounded-xl border border-border/60 bg-secondary/40 p-4">
-          <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Your selection</div>
+          <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">
+            Your selection
+          </div>
           <div className="flex items-center justify-between">
             <div>
               <div className="font-display font-bold text-foreground">{wizardState.selection}</div>
