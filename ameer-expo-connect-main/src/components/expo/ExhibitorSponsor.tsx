@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Building2, Handshake, ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, ClipboardCheck } from "lucide-react";
 import { submitPartnerInquiry } from "@/server/partners";
 
 function PartnerForm({
@@ -47,7 +47,7 @@ function PartnerForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-8 space-y-4 max-w-md">
+    <form onSubmit={handleSubmit} className="mt-6 space-y-4 max-w-md">
       {status === "error" && (
         <div className="text-red-500 text-sm font-semibold">
           Something went wrong. Please try again.
@@ -102,32 +102,98 @@ function PartnerForm({
 }
 
 const booths = [
-  { size: "6 sqm", price: "From $1,800" },
-  { size: "9 sqm", price: "From $2,600" },
-  { size: "18 sqm", price: "From $4,900" },
-  { size: "36 sqm", price: "From $9,400" },
-  { size: "Custom", price: "On request" },
+  {
+    name: "Standard Booth",
+    size: "2m × 2m",
+    price: "KES 70,000",
+    desc: "Compact 2m × 2m shell scheme booth for a focused exhibitor presence.",
+  },
+  {
+    name: "Double Booth",
+    size: "3m × 3m",
+    price: "KES 120,000",
+    desc: "Expanded 3m × 3m shell scheme with more display space and comfort.",
+  },
+  {
+    name: "Premium Booth",
+    size: "3m × 6m",
+    price: "KES 200,000",
+    desc: "Large 3m × 6m booth with premium location, furniture and connectivity.",
+  },
+  {
+    name: "Large Booth",
+    size: "6m × 6m",
+    price: "KES 250,000",
+    desc: "Spacious 6m × 6m showcase area for high-impact brand presence.",
+  },
 ];
 
 const packages = [
   {
-    tier: "Diamond",
+    tier: "Platinum",
+    price: "KES 2,500,000",
     accent: true,
-    perks: ["Keynote slot", "Main-stage branding", "20 delegate passes", "Premium 36 sqm booth"],
+    flagship: true,
+    perks: [
+      "Prime main hall exhibition space",
+      "Citizen TV coverage and live broadcast segments",
+      "20 speaker mentions and brand calls-to-action",
+      "Full event branding across signage and print",
+      "Dedicated VIP hospitality suite",
+      "Premium digital and social amplification",
+      "Featured delegate invitations",
+      "Exclusive on-site brand activation",
+      "Logo placement on stage and media walls",
+      "High-impact networking with premium buyers",
+    ],
   },
   {
-    tier: "Platinum",
-    perks: ["Panel session", "Hall branding", "12 delegate passes", "18 sqm booth"],
+    tier: "Diamond",
+    price: "KES 2,000,000",
+    perks: [
+      "4 banners + TV screen + stand branding",
+      "Parking access",
+      "3 tents, 2 chairs, 1 table, 1 carton bottled water",
+      "Logo on hyping commercial – Citizen TV",
+      "1-week advert on Citizen TV",
+      "2 squeeze backs on property shows",
+      "Live coverage on Citizen TV & Universal TV",
+      "Logo on website, posters, flyers & print media",
+      "Free staff badges (unlimited) & visitor passes",
+      "Advertisement on social media",
+    ],
   },
   {
     tier: "Gold",
-    perks: ["Workshop slot", "Registration branding", "8 delegate passes", "9 sqm booth"],
+    price: "KES 1,000,000",
+    perks: [
+      "2 banners, 1 table, 2 seats",
+      "Logo on hyping commercial – Citizen TV",
+      "2 squeeze backs on property show (Citizen TV)",
+      "Live coverage on Citizen TV & Universal TV",
+      "Logo on website, flyers & print media",
+      "Free staff badges & visitor passes",
+    ],
   },
-  { tier: "Silver", perks: ["Logo on collateral", "5 delegate passes", "6 sqm booth"] },
-  { tier: "Bronze", perks: ["Logo on website", "3 delegate passes", "Shared booth"] },
+  {
+    tier: "Silver",
+    price: "KES 500,000",
+    perks: [
+      "2 banners, 1 table, 2 seats",
+      "Logo on hyping commercial – Citizen TV",
+      "1 squeeze back on property show",
+      "Live coverage on Citizen TV & Universal TV",
+      "Logo on website",
+      "Flyers, print media",
+      "Free staff badges & visitor passes",
+    ],
+  },
 ];
 
 export function ExhibitorSponsor() {
+  const [showExhibitorForm, setShowExhibitorForm] = useState(false);
+  const [selectedTier, setSelectedTier] = useState<string | null>(null);
+
   return (
     <>
       <section id="exhibit" className="relative py-24 sm:py-32 bg-secondary/40">
@@ -141,19 +207,34 @@ export function ExhibitorSponsor() {
                 Reserve your <span className="text-gradient-gold">stand</span>.
               </h2>
               <p className="mt-5 text-muted-foreground leading-relaxed">
-                Shell scheme or fully custom builds — with power, internet, furniture add-ons and
-                instant quotation. Reserve now to secure premium hall positioning.
+                Shell scheme booths available in multiple sizes — with power, internet, furniture
+                and signage included. A 30% deposit confirms your booking, with balance payable
+                within 10 working days.
               </p>
-              <PartnerForm type="exhibitor" />
+              <button
+                type="button"
+                onClick={() => setShowExhibitorForm((v) => !v)}
+                className="mt-8 inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-elegant hover:-translate-y-0.5 transition-transform"
+              >
+                <ClipboardCheck size={18} />
+                Apply for a Booth
+                <ArrowRight size={16} />
+              </button>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Deposit: 30% at booking · Balance: within 10 working days
+              </p>
+              {showExhibitorForm && <PartnerForm type="exhibitor" />}
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {booths.map((b) => (
                 <div
-                  key={b.size}
-                  className="rounded-2xl bg-card p-5 border border-border/60 shadow-soft hover:shadow-elegant hover:-translate-y-1 transition-all"
+                  key={b.name}
+                  className="rounded-2xl bg-card p-6 border border-border/60 shadow-soft hover:shadow-elegant hover:-translate-y-1 transition-all"
                 >
-                  <div className="font-display text-2xl font-bold text-foreground">{b.size}</div>
-                  <div className="mt-1 text-sm text-muted-foreground">{b.price}</div>
+                  <div className="font-display text-lg font-bold text-foreground">{b.name}</div>
+                  <div className="mt-1 text-sm text-muted-foreground">{b.size}</div>
+                  <div className="mt-3 font-display text-xl font-bold text-gold">{b.price}</div>
+                  <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{b.desc}</p>
                   <div className="mt-4 h-1 w-10 rounded-full bg-gradient-gold" />
                 </div>
               ))}
@@ -172,22 +253,23 @@ export function ExhibitorSponsor() {
               Put your brand <span className="text-gradient-gold">centre stage</span>.
             </h2>
             <p className="mt-4 text-muted-foreground">
-              Five packages engineered for reach, prestige and lead generation.
+              Premium packages with Citizen TV coverage, property show exposure, live branding, and
+              targeted regional reach.
             </p>
           </div>
 
-          <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {packages.map((p) => (
               <div
                 key={p.tier}
-                className={`relative rounded-2xl p-6 border transition-all hover:-translate-y-1 ${
+                className={`relative flex flex-col rounded-2xl p-6 border transition-all hover:-translate-y-1 ${
                   p.accent
                     ? "bg-gradient-primary text-primary-foreground border-transparent shadow-elegant"
                     : "bg-card border-border/60 shadow-soft"
                 }`}
               >
-                {p.accent && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-gold px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-gold-foreground">
+                {p.flagship && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-gold px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-gold-foreground shadow-glow">
                     Flagship
                   </div>
                 )}
@@ -198,8 +280,15 @@ export function ExhibitorSponsor() {
                 >
                   {p.tier}
                 </div>
+                <div
+                  className={`mt-1 font-display text-lg font-bold ${
+                    p.accent ? "text-white" : "text-gold"
+                  }`}
+                >
+                  {p.price}
+                </div>
                 <ul
-                  className={`mt-4 space-y-2 text-sm ${p.accent ? "text-white/85" : "text-muted-foreground"}`}
+                  className={`mt-4 space-y-2 text-sm flex-1 ${p.accent ? "text-white/85" : "text-muted-foreground"}`}
                 >
                   {p.perks.map((perk) => (
                     <li key={perk} className="flex items-start gap-2">
@@ -211,20 +300,47 @@ export function ExhibitorSponsor() {
                     </li>
                   ))}
                 </ul>
-                {/* Replaced with inline form below */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedTier(p.tier)}
+                  className={`mt-6 inline-flex items-center gap-1.5 text-sm font-semibold ${
+                    p.accent ? "text-gold hover:text-white" : "text-primary hover:text-gold"
+                  } transition-colors`}
+                >
+                  Apply for {p.tier}
+                  <ArrowRight size={14} />
+                </button>
               </div>
             ))}
           </div>
 
-          <div className="mt-16 max-w-xl mx-auto text-center">
-            <h3 className="font-display text-2xl font-bold">Inquire about sponsorship</h3>
-            <p className="mt-2 text-muted-foreground text-sm">
-              Tell us which package you're interested in.
-            </p>
-            <div className="text-left flex justify-center">
-              <PartnerForm type="sponsor" />
-            </div>
+          <div className="mt-6 text-center text-sm text-muted-foreground">
+            Packages strictly in order of receipt of application and deposit.{" "}
+            <button
+              type="button"
+              onClick={() => setSelectedTier((t) => t ?? "Diamond")}
+              className="font-semibold text-primary hover:text-gold transition-colors"
+            >
+              Apply now →
+            </button>
           </div>
+
+          {selectedTier && (
+            <div className="mt-16 max-w-xl mx-auto text-center">
+              <h3 className="font-display text-2xl font-bold">
+                Inquire about the {selectedTier} package
+              </h3>
+              <p className="mt-2 text-muted-foreground text-sm">
+                Tell us a bit about your company and we'll follow up.
+              </p>
+              <div className="text-left flex justify-center">
+                <PartnerForm
+                  type="sponsor"
+                  defaultMessage={`Interested in the ${selectedTier} sponsorship package.`}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </section>
     </>

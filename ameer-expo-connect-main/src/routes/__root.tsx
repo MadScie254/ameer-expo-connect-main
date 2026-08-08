@@ -12,6 +12,7 @@ import "../lib/google-translate-patch";
 
 import { Toaster } from "@/components/ui/sonner";
 import { GlobalAnnouncements } from "@/components/expo/GlobalAnnouncements";
+import { WhatsAppButton } from "@/components/expo/WhatsAppButton";
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
@@ -144,6 +145,7 @@ function RootComponent() {
       <Outlet />
       <GlobalAnnouncements />
       <Toaster position="top-right" />
+      <WhatsAppButton />
     </QueryClientProvider>
   );
 }
