@@ -298,11 +298,11 @@ function Register() {
 
   // Turnstile callback integration
   useEffect(() => {
-    (window as any).onTurnstileSuccess = (token: string) => {
+    window.onTurnstileSuccess = (token: string) => {
       set("turnstileToken", token);
     };
     return () => {
-      delete (window as any).onTurnstileSuccess;
+      delete window.onTurnstileSuccess;
     };
   }, []);
 
@@ -484,8 +484,8 @@ function Register() {
       if (!result.success) {
         setSubmitError(result.error || "Registration failed. Please try again.");
         // Reset Turnstile widget so user can retry with a fresh token
-        if ((window as any).turnstile) {
-          (window as any).turnstile.reset();
+        if (window.turnstile) {
+          window.turnstile.reset();
         }
         return;
       }
@@ -515,8 +515,8 @@ function Register() {
       const msg = err instanceof Error ? err.message : "Registration failed. Please try again.";
       console.error("Registration error:", err);
       // Reset Turnstile widget so user can retry with a fresh token
-      if ((window as any).turnstile) {
-        (window as any).turnstile.reset();
+      if (window.turnstile) {
+        window.turnstile.reset();
       }
       if (msg.trim().startsWith("<")) {
         setSubmitError(

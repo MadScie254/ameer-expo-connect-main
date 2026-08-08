@@ -16,6 +16,15 @@ import logo from "@/assets/ameer-expo-logo.png";
 import { submitPartnerInquiry } from "../server/partners";
 import { RegistrationTypeGate } from "../components/expo/RegistrationTypeGate";
 
+declare global {
+  interface Window {
+    onTurnstileSuccess?: (token: string) => void;
+    turnstile?: {
+      reset: () => void;
+    };
+  }
+}
+
 // Lead-capture flow by design: no payment is collected here; booth/sponsorship deals are negotiated
 // manually after the team follows up.
 // NOTE: this route previously wrote to `exhibitor_leads` via `submitExhibitorLead`.
@@ -164,6 +173,7 @@ type WizardState = {
   email: string;
   phone: string;
   message: string;
+  turnstileToken?: string;
 };
 
 const inputCls =
@@ -533,6 +543,7 @@ function ExhibitPage() {
             message: wizardState.message || undefined,
             selection: wizardState.selection,
             amount: wizardState.amount,
+            turnstileToken: wizardState.turnstileToken,
           },
         });
         if (!result.success) {
@@ -549,8 +560,21 @@ function ExhibitPage() {
           err instanceof Error ? err.message : "Unable to submit your request right now.",
         );
         setSubmitStatus("error");
+        if (window.turnstile) {
+          window.turnstile.reset();
+        }
       }
     };
+
+    // Turnstile callback integration
+    useEffect(() => {
+      window.onTurnstileSuccess = (token: string) => {
+        setWizardState((s) => ({ ...s, turnstileToken: token }));
+      };
+      return () => {
+        delete window.onTurnstileSuccess;
+      };
+    }, []);
 
     return (
       <form
@@ -667,6 +691,17 @@ function ExhibitPage() {
             />
           </div>
         </div>
+
+        {import.meta.env.VITE_TURNSTILE_SITE_KEY ? (
+          <div className="mt-8 flex justify-center">
+            <div
+              className="cf-turnstile"
+              data-sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+              data-callback="onTurnstileSuccess"
+              data-action="turnstile-spin-v2"
+            />
+          </div>
+        ) : null}
 
         <NavButtons
           onBack={() => setStep(2)}

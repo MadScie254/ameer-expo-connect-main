@@ -126,6 +126,7 @@ function RootShell({ children }: { children: ReactNode }) {
           async
           defer
         />
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
       </head>
       <body>
         <div id="google_translate_element" className="hidden"></div>
