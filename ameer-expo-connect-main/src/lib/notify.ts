@@ -434,6 +434,8 @@ export async function sendPartnerNotification(inquiry: {
   email: string;
   phone?: string | null;
   message?: string | null;
+  selection?: string | null;
+  amount?: number | null;
 }) {
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.ADMIN_NOTIFICATION_EMAIL?.split(",")
@@ -461,6 +463,8 @@ export async function sendPartnerNotification(inquiry: {
           <p><strong>Email:</strong> ${escapeHtml(inquiry.email)}</p>
           <p><strong>Phone:</strong> ${escapeHtml(inquiry.phone) || "—"}</p>
           <p><strong>Message:</strong> ${escapeHtml(inquiry.message) || "—"}</p>
+          ${inquiry.selection ? `<p><strong>Selection:</strong> ${escapeHtml(inquiry.selection)}</p>` : ""}
+          ${inquiry.amount ? `<p><strong>Amount:</strong> KES ${inquiry.amount}</p>` : ""}
           <p><strong>Inquiry ID:</strong> ${escapeHtml(inquiry.id)}</p>
         `,
       }),

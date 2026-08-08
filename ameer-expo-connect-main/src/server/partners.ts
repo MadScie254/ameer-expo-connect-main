@@ -10,6 +10,8 @@ const PartnerInquirySchema = z.object({
   email: z.string().email("Invalid email address"),
   phone: z.string().optional(),
   message: z.string().optional(),
+  selection: z.string().optional(),
+  amount: z.number().optional(),
 });
 
 export const submitPartnerInquiry = createServerFn({ method: "POST" })
@@ -43,6 +45,8 @@ export const submitPartnerInquiry = createServerFn({ method: "POST" })
           email: data.email,
           phone: data.phone || null,
           message: data.message || null,
+          selection: data.selection || null,
+          amount: data.amount || null,
         })
         .select()
         .single();
@@ -59,6 +63,8 @@ export const submitPartnerInquiry = createServerFn({ method: "POST" })
         email: row.email,
         phone: row.phone,
         message: row.message,
+        selection: row.selection,
+        amount: row.amount,
       });
 
       return { success: true, id: row.id };
