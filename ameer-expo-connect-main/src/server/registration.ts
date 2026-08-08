@@ -86,7 +86,7 @@ async function findOrCreateUserId(email: string, firstName: string, lastName: st
  * (graceful degradation when Turnstile hasn't been set up yet).
  */
 async function verifyTurnstile(token: string | undefined): Promise<boolean> {
-  const secret = process.env.TURNSTILE_SECRET_KEY;
+  const secret = process.env.TURNSTILE_SECRET;
   if (!secret) {
     // Turnstile not configured — fall through (5-minute throttle is the backstop)
     return true;
