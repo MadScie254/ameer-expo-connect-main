@@ -125,10 +125,9 @@ function AdminDashboard() {
         data: { session },
       } = await supabase.auth.getSession();
 
-      // If there is no active session, do not grant admin access or load data.
+      // If there is no active session, send them straight to the login page.
       if (!session) {
-        setIsAdmin(false);
-        setLoading(false);
+        window.location.replace("/admin-login");
         return;
       }
 
@@ -382,10 +381,16 @@ function AdminDashboard() {
             <h1 className="text-2xl font-bold font-display text-red-500 mb-2">
               Access Denied
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-6">
               You do not have administrator privileges to view this page. Please
-              log in with an admin account.
+              sign in with an admin account.
             </p>
+            <a
+              href="/admin-login"
+              className="inline-block px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors"
+            >
+              Go to Sign In
+            </a>
           </div>
         </main>
         <Footer />
