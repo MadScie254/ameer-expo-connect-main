@@ -90,13 +90,16 @@ export function NowHappening() {
     <div className="bg-gradient-primary text-primary-foreground border-y border-white/10">
       <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 flex items-center gap-2 sm:gap-3 text-sm sm:text-base">
         <Clock size={16} className="shrink-0" />
+        <span className="inline-flex items-center rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-bold tracking-wide">
+          EAT
+        </span>
         {state.kind === "now" ? (
           <p className="font-medium">
             <span className="font-bold">Now:</span> {state.session.title} — {state.session.location}
           </p>
         ) : (
           <p className="font-medium">
-            <span className="font-bold">Next:</span> {state.session.title} at {formatClock(state.session.start_time)}
+            <span className="font-bold">Next:</span> {state.session.title} at {formatClock(state.session.start_time)} EAT
           </p>
         )}
       </div>

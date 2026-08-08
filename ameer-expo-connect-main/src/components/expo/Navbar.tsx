@@ -18,11 +18,19 @@ const links = [
   { label: "Admin", to: "/admin" },
 ];
 
+const EVENT_START = new Date("2026-09-18T00:00:00+03:00");
+const EVENT_END = new Date("2026-09-20T23:59:59+03:00");
+
+function isWithinEventWindow(now: Date): boolean {
+  return now >= EVENT_START && now <= EVENT_END;
+}
+
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [agendaCount, setAgendaCount] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [hasLiveSession, setHasLiveSession] = useState(false);
 
   const refreshAgendaCount = async (userId: string) => {
     const { count, error } = await supabase
@@ -94,6 +102,40 @@ export function Navbar() {
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
+
+    const refreshLiveState = async () => {
+      const now = new Date();
+      if (!isWithinEventWindow(now)) {
+        if (!cancelled) setHasLiveSession(false);
+        return;
+      }
+
+      const nowIso = now.toISOString();
+      const { data, error } = await supabase
+        .from("sessions")
+        .select("id")
+        .lte("start_time", nowIso)
+        .gte("end_time", nowIso)
+        .limit(1);
+
+      if (!cancelled) {
+        setHasLiveSession(!error && !!data && data.length > 0);
+      }
+    };
+
+    void refreshLiveState();
+    const timer = window.setInterval(() => {
+      void refreshLiveState();
+    }, 60_000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden";
     } else {
@@ -154,7 +196,14 @@ export function Navbar() {
                     : "text-white/85 hover:text-white hover:bg-white/10"
                 }`}
               >
-                {l.label}
+                <span className="inline-flex items-center gap-1.5">
+                  {l.label}
+                  {l.label === "Schedule & Agenda" && hasLiveSession ? (
+                    <span className="inline-flex items-center rounded-full bg-gold/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gold">
+                      Live
+                    </span>
+                  ) : null}
+                </span>
               </Link>
             ))}
             {isLoggedIn && (
@@ -238,7 +287,14 @@ export function Navbar() {
                     onClick={() => setOpen(false)}
                     className="block px-4 py-4 rounded-xl text-lg font-semibold text-foreground hover:bg-accent/50 transition-colors"
                   >
-                    {l.label}
+                    <span className="inline-flex items-center gap-2">
+                      {l.label}
+                      {l.label === "Schedule & Agenda" && hasLiveSession ? (
+                        <span className="inline-flex items-center rounded-full bg-gold/20 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-gold">
+                          Live
+                        </span>
+                      ) : null}
+                    </span>
                   </Link>
                 ))}
                 {isLoggedIn && (

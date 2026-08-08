@@ -93,6 +93,7 @@ function Schedule() {
   const [user, setUser] = useState<any>(null);
   const [showOnlyBookmarked, setShowOnlyBookmarked] = useState(false);
   const [expandedAgendaSession, setExpandedAgendaSession] = useState<string | null>(null);
+  const [highlightedSessionId, setHighlightedSessionId] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -191,6 +192,29 @@ function Schedule() {
     }
   };
 
+  const jumpToFullSession = (session: Session) => {
+    const dayIndex = DAYS.findIndex((day) => session.start_time.startsWith(day.isoDate));
+    setShowOnlyBookmarked(false);
+    if (dayIndex >= 0) {
+      setActiveDay(dayIndex);
+    }
+    setHighlightedSessionId(session.id);
+    updateView("full");
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        const target = document.getElementById(`session-card-${session.id}`);
+        target?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    });
+  };
+
+  useEffect(() => {
+    if (!highlightedSessionId) return;
+    const timer = window.setTimeout(() => setHighlightedSessionId(null), 3200);
+    return () => window.clearTimeout(timer);
+  }, [highlightedSessionId]);
+
   const filteredSessions = sessions.filter((s) => {
     const isRightDay = s.start_time.startsWith(DAYS[activeDay].isoDate);
     const isBookmarkedFilter = showOnlyBookmarked ? bookmarks.includes(s.id) : true;
@@ -287,8 +311,13 @@ function Schedule() {
                     const isBookmarked = bookmarks.includes(session.id);
                     return (
                       <div
+                        id={`session-card-${session.id}`}
                         key={session.id}
-                        className="group relative bg-card rounded-3xl border border-border/60 shadow-elegant p-6 sm:p-8 flex flex-col sm:flex-row gap-6 transition-all hover:border-primary/30 hover:shadow-glow"
+                        className={`group relative bg-card rounded-3xl border shadow-elegant p-6 sm:p-8 flex flex-col sm:flex-row gap-6 transition-all hover:border-primary/30 hover:shadow-glow ${
+                          highlightedSessionId === session.id
+                            ? "border-primary ring-2 ring-primary/40"
+                            : "border-border/60"
+                        }`}
                       >
                         {/* Time Column */}
                         <div className="sm:w-48 shrink-0 flex flex-col gap-1.5 border-l-4 border-primary pl-4">
@@ -422,6 +451,12 @@ function Schedule() {
                                       <span className="text-muted-foreground"> · {session.speaker_role}</span>
                                     ) : null}
                                   </div>
+                                  <button
+                                    onClick={() => jumpToFullSession(session)}
+                                    className="mt-3 text-sm font-semibold text-primary hover:underline"
+                                  >
+                                    View full session
+                                  </button>
                                 </div>
                               )}
                             </div>
