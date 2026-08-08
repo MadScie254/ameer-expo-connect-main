@@ -45,11 +45,11 @@ export async function sendRegistrationNotification(registration: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Ameer Expo <notifications@ameergroupltd.com>",
+        from: "Ameer Expo Africa & Middle East <notifications@ameergroupltd.com>",
         to,
         subject: `New registration — ${registration.firstName} ${registration.lastName} (${registration.passType})`,
         html: `
-          <h2>New Ameer Expo registration</h2>
+          <h2>New Ameer Expo Africa & Middle East registration</h2>
           <p><strong>Name:</strong> ${escapeHtml(registration.firstName)} ${escapeHtml(registration.lastName)}</p>
           <p><strong>Email:</strong> ${escapeHtml(registration.email)}</p>
           <p><strong>Phone:</strong> ${escapeHtml(registration.phone) || "—"}</p>
@@ -100,11 +100,11 @@ export async function sendExhibitorLeadNotification(lead: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Ameer Expo <notifications@ameergroupltd.com>",
+        from: "Ameer Expo Africa & Middle East <notifications@ameergroupltd.com>",
         to,
         subject: `New ${lead.interest} enquiry — ${lead.company} (${lead.tierOrSize ?? "unspecified"})`,
         html: `
-          <h2>New Ameer Expo ${escapeHtml(lead.interest)} enquiry</h2>
+          <h2>New Ameer Expo Africa & Middle East ${escapeHtml(lead.interest)} enquiry</h2>
           <p><strong>Company:</strong> ${escapeHtml(lead.company)}</p>
           <p><strong>Contact:</strong> ${escapeHtml(lead.contactName)}</p>
           <p><strong>Email:</strong> ${escapeHtml(lead.email)}</p>
@@ -248,7 +248,7 @@ export async function sendRegistrantConfirmation(registration: {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Your Ameer Expo Confirmation</title>
+  <title>Your Ameer Expo Africa & Middle East Confirmation</title>
 </head>
 <body style="margin:0;padding:0;background:#F3F4F6;font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;">
 
@@ -408,9 +408,9 @@ export async function sendRegistrantConfirmation(registration: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Ameer Expo <notifications@ameergroupltd.com>",
+        from: "Ameer Expo Africa & Middle East <notifications@ameergroupltd.com>",
         to: registration.email,
-        subject: `You're confirmed — Ameer Expo 2026 (${ticketNumber})`,
+        subject: `You're confirmed — Ameer Expo Africa & Middle East 2026 (${ticketNumber})`,
         html,
         ...(attachments.length > 0 ? { attachments } : {}),
       }),
@@ -451,11 +451,11 @@ export async function sendPartnerNotification(inquiry: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Ameer Expo <notifications@ameergroupltd.com>",
+        from: "Ameer Expo Africa & Middle East <notifications@ameergroupltd.com>",
         to,
         subject: `New ${inquiry.type} inquiry — ${inquiry.companyName}`,
         html: `
-          <h2>New Ameer Expo ${escapeHtml(inquiry.type)} inquiry</h2>
+          <h2>New Ameer Expo Africa & Middle East ${escapeHtml(inquiry.type)} inquiry</h2>
           <p><strong>Company:</strong> ${escapeHtml(inquiry.companyName)}</p>
           <p><strong>Contact:</strong> ${escapeHtml(inquiry.contactName)}</p>
           <p><strong>Email:</strong> ${escapeHtml(inquiry.email)}</p>
@@ -494,9 +494,9 @@ export async function sendPaymentReceivedEmail(registration: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Ameer Expo <notifications@ameergroupltd.com>",
+        from: "Ameer Expo Africa & Middle East <notifications@ameergroupltd.com>",
         to: registration.email,
-        subject: "Payment Received — Ameer Expo 2026",
+        subject: "Payment Received — Ameer Expo Africa & Middle East 2026",
         html: `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #1a1a1a;">
             <h2>Payment Received!</h2>
@@ -504,7 +504,7 @@ export async function sendPaymentReceivedEmail(registration: {
             <p>We've successfully received your payment of <strong>KES ${registration.amount}</strong> for your VIP Pass.</p>
             <p>Your official ticket and QR code are being generated right now and will be sent to you in a separate email shortly.</p>
             <br />
-            <p>Best,<br/>The Ameer Expo Team</p>
+            <p>Best,<br/>The Ameer Expo Africa & Middle East Team</p>
           </div>
         `,
       }),
