@@ -10,6 +10,21 @@ const TICKET_BODY_LENGTH = 8;
 const TICKET_PREFIX = "AE26";
 
 /**
+ * Generates a crypto-random reference code like `AE26-7QK3M9`.
+ * Uses 6 characters from the unambiguous charset — shorter than ticket numbers
+ * because reference codes are human-typed in support queries, not scanned.
+ */
+export function generateReferenceCode(): string {
+  const REF_BODY_LENGTH = 6;
+  const bytes = new Uint8Array(REF_BODY_LENGTH);
+  crypto.getRandomValues(bytes);
+  const body = Array.from(bytes)
+    .map((b) => TICKET_CHARSET[b % TICKET_CHARSET.length])
+    .join("");
+  return `${TICKET_PREFIX}-${body}`;
+}
+
+/**
  * Generates a crypto-random ticket number like `AE26-7QK3M9XB`.
  * Uses 8 characters from the unambiguous charset above.
  */

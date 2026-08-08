@@ -46,9 +46,36 @@ export const confirmCheckIn = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { ticketNumber, pin } = data;
 
+    // 0. Rate-limit gate — count failed PIN attempts in the last 5 minutes.
+    //    Reuses ticket_checkin_log with action='pin_fail' (no schema change needed).
+    //    Threshold: 10 failed attempts in 5 min before any IP/device is blocked.
+    const fiveMinsAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const { data: recentFails, error: rateCheckError } = await supabaseAdmin
+      .from("ticket_checkin_log")
+      .select("id")
+      .eq("action", "pin_fail")
+      .gte("performed_at", fiveMinsAgo);
+
+    if (!rateCheckError && recentFails && recentFails.length >= 10) {
+      // Log the block so it's visible in the audit trail
+      await supabaseAdmin.from("ticket_checkin_log").insert({
+        ticket_number: ticketNumber,
+        action: "pin_fail",
+      });
+      console.warn(
+        `[confirmCheckIn] rate_limited: ${recentFails.length} failed PIN attempts in last 5 min`,
+      );
+      return { success: false as const, reason: "rate_limited" as const };
+    }
+
     // 1. PIN gate — checked server-side; PIN never leaves the server.
     const expectedPin = process.env.STAFF_CHECKIN_PIN;
     if (!expectedPin || pin !== expectedPin) {
+      // Record the failed attempt for rate-limit accounting
+      await supabaseAdmin.from("ticket_checkin_log").insert({
+        ticket_number: ticketNumber,
+        action: "pin_fail",
+      });
       return { success: false as const, reason: "invalid_pin" as const };
     }
 

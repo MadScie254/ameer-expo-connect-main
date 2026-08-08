@@ -21,6 +21,7 @@ import {
   ChevronDown,
   ChevronUp,
   Eye,
+  Briefcase,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -60,11 +61,22 @@ type Session = {
   track: string;
 };
 
+type Lead = {
+  id: string;
+  type: string;
+  company_name: string;
+  contact_name: string;
+  email: string;
+  phone: string | null;
+  message: string | null;
+  created_at: string;
+};
+
 function AdminDashboard() {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
-    "overview" | "registrations" | "sessions" | "notifications"
+    "overview" | "registrations" | "sessions" | "notifications" | "leads"
   >("overview");
 
   const [stats, setStats] = useState({
@@ -79,6 +91,8 @@ function AdminDashboard() {
 
   const [allRegistrations, setAllRegistrations] = useState<Registration[]>([]);
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [leadsSearch, setLeadsSearch] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterPassType, setFilterPassType] = useState<
     "all" | "general" | "vip"
@@ -177,6 +191,16 @@ function AdminDashboard() {
 
         if (sessionsData) {
           setSessions(sessionsData as Session[]);
+        }
+
+        // Load partner inquiry leads
+        const { data: leadsData } = await supabase
+          .from("partner_inquiries")
+          .select("id, type, company_name, contact_name, email, phone, message, created_at")
+          .order("created_at", { ascending: false });
+
+        if (leadsData) {
+          setLeads(leadsData as Lead[]);
         }
       } catch (err) {
         console.error("Failed to load admin data:", err);
@@ -382,6 +406,7 @@ function AdminDashboard() {
       label: "Notifications",
       icon: Bell,
     },
+    { key: "leads" as const, label: "Leads", icon: Briefcase },
   ];
 
   return (
@@ -1062,6 +1087,124 @@ function AdminDashboard() {
                     🔔 Broadcast Message
                   </button>
                 </form>
+              </div>
+            </div>
+          )}
+
+          {/* ── LEADS TAB ── */}
+          {activeTab === "leads" && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="font-bold text-2xl font-display flex items-center gap-2">
+                    <Briefcase size={22} className="text-primary" />
+                    Partner Leads
+                  </h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Exhibitor and sponsor inquiries captured via the website.
+                  </p>
+                </div>
+                <span className="px-3 py-1.5 rounded-xl bg-primary/10 text-primary text-sm font-semibold">
+                  {leads.length} total
+                </span>
+              </div>
+
+              {/* Search bar */}
+              <div className="bg-card rounded-2xl border border-border/60 p-4 shadow-soft">
+                <div className="relative">
+                  <Search
+                    size={16}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Search by company, name, or email…"
+                    value={leadsSearch}
+                    onChange={(e) => setLeadsSearch(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-secondary/50 text-sm outline-none focus:border-primary transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* Table */}
+              <div className="bg-card rounded-3xl border border-border/60 shadow-elegant overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left">
+                    <thead className="bg-secondary/50 text-muted-foreground">
+                      <tr>
+                        <th className="px-6 py-4 font-semibold">Company</th>
+                        <th className="px-6 py-4 font-semibold">Contact</th>
+                        <th className="px-6 py-4 font-semibold">Email</th>
+                        <th className="px-6 py-4 font-semibold">Interest</th>
+                        <th className="px-6 py-4 font-semibold">Message</th>
+                        <th className="px-6 py-4 font-semibold">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/60">
+                      {leads
+                        .filter((l) => {
+                          if (!leadsSearch.trim()) return true;
+                          const q = leadsSearch.toLowerCase();
+                          return (
+                            l.company_name?.toLowerCase().includes(q) ||
+                            l.contact_name?.toLowerCase().includes(q) ||
+                            l.email?.toLowerCase().includes(q)
+                          );
+                        })
+                        .map((lead) => (
+                          <tr
+                            key={lead.id}
+                            className="hover:bg-accent/30 transition-colors"
+                          >
+                            <td className="px-6 py-4 font-semibold text-foreground whitespace-nowrap">
+                              {lead.company_name}
+                            </td>
+                            <td className="px-6 py-4 text-muted-foreground whitespace-nowrap">
+                              {lead.contact_name}
+                              {lead.phone && (
+                                <div className="text-xs text-muted-foreground/70">
+                                  {lead.phone}
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 text-muted-foreground">
+                              {lead.email}
+                            </td>
+                            <td className="px-6 py-4">
+                              <span
+                                className={`px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${
+                                  lead.type === "sponsor"
+                                    ? "bg-[#bf953f]/10 text-[#bf953f]"
+                                    : "bg-blue-500/10 text-blue-600"
+                                }`}
+                              >
+                                {lead.type}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-muted-foreground max-w-xs">
+                              <p className="line-clamp-2 text-xs">
+                                {lead.message || <span className="italic opacity-50">—</span>}
+                              </p>
+                            </td>
+                            <td className="px-6 py-4 text-muted-foreground whitespace-nowrap">
+                              {new Date(lead.created_at).toLocaleDateString()}
+                            </td>
+                          </tr>
+                        ))}
+                      {leads.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan={6}
+                            className="px-6 py-12 text-center text-muted-foreground"
+                          >
+                            <Briefcase className="w-10 h-10 mx-auto mb-3 opacity-20" />
+                            No partner inquiries yet.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}

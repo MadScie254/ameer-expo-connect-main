@@ -3,7 +3,7 @@ import { z } from "zod";
 import { supabaseAdmin } from "../lib/supabase-server";
 import { getPesapalToken, submitPesapalOrder } from "./pesapal";
 import { sendRegistrationNotification, sendRegistrantConfirmation } from "../lib/notify";
-import { generateTicketNumber, generateTicketQrPng } from "../lib/ticket";
+import { generateTicketNumber, generateReferenceCode, generateTicketQrPng } from "../lib/ticket";
 
 function isAtLeast17(value: string) {
   const d = new Date(value);
@@ -171,7 +171,22 @@ export const submitRegistration = createServerFn({ method: "POST" })
       }
 
       const id = crypto.randomUUID();
-      const referenceCode = `AE26-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+
+      // ── Crypto-secure reference_code with collision-retry ────────────────
+      // Mirrors the ticket_number retry loop; reference_code has a UNIQUE
+      // constraint so we check pre-emptively rather than parsing DB errors.
+      let referenceCode = generateReferenceCode();
+      for (let refAttempt = 0; refAttempt < 3; refAttempt++) {
+        referenceCode = generateReferenceCode();
+        const { data: existingRef } = await supabaseAdmin
+          .from("registrations")
+          .select("id")
+          .eq("reference_code", referenceCode)
+          .maybeSingle();
+        if (!existingRef) break; // unique — use it
+        // Collision (astronomically rare): generate a new one next iteration
+      }
+
       const payload = data;
 
       let redirectUrl = null;
