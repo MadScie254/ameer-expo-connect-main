@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import logo from "@/assets/ameer-expo-logo.png";
 import { Menu, X } from "lucide-react";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { supabase } from "@/lib/supabase";
 
 const links = [
   { label: "About", to: "/", hash: "about" },
@@ -20,12 +21,64 @@ const links = [
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [agendaCount, setAgendaCount] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const refreshAgendaCount = async (userId: string) => {
+    const { count, error } = await supabase
+      .from("user_bookmarks")
+      .select("session_id", { count: "exact", head: true })
+      .eq("user_id", userId);
+
+    if (!error) {
+      setAgendaCount(count ?? 0);
+    }
+  };
 
   useEffect(() => {
     const on = () => setScrolled(window.scrollY > 30);
     on();
     window.addEventListener("scroll", on);
     return () => window.removeEventListener("scroll", on);
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const initAuth = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!mounted) return;
+
+      const userId = session?.user?.id;
+      setIsLoggedIn(!!userId);
+
+      if (userId) {
+        await refreshAgendaCount(userId);
+      } else {
+        setAgendaCount(0);
+      }
+    };
+
+    initAuth();
+
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      const userId = session?.user?.id;
+      setIsLoggedIn(!!userId);
+
+      if (userId) {
+        void refreshAgendaCount(userId);
+      } else {
+        setAgendaCount(0);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      data.subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -92,6 +145,19 @@ export function Navbar() {
                 {l.label}
               </Link>
             ))}
+            {isLoggedIn && (
+              <Link
+                to="/schedule"
+                hash="my-agenda"
+                className={`ml-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                  scrolled
+                    ? "bg-primary/10 text-primary hover:bg-primary/20"
+                    : "bg-white/15 text-white hover:bg-white/25"
+                }`}
+              >
+                My Agenda ({agendaCount})
+              </Link>
+            )}
           </div>
 
           <div className="flex items-center gap-3 shrink-0 ml-4">
@@ -163,6 +229,16 @@ export function Navbar() {
                     {l.label}
                   </Link>
                 ))}
+                {isLoggedIn && (
+                  <Link
+                    to="/schedule"
+                    hash="my-agenda"
+                    onClick={() => setOpen(false)}
+                    className="block px-4 py-4 rounded-xl text-lg font-semibold text-primary bg-primary/10"
+                  >
+                    My Agenda ({agendaCount})
+                  </Link>
+                )}
               </div>
 
               <div className="h-px bg-border my-6 opacity-50" />
