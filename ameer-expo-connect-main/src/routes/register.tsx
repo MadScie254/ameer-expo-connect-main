@@ -12,8 +12,6 @@ import {
   Check,
   User,
   Briefcase,
-  Sparkles,
-  Users,
   MapPin,
   Ticket,
   ClipboardCheck,
@@ -38,7 +36,7 @@ export const Route = createFileRoute("/register")({
       {
         name: "description",
         content:
-          "Complete your Ameer Expo 2026 visitor registration in 6 quick steps. Get your QR badge and confirmation instantly.",
+          "Complete your Ameer Expo 2026 visitor registration in 5 quick steps. Get your QR badge and confirmation instantly.",
       },
       { property: "og:title", content: "Register · Ameer Expo 2026" },
       {
@@ -52,8 +50,6 @@ export const Route = createFileRoute("/register")({
 const steps = [
   { key: "personal", label: "Personal", icon: User },
   { key: "professional", label: "Professional", icon: Briefcase },
-  { key: "interests", label: "Interests", icon: Sparkles },
-  { key: "networking", label: "Networking", icon: Users },
   { key: "logistics", label: "Logistics", icon: MapPin },
   { key: "passType", label: "Pass Type", icon: Ticket },
   { key: "review", label: "Review", icon: ClipboardCheck },
@@ -94,22 +90,10 @@ const businessTypes = [
   "Other",
 ];
 
-const networkingTargets = [
-  "Investors",
-  "Suppliers",
-  "Manufacturers",
-  "Government",
-  "Technology Partners",
-  "Importers",
-  "Exporters",
-  "Distributors",
-];
-
 type FormState = {
   firstName: string;
   lastName: string;
   gender: string;
-  dob: string;
   idNumber: string;
   country: string;
   city: string;
@@ -123,9 +107,6 @@ type FormState = {
   website: string;
   businessType: string;
   experience: string;
-  interests: string[];
-  b2b: string;
-  targets: string[];
   hotel: boolean;
   pickup: boolean;
   visa: boolean;
@@ -139,7 +120,6 @@ const initial: FormState = {
   firstName: "",
   lastName: "",
   gender: "",
-  dob: "",
   idNumber: "",
   country: "",
   city: "",
@@ -153,9 +133,6 @@ const initial: FormState = {
   website: "",
   businessType: "",
   experience: "",
-  interests: [],
-  b2b: "",
-  targets: [],
   hotel: false,
   pickup: false,
   visa: false,
@@ -222,30 +199,8 @@ function Chip({
 
 const STORAGE_KEY = "ameer-expo-register-v1";
 
-function calculateAge(dateValue: string) {
-  const d = new Date(dateValue);
-  if (Number.isNaN(d.getTime())) return null;
-
-  const today = new Date();
-  let age = today.getFullYear() - d.getFullYear();
-  const monthDiff = today.getMonth() - d.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < d.getDate())) {
-    age--;
-  }
-  return age;
-}
-
 function getPersonalStepErrors(form: FormState) {
-  const errors: Partial<Record<"dob" | "country" | "city", string>> = {};
-
-  if (!form.dob.trim()) {
-    errors.dob = "Date of birth is required";
-  } else {
-    const age = calculateAge(form.dob);
-    if (age === null || age < 17) {
-      errors.dob = "You must be at least 17 years old to register";
-    }
-  }
+  const errors: Partial<Record<"country" | "city", string>> = {};
 
   if (!form.country.trim()) {
     errors.country = "Country is required";
@@ -468,11 +423,6 @@ function Register() {
   }, [f, step, hydrated, submitted]);
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setF((s) => ({ ...s, [k]: v }));
-  const toggle = (k: "interests" | "targets", v: string) =>
-    setF((s) => ({
-      ...s,
-      [k]: s[k].includes(v) ? s[k].filter((x) => x !== v) : [...s[k], v],
-    }));
 
   const clearDraft = () => {
     try {
@@ -488,7 +438,7 @@ function Register() {
 
   const personalErrors = useMemo(() => (step === 0 ? getPersonalStepErrors(f) : {}), [f, step]);
 
-  const showPersonalError = (field: "dob" | "country" | "city") => {
+  const showPersonalError = (field: "country" | "city") => {
     return (
       step === 0 &&
       (personalValidationAttempted || personalTouchedFields[field]) &&
@@ -499,7 +449,7 @@ function Register() {
   const canNext = () => {
     if (step === 0) return Object.keys(personalErrors).length === 0;
     if (step === 1) return f.company && f.jobTitle && f.businessType;
-    if (step === 6) return f.terms;
+    if (step === 4) return f.terms;
     return true;
   };
 
@@ -953,27 +903,7 @@ function Register() {
                         <option>Prefer not to say</option>
                       </select>
                     </Field>
-                    <Field
-                      label="Date of Birth"
-                      required
-                      error={showPersonalError("dob") ? personalErrors.dob : undefined}
-                    >
-                      <input
-                        type="date"
-                        className={inputCls}
-                        value={f.dob}
-                        max={(() => {
-                          const maxDate = new Date();
-                          maxDate.setFullYear(maxDate.getFullYear() - 17);
-                          const year = maxDate.getFullYear();
-                          const month = String(maxDate.getMonth() + 1).padStart(2, "0");
-                          const day = String(maxDate.getDate()).padStart(2, "0");
-                          return `${year}-${month}-${day}`;
-                        })()}
-                        onChange={(e) => set("dob", e.target.value)}
-                        onBlur={() => setPersonalTouchedFields((s) => ({ ...s, dob: true }))}
-                      />
-                    </Field>
+
                     <Field label="Passport / National ID">
                       <input
                         className={inputCls}
@@ -1118,59 +1048,6 @@ function Register() {
 
               {step === 2 && (
                 <StepBlock
-                  title="Areas of interest"
-                  subtitle="Pick everything you'd like to explore."
-                  icon={Sparkles}
-                >
-                  <div className="flex flex-wrap gap-2">
-                    {industries.map((i) => (
-                      <Chip
-                        key={i}
-                        active={f.interests.includes(i)}
-                        onClick={() => toggle("interests", i)}
-                      >
-                        {i}
-                      </Chip>
-                    ))}
-                  </div>
-                </StepBlock>
-              )}
-
-              {step === 3 && (
-                <StepBlock
-                  title="Networking preferences"
-                  subtitle="We'll match you with the right people."
-                  icon={Users}
-                >
-                  <div className="space-y-6">
-                    <Field label="Would you like to schedule B2B meetings?">
-                      <div className="flex gap-2">
-                        {["Yes", "No"].map((v) => (
-                          <Chip key={v} active={f.b2b === v} onClick={() => set("b2b", v)}>
-                            {v}
-                          </Chip>
-                        ))}
-                      </div>
-                    </Field>
-                    <Field label="Interested in meeting">
-                      <div className="flex flex-wrap gap-2">
-                        {networkingTargets.map((v) => (
-                          <Chip
-                            key={v}
-                            active={f.targets.includes(v)}
-                            onClick={() => toggle("targets", v)}
-                          >
-                            {v}
-                          </Chip>
-                        ))}
-                      </div>
-                    </Field>
-                  </div>
-                </StepBlock>
-              )}
-
-              {step === 4 && (
-                <StepBlock
                   title="Logistics & accommodation"
                   subtitle="We'll handle the details."
                   icon={MapPin}
@@ -1225,7 +1102,7 @@ function Register() {
                 </StepBlock>
               )}
 
-              {step === 5 && (
+              {step === 3 && (
                 <StepBlock
                   title="Select your pass"
                   subtitle="Choose your experience for the expo."
@@ -1332,7 +1209,7 @@ function Register() {
                 </StepBlock>
               )}
 
-              {step === 6 && (
+              {step === 4 && (
                 <StepBlock
                   title="Review & confirm"
                   subtitle="Everything look right?"
@@ -1350,9 +1227,6 @@ function Register() {
                     <Sum label="Role" value={f.jobTitle} />
                     <Sum label="Business Type" value={f.businessType} />
                     <Sum label="Industry" value={f.industry} />
-                    <Sum label="Interests" value={f.interests.join(", ") || "—"} />
-                    <Sum label="B2B Meetings" value={f.b2b || "—"} />
-                    <Sum label="Meeting" value={f.targets.join(", ") || "—"} />
                     <Sum
                       label="Logistics"
                       value={

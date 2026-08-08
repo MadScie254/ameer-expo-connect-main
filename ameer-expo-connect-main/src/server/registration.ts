@@ -5,27 +5,10 @@ import { getPesapalToken, submitPesapalOrder } from "./pesapal";
 import { sendRegistrationNotification, sendRegistrantConfirmation } from "../lib/notify";
 import { generateTicketNumber, generateReferenceCode, generateTicketQrPng } from "../lib/ticket";
 
-function isAtLeast17(value: string) {
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return false;
-
-  const today = new Date();
-  let age = today.getFullYear() - d.getFullYear();
-  const monthDiff = today.getMonth() - d.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < d.getDate())) {
-    age--;
-  }
-  return age >= 17;
-}
-
 const RegistrationSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   gender: z.string(),
-  dob: z
-    .string()
-    .min(1, "Date of birth is required")
-    .refine((val) => isAtLeast17(val), "You must be at least 17 years old to register"),
   idNumber: z.string(),
   country: z.string().min(1, "Country is required"),
   city: z.string().min(1, "City is required"),
@@ -39,9 +22,6 @@ const RegistrationSchema = z.object({
   website: z.string(),
   businessType: z.string(),
   experience: z.string(),
-  interests: z.array(z.string()),
-  b2b: z.string(),
-  targets: z.array(z.string()),
   hotel: z.boolean(),
   pickup: z.boolean(),
   visa: z.boolean(),
@@ -260,7 +240,6 @@ export const submitRegistration = createServerFn({ method: "POST" })
           amount: amount,
           payment_status: paymentStatus,
           order_tracking_id: orderTrackingId,
-          date_of_birth: data.dob,
           city: data.city,
           country: data.country,
           payload: payload,
@@ -272,9 +251,6 @@ export const submitRegistration = createServerFn({ method: "POST" })
           website: data.website,
           business_type: data.businessType,
           experience: data.experience,
-          interests: data.interests,
-          wants_b2b: data.b2b,
-          networking_targets: data.targets,
           needs_hotel: data.hotel,
           needs_pickup: data.pickup,
           needs_visa: data.visa,
