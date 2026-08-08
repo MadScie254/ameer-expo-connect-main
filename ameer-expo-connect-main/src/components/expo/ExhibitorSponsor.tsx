@@ -1,105 +1,5 @@
-import { useState } from "react";
 import { ArrowRight, Check, ClipboardCheck } from "lucide-react";
-import { submitPartnerInquiry } from "@/server/partners";
-
-function PartnerForm({
-  type,
-  defaultMessage = "",
-}: {
-  type: "exhibitor" | "sponsor";
-  defaultMessage?: string;
-}) {
-  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setStatus("submitting");
-    const formData = new FormData(e.currentTarget);
-    const data = {
-      type,
-      companyName: formData.get("companyName") as string,
-      contactName: formData.get("contactName") as string,
-      email: formData.get("email") as string,
-      phone: formData.get("phone") as string,
-      message: formData.get("message") as string,
-    };
-    try {
-      const res = await submitPartnerInquiry({ data });
-      if (res.success) {
-        setStatus("success");
-      } else {
-        setStatus("error");
-      }
-    } catch (err) {
-      setStatus("error");
-    }
-  }
-
-  if (status === "success") {
-    return (
-      <div className="mt-8 rounded-2xl bg-green-500/10 p-6 border border-green-500/20 text-green-700 dark:text-green-400">
-        <div className="font-semibold flex items-center gap-2 text-lg">
-          <Check size={20} /> Thanks, we'll be in touch!
-        </div>
-        <div className="text-sm mt-2">Your inquiry has been received.</div>
-      </div>
-    );
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="mt-6 space-y-4 max-w-md">
-      {status === "error" && (
-        <div className="text-red-500 text-sm font-semibold">
-          Something went wrong. Please try again.
-        </div>
-      )}
-      <div className="grid grid-cols-2 gap-4">
-        <input
-          required
-          name="companyName"
-          placeholder="Company Name"
-          className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
-        />
-        <input
-          required
-          name="contactName"
-          placeholder="Contact Name"
-          className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
-        />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <input
-          required
-          type="email"
-          name="email"
-          placeholder="Email Address"
-          className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
-        />
-        <input
-          name="phone"
-          placeholder="Phone (optional)"
-          className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
-        />
-      </div>
-      <textarea
-        name="message"
-        defaultValue={defaultMessage}
-        placeholder="Message (optional)"
-        className="flex min-h-[80px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
-      />
-      <button
-        disabled={status === "submitting"}
-        type="submit"
-        className="inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-elegant hover:-translate-y-0.5 transition-transform disabled:opacity-50"
-      >
-        {status === "submitting"
-          ? "Submitting..."
-          : `Submit ${type === "exhibitor" ? "Booth Request" : "Sponsorship Inquiry"}`}
-        {!status.includes("submitting") && <ArrowRight size={16} />}
-      </button>
-    </form>
-  );
-}
+import { Link } from "@tanstack/react-router";
 
 const booths = [
   {
@@ -191,9 +91,6 @@ const packages = [
 ];
 
 export function ExhibitorSponsor() {
-  const [showExhibitorForm, setShowExhibitorForm] = useState(false);
-  const [selectedTier, setSelectedTier] = useState<string | null>(null);
-
   return (
     <>
       <section id="exhibit" className="relative py-24 sm:py-32 bg-secondary/40">
@@ -211,19 +108,18 @@ export function ExhibitorSponsor() {
                 and signage included. A 30% deposit confirms your booking, with balance payable
                 within 10 working days.
               </p>
-              <button
-                type="button"
-                onClick={() => setShowExhibitorForm((v) => !v)}
+              <Link
+                to="/exhibit"
+                search={{ type: "exhibitor" }}
                 className="mt-8 inline-flex items-center gap-2 rounded-xl bg-gradient-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-elegant hover:-translate-y-0.5 transition-transform"
               >
                 <ClipboardCheck size={18} />
                 Apply for a Booth
                 <ArrowRight size={16} />
-              </button>
+              </Link>
               <p className="mt-3 text-xs text-muted-foreground">
                 Deposit: 30% at booking · Balance: within 10 working days
               </p>
-              {showExhibitorForm && <PartnerForm type="exhibitor" />}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {booths.map((b) => (
@@ -300,47 +196,30 @@ export function ExhibitorSponsor() {
                     </li>
                   ))}
                 </ul>
-                <button
-                  type="button"
-                  onClick={() => setSelectedTier(p.tier)}
+                <Link
+                  to="/exhibit"
+                  search={{ type: "sponsor", tier: p.tier }}
                   className={`mt-6 inline-flex items-center gap-1.5 text-sm font-semibold ${
                     p.accent ? "text-gold hover:text-white" : "text-primary hover:text-gold"
                   } transition-colors`}
                 >
                   Apply for {p.tier}
                   <ArrowRight size={14} />
-                </button>
+                </Link>
               </div>
             ))}
           </div>
 
           <div className="mt-6 text-center text-sm text-muted-foreground">
             Packages strictly in order of receipt of application and deposit.{" "}
-            <button
-              type="button"
-              onClick={() => setSelectedTier((t) => t ?? "Diamond")}
+            <Link
+              to="/exhibit"
+              search={{ type: "sponsor" }}
               className="font-semibold text-primary hover:text-gold transition-colors"
             >
               Apply now →
-            </button>
+            </Link>
           </div>
-
-          {selectedTier && (
-            <div className="mt-16 max-w-xl mx-auto text-center">
-              <h3 className="font-display text-2xl font-bold">
-                Inquire about the {selectedTier} package
-              </h3>
-              <p className="mt-2 text-muted-foreground text-sm">
-                Tell us a bit about your company and we'll follow up.
-              </p>
-              <div className="text-left flex justify-center">
-                <PartnerForm
-                  type="sponsor"
-                  defaultMessage={`Interested in the ${selectedTier} sponsorship package.`}
-                />
-              </div>
-            </div>
-          )}
         </div>
       </section>
     </>

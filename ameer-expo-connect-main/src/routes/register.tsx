@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
   submitRegistration,
@@ -29,6 +29,7 @@ import {
 import logo from "@/assets/ameer-expo-logo.png";
 import { VideoEmbed } from "../components/expo/VideoEmbed";
 import { LanguageSwitcher } from "../components/expo/LanguageSwitcher";
+import { RegistrationTypeGate } from "../components/expo/RegistrationTypeGate";
 export const Route = createFileRoute("/register")({
   component: Register,
   head: () => ({
@@ -327,7 +328,9 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
 // Main component
 // ──────────────────────────────────────────────────────────────────────────────
 function Register() {
+  const navigate = useNavigate();
   const t = (str: string) => str;
+  const [typeGateDone, setTypeGateDone] = useState(false);
   const [step, setStep] = useState(0);
   const [f, setF] = useState<FormState>(initial);
   const [submitted, setSubmitted] = useState<string | null>(null);
@@ -859,6 +862,21 @@ function Register() {
           </div>
         </div>
       </div>
+    );
+  }
+
+  // ── Type gate (first screen before the visitor wizard) ─────────────────────
+  if (!typeGateDone) {
+    return (
+      <RegistrationTypeGate
+        onContinue={(type) => {
+          if (type === "visitor") {
+            setTypeGateDone(true);
+          } else {
+            navigate({ to: "/exhibit", search: { type: type as "exhibitor" | "sponsor" } });
+          }
+        }}
+      />
     );
   }
 
