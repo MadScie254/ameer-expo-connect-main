@@ -294,6 +294,7 @@ function Register() {
   const [resumedAt, setResumedAt] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Turnstile callback integration

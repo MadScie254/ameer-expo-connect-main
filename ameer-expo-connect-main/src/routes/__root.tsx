@@ -113,28 +113,57 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `window.googleTranslateElementInit = function() { new window.google.translate.TranslateElement({ pageLanguage: 'en', autoDisplay: false }, 'google_translate_element'); }`,
-          }}
-        />
-        <script
-          src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
-          async
-          defer
-        />
         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
       </head>
-      <body>
-        <div id="google_translate_element" className="hidden"></div>
+      <body suppressHydrationWarning>
+        <GoogleTranslateLoader />
+        <div id="google_translate_element" className="hidden" suppressHydrationWarning></div>
         {children}
         <Scripts />
       </body>
     </html>
   );
+}
+
+function GoogleTranslateLoader() {
+  useEffect(() => {
+    const googleWindow = window as Window & {
+      google?: {
+        translate?: {
+          TranslateElement?: new (
+            options: { pageLanguage: string; autoDisplay: boolean },
+            elementId: string,
+          ) => unknown;
+        };
+      };
+      googleTranslateElementInit?: () => void;
+    };
+
+    const existingScript = document.getElementById("google-translate-script");
+    if (existingScript) return;
+
+    googleWindow.googleTranslateElementInit = function () {
+      if (!googleWindow.google?.translate?.TranslateElement) return;
+
+      new googleWindow.google.translate.TranslateElement(
+        { pageLanguage: "en", autoDisplay: false },
+        "google_translate_element",
+      );
+    };
+
+    const script = document.createElement("script");
+    script.id = "google-translate-script";
+    script.src =
+      "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+  }, []);
+
+  return null;
 }
 
 function RootComponent() {
