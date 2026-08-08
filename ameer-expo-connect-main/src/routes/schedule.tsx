@@ -151,9 +151,11 @@ function Schedule() {
     const isBookmarked = bookmarks.includes(sessionId);
 
     // Optimistic UI update
-    setBookmarks((prev) =>
-      isBookmarked ? prev.filter((id) => id !== sessionId) : [...prev, sessionId],
-    );
+    setBookmarks((prev) => {
+      const next = isBookmarked ? prev.filter((id) => id !== sessionId) : [...prev, sessionId];
+      window.dispatchEvent(new CustomEvent("agenda:count-changed", { detail: { count: next.length } }));
+      return next;
+    });
 
     try {
       if (isBookmarked) {
@@ -166,9 +168,13 @@ function Schedule() {
       }
     } catch (err) {
       // Revert on failure
-      setBookmarks((prev) =>
-        isBookmarked ? [...prev, sessionId] : prev.filter((id) => id !== sessionId),
-      );
+      setBookmarks((prev) => {
+        const reverted = isBookmarked ? [...prev, sessionId] : prev.filter((id) => id !== sessionId);
+        window.dispatchEvent(
+          new CustomEvent("agenda:count-changed", { detail: { count: reverted.length } }),
+        );
+        return reverted;
+      });
       console.error("Failed to toggle bookmark", err);
     }
   };

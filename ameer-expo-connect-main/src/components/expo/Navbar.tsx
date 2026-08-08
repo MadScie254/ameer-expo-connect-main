@@ -82,6 +82,18 @@ export function Navbar() {
   }, []);
 
   useEffect(() => {
+    const onAgendaCountChanged = (event: Event) => {
+      const custom = event as CustomEvent<{ count: number }>;
+      if (typeof custom.detail?.count === "number") {
+        setAgendaCount(custom.detail.count);
+      }
+    };
+
+    window.addEventListener("agenda:count-changed", onAgendaCountChanged);
+    return () => window.removeEventListener("agenda:count-changed", onAgendaCountChanged);
+  }, []);
+
+  useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden";
     } else {
