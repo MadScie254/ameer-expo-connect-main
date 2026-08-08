@@ -3,17 +3,17 @@ import { Mail, Phone, MapPin, Instagram, Linkedin, Twitter, Facebook } from "luc
 import logo from "@/assets/ameer-expo-logo.png";
 
 const SOCIAL_LINKS = {
-  linkedin: "#", // TODO: replace with real URL
-  twitter: "#", // TODO: replace with real URL
-  instagram: "#", // TODO: replace with real URL
-  facebook: "#", // TODO: replace with real URL
+  linkedin: null, // TODO: replace with real URL
+  twitter: null, // TODO: replace with real URL
+  instagram: null, // TODO: replace with real URL
+  facebook: null, // TODO: replace with real URL
 };
 
 const FOOTER_LINKS = {
-  privacy: "#", // TODO: replace with real URL
+  privacy: null, // TODO: replace with real URL
   terms: "/terms",
-  cookies: "#", // TODO: replace with real URL
-  brochure: "#", // TODO: replace with real URL
+  cookies: null, // TODO: replace with real URL
+  brochure: null, // TODO: replace with real URL
 };
 
 export function Footer() {
@@ -56,15 +56,26 @@ export function Footer() {
                 { icon: Twitter, url: SOCIAL_LINKS.twitter },
                 { icon: Instagram, url: SOCIAL_LINKS.instagram },
                 { icon: Facebook, url: SOCIAL_LINKS.facebook },
-              ].map(({ icon: I, url }, i) => (
-                <a
-                  key={i}
-                  href={url}
-                  className="grid h-9 w-9 place-items-center rounded-full bg-white/10 hover:bg-gold hover:text-gold-foreground transition-colors"
-                >
-                  <I size={16} />
-                </a>
-              ))}
+              ].map(({ icon: I, url }, i) =>
+                url ? (
+                  <a
+                    key={i}
+                    href={url}
+                    className="grid h-9 w-9 place-items-center rounded-full bg-white/10 hover:bg-gold hover:text-gold-foreground transition-colors"
+                  >
+                    <I size={16} />
+                  </a>
+                ) : (
+                  <span
+                    key={i}
+                    aria-disabled="true"
+                    title="Coming soon"
+                    className="grid h-9 w-9 place-items-center rounded-full bg-white/10 opacity-50 cursor-not-allowed"
+                  >
+                    <I size={16} />
+                  </span>
+                ),
+              )}
             </div>
           </div>
 
@@ -113,9 +124,15 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href={FOOTER_LINKS.brochure} className="hover:text-gold">
-                  Download Brochure
-                </a>
+                {FOOTER_LINKS.brochure ? (
+                  <a href={FOOTER_LINKS.brochure} className="hover:text-gold">
+                    Download Brochure
+                  </a>
+                ) : (
+                  <span className="opacity-50 cursor-not-allowed" aria-disabled="true" title="Coming soon">
+                    Download Brochure
+                  </span>
+                )}
               </li>
             </ul>
           </div>
@@ -140,15 +157,27 @@ export function Footer() {
         <div className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-white/60">
           <div>© 2026 Ameer Group Ltd. All rights reserved.</div>
           <div className="flex gap-4">
-            <a href={FOOTER_LINKS.privacy} className="hover:text-gold">
-              Privacy
-            </a>
+            {FOOTER_LINKS.privacy ? (
+              <a href={FOOTER_LINKS.privacy} className="hover:text-gold">
+                Privacy
+              </a>
+            ) : (
+              <span className="opacity-50 cursor-not-allowed" aria-disabled="true" title="Coming soon">
+                Privacy
+              </span>
+            )}
             <a href={FOOTER_LINKS.terms} className="hover:text-gold">
               Terms
             </a>
-            <a href={FOOTER_LINKS.cookies} className="hover:text-gold">
-              Cookies
-            </a>
+            {FOOTER_LINKS.cookies ? (
+              <a href={FOOTER_LINKS.cookies} className="hover:text-gold">
+                Cookies
+              </a>
+            ) : (
+              <span className="opacity-50 cursor-not-allowed" aria-disabled="true" title="Coming soon">
+                Cookies
+              </span>
+            )}
           </div>
         </div>
       </div>
