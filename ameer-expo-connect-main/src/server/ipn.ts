@@ -13,7 +13,7 @@ export async function handleIpn(request: Request) {
     let orderTrackingId = url.searchParams.get("OrderTrackingId");
     let merchantReference = url.searchParams.get("OrderMerchantReference");
 
-    // Fallback to body if not in query
+    // Fallback to body if not in query.
     if (!orderTrackingId && request.method === "POST") {
       try {
         const body = await request.json();
