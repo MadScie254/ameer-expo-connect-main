@@ -154,7 +154,9 @@ function Schedule() {
     // Optimistic UI update
     setBookmarks((prev) => {
       const next = isBookmarked ? prev.filter((id) => id !== sessionId) : [...prev, sessionId];
-      window.dispatchEvent(new CustomEvent("agenda:count-changed", { detail: { count: next.length } }));
+      window.dispatchEvent(
+        new CustomEvent("agenda:count-changed", { detail: { count: next.length } }),
+      );
       return next;
     });
 
@@ -170,7 +172,9 @@ function Schedule() {
     } catch (err) {
       // Revert on failure
       setBookmarks((prev) => {
-        const reverted = isBookmarked ? [...prev, sessionId] : prev.filter((id) => id !== sessionId);
+        const reverted = isBookmarked
+          ? [...prev, sessionId]
+          : prev.filter((id) => id !== sessionId);
         window.dispatchEvent(
           new CustomEvent("agenda:count-changed", { detail: { count: reverted.length } }),
         );
@@ -188,7 +192,11 @@ function Schedule() {
     setView(next);
     const nextHash = next === "agenda" ? "#my-agenda" : "#full-schedule";
     if (window.location.hash !== nextHash) {
-      window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}${nextHash}`);
+      window.history.replaceState(
+        null,
+        "",
+        `${window.location.pathname}${window.location.search}${nextHash}`,
+      );
     }
   };
 
@@ -384,7 +392,9 @@ function Schedule() {
 
             <TabsContent value="agenda" className="mt-0">
               {loading ? (
-                <div className="py-20 text-center text-muted-foreground">Loading your agenda...</div>
+                <div className="py-20 text-center text-muted-foreground">
+                  Loading your agenda...
+                </div>
               ) : !user || agendaSessions.length === 0 ? (
                 <div className="py-16 text-center bg-card rounded-3xl border border-border/60 border-dashed">
                   <CalendarIcon size={44} className="mx-auto text-muted-foreground/30 mb-4" />
@@ -414,7 +424,10 @@ function Schedule() {
                         {group.sessions.map((session) => {
                           const expanded = expandedAgendaSession === session.id;
                           return (
-                            <div key={session.id} className="rounded-xl border border-border/70 overflow-hidden">
+                            <div
+                              key={session.id}
+                              className="rounded-xl border border-border/70 overflow-hidden"
+                            >
                               <button
                                 onClick={() =>
                                   setExpandedAgendaSession((prev) =>
@@ -448,7 +461,10 @@ function Schedule() {
                                     <span className="font-semibold">Speaker: </span>
                                     {session.speaker_name}
                                     {session.speaker_role ? (
-                                      <span className="text-muted-foreground"> · {session.speaker_role}</span>
+                                      <span className="text-muted-foreground">
+                                        {" "}
+                                        · {session.speaker_role}
+                                      </span>
                                     ) : null}
                                   </div>
                                   <button

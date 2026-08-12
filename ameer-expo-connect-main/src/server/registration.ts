@@ -167,43 +167,15 @@ export const submitRegistration = createServerFn({ method: "POST" })
         // Collision (astronomically rare): generate a new one next iteration
       }
 
-      const payload = data;
-
-      let redirectUrl = null;
-      let orderTrackingId = null;
-      let paymentStatus = "free";
-
       const passType = data.passType || "general";
       const amount = passType === "vip" ? 5000 : 0;
-
-      if (passType === "vip") {
-        try {
-          // Fetch pesapal token and submit order
-          const token = await getPesapalToken();
-          const pesapalRes = await submitPesapalOrder(token, {
-            id,
-            amount,
-            email: data.email,
-            phone: data.phone,
-            firstName: data.firstName,
-            lastName: data.lastName,
-          });
-
-          // Only mark as pending after we have a real Pesapal response
-          paymentStatus = "pending";
-          redirectUrl = pesapalRes.redirect_url;
-          orderTrackingId = pesapalRes.order_tracking_id;
-        } catch (pesapalErr) {
-          console.error("Pesapal integration failed:", pesapalErr);
-          // Do not create any registration row when payment setup fails — nothing to resume.
-          return { success: false, error: "Payment setup failed. Please try again in a moment." };
-        }
-      }
+      const isVip = passType === "vip";
+      const paymentStatus = isVip ? "unpaid" : "free";
 
       // ── Generate ticket for free registrations immediately ───────────────
       let ticketNumber: string | null = null;
       let ticketIssuedAt: string | null = null;
-      if (paymentStatus === "free") {
+      if (!isVip) {
         // Retry up to 3 times on unique-constraint collision
         for (let attempt = 0; attempt < 3; attempt++) {
           ticketNumber = generateTicketNumber();
@@ -224,6 +196,7 @@ export const submitRegistration = createServerFn({ method: "POST" })
 
       const userId = await findOrCreateUserId(data.email, data.firstName, data.lastName);
 
+      // ── PHASE 1: Insert the row immediately so the lead is never lost ────
       const { data: row, error: insertError } = await supabaseAdmin
         .from("registrations")
         .insert({
@@ -239,10 +212,10 @@ export const submitRegistration = createServerFn({ method: "POST" })
           pass_type: passType,
           amount: amount,
           payment_status: paymentStatus,
-          order_tracking_id: orderTrackingId,
+          order_tracking_id: null,
           city: data.city,
           country: data.country,
-          payload: payload,
+          payload: data,
           gender: data.gender,
           id_number: data.idNumber,
           whatsapp: data.whatsapp,
@@ -266,60 +239,142 @@ export const submitRegistration = createServerFn({ method: "POST" })
         throw insertError;
       }
 
-      if (paymentStatus === "free") {
-        // Generate QR PNG for the confirmation email
-        let ticketQrBase64: string | null = null;
-        if (row.ticket_number) {
-          try {
-            const qrBuffer = await generateTicketQrPng(row.ticket_number);
-            ticketQrBase64 = qrBuffer.toString("base64");
-          } catch (qrErr) {
-            console.error("QR generation failed (non-fatal):", qrErr);
-          }
+      // ── PHASE 2 (VIP only): Attempt Pesapal — non-fatal if it fails ──────
+      if (isVip) {
+        try {
+          const token = await getPesapalToken();
+          const pesapalRes = await submitPesapalOrder(token, {
+            id,
+            amount,
+            email: data.email,
+            phone: data.phone,
+            firstName: data.firstName,
+            lastName: data.lastName,
+          });
+
+          // Pesapal succeeded — update the row to "pending" with the tracking details
+          await supabaseAdmin
+            .from("registrations")
+            .update({
+              payment_status: "pending",
+              order_tracking_id: pesapalRes.order_tracking_id,
+            })
+            .eq("id", id);
+
+          return {
+            success: true,
+            id: row.id,
+            referenceCode: row.reference_code,
+            passType,
+            redirectUrl: pesapalRes.redirect_url,
+            ticketNumber: null,
+            paymentFailed: false,
+          };
+        } catch (pesapalErr) {
+          // Pesapal failed — the registration ROW IS ALREADY SAVED.
+          // Do NOT fail the whole request. The user can pay later via their confirmation email.
+          console.error("Pesapal integration failed (non-fatal — row already saved):", pesapalErr);
+
+          // Notify admin and send registrant a confirmation with "pay later" context
+          await sendRegistrationNotification({
+            id: row.id,
+            firstName: row.first_name,
+            lastName: row.last_name,
+            email: row.email,
+            phone: row.phone,
+            company: row.company,
+            passType: row.pass_type,
+            amount: Number(row.amount),
+            paymentStatus: row.payment_status,
+            ticketNumber: null,
+          }).catch((e) => console.error("Admin notification failed (non-fatal):", e));
+
+          await sendRegistrantConfirmation({
+            email: row.email,
+            firstName: row.first_name,
+            referenceCode: row.reference_code,
+            passType: row.pass_type,
+            lastName: row.last_name,
+            company: row.company,
+            jobTitle: row.job_title,
+            industry: row.industry,
+            interests: row.interests,
+            networkingTargets: row.networking_targets,
+            needsHotel: row.needs_hotel,
+            needsPickup: row.needs_pickup,
+            needsVisa: row.needs_visa,
+            dietary: row.dietary,
+            accessibility: row.accessibility,
+            gender: row.gender,
+            ticketNumber: null,
+            ticketQrBase64: null,
+          }).catch((e) => console.error("Registrant confirmation failed (non-fatal):", e));
+
+          return {
+            success: true,
+            id: row.id,
+            referenceCode: row.reference_code,
+            passType,
+            redirectUrl: null,
+            ticketNumber: null,
+            paymentFailed: true, // frontend shows a non-blocking "pay later" notice
+          };
         }
-
-        await sendRegistrationNotification({
-          id: row.id,
-          firstName: row.first_name,
-          lastName: row.last_name,
-          email: row.email,
-          phone: row.phone,
-          company: row.company,
-          passType: row.pass_type,
-          amount: Number(row.amount),
-          paymentStatus: row.payment_status,
-          ticketNumber: row.ticket_number,
-        });
-
-        await sendRegistrantConfirmation({
-          email: row.email,
-          firstName: row.first_name,
-          referenceCode: row.reference_code,
-          passType: row.pass_type,
-          lastName: row.last_name,
-          company: row.company,
-          jobTitle: row.job_title,
-          industry: row.industry,
-          interests: row.interests,
-          networkingTargets: row.networking_targets,
-          needsHotel: row.needs_hotel,
-          needsPickup: row.needs_pickup,
-          needsVisa: row.needs_visa,
-          dietary: row.dietary,
-          accessibility: row.accessibility,
-          gender: row.gender,
-          ticketNumber: row.ticket_number,
-          ticketQrBase64,
-        });
       }
+
+      // ── Free / General pass: send emails immediately ─────────────────────
+      let ticketQrBase64: string | null = null;
+      if (row.ticket_number) {
+        try {
+          const qrBuffer = await generateTicketQrPng(row.ticket_number);
+          ticketQrBase64 = qrBuffer.toString("base64");
+        } catch (qrErr) {
+          console.error("QR generation failed (non-fatal):", qrErr);
+        }
+      }
+
+      await sendRegistrationNotification({
+        id: row.id,
+        firstName: row.first_name,
+        lastName: row.last_name,
+        email: row.email,
+        phone: row.phone,
+        company: row.company,
+        passType: row.pass_type,
+        amount: Number(row.amount),
+        paymentStatus: row.payment_status,
+        ticketNumber: row.ticket_number,
+      });
+
+      await sendRegistrantConfirmation({
+        email: row.email,
+        firstName: row.first_name,
+        referenceCode: row.reference_code,
+        passType: row.pass_type,
+        lastName: row.last_name,
+        company: row.company,
+        jobTitle: row.job_title,
+        industry: row.industry,
+        interests: row.interests,
+        networkingTargets: row.networking_targets,
+        needsHotel: row.needs_hotel,
+        needsPickup: row.needs_pickup,
+        needsVisa: row.needs_visa,
+        dietary: row.dietary,
+        accessibility: row.accessibility,
+        gender: row.gender,
+        ticketNumber: row.ticket_number,
+        ticketQrBase64,
+      });
 
       return {
         success: true,
         id: row.id,
         referenceCode: row.reference_code,
         passType,
-        redirectUrl,
+        redirectUrl: null,
         ticketNumber: row.ticket_number as string | null,
+        paymentFailed: false,
       };
     } catch (error) {
       console.error("Registration error:", error);

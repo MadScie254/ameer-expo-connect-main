@@ -84,9 +84,12 @@ export const setAdminPassword = createServerFn({ method: "POST" })
       }
 
       // Update user password via admin API
-      const { data: updated, error: updateErr } = await supabaseAdmin.auth.admin.updateUserById(userId!, {
-        password,
-      });
+      const { data: updated, error: updateErr } = await supabaseAdmin.auth.admin.updateUserById(
+        userId!,
+        {
+          password,
+        },
+      );
 
       if (updateErr) {
         console.error("updateUserById error:", updateErr);
@@ -103,7 +106,9 @@ export const setAdminPassword = createServerFn({ method: "POST" })
     } catch (err) {
       console.error("setAdminPassword error:", err);
       try {
-        await supabaseAdmin.from("admin_setup_audit").insert({ email, success: false, error: "exception" });
+        await supabaseAdmin
+          .from("admin_setup_audit")
+          .insert({ email, success: false, error: "exception" });
       } catch {
         /* ignore logging failure */
       }

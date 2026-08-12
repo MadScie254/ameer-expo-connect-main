@@ -94,12 +94,8 @@ function AdminDashboard() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [leadsSearch, setLeadsSearch] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterPassType, setFilterPassType] = useState<
-    "all" | "general" | "vip"
-  >("all");
-  const [sortField, setSortField] = useState<"created_at" | "first_name">(
-    "created_at",
-  );
+  const [filterPassType, setFilterPassType] = useState<"all" | "general" | "vip">("all");
+  const [sortField, setSortField] = useState<"created_at" | "first_name">("created_at");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   // Session form state
@@ -131,7 +127,6 @@ function AdminDashboard() {
         return;
       }
 
-
       // Check if admin
       const { data: profile } = await supabase
         .from("profiles")
@@ -158,10 +153,7 @@ function AdminDashboard() {
           .order("created_at", { ascending: false });
 
         if (registrations) {
-          const revenue = registrations.reduce(
-            (acc, curr) => acc + (Number(curr.amount) || 0),
-            0,
-          );
+          const revenue = registrations.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
           const vip = registrations.filter((r) => r.pass_type === "vip").length;
           const gen = registrations.filter((r) => r.pass_type === "general").length;
           const paid = registrations.filter(
@@ -234,9 +226,7 @@ function AdminDashboard() {
     list.sort((a, b) => {
       const aVal = a[sortField] || "";
       const bVal = b[sortField] || "";
-      return sortDir === "asc"
-        ? aVal.localeCompare(bVal)
-        : bVal.localeCompare(aVal);
+      return sortDir === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
     });
 
     return list;
@@ -378,12 +368,10 @@ function AdminDashboard() {
         <main className="flex-1 pt-[120px] pb-24 flex items-center justify-center">
           <div className="bg-card p-8 rounded-3xl border border-red-500/20 text-center shadow-sm max-w-md">
             <Settings className="w-16 h-16 text-red-500 mx-auto mb-4 opacity-50" />
-            <h1 className="text-2xl font-bold font-display text-red-500 mb-2">
-              Access Denied
-            </h1>
+            <h1 className="text-2xl font-bold font-display text-red-500 mb-2">Access Denied</h1>
             <p className="text-muted-foreground mb-6">
-              You do not have administrator privileges to view this page. Please
-              sign in with an admin account.
+              You do not have administrator privileges to view this page. Please sign in with an
+              admin account.
             </p>
             <a
               href="/admin-login"
@@ -421,9 +409,7 @@ function AdminDashboard() {
       <main className="flex-1 pt-[120px] pb-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="mb-8">
-            <h1 className="font-display text-4xl font-bold">
-              Admin Dashboard
-            </h1>
+            <h1 className="font-display text-4xl font-bold">Admin Dashboard</h1>
             <p className="text-muted-foreground mt-2 text-lg">
               Manage registrations, sessions, and view event analytics.
             </p>
@@ -488,12 +474,8 @@ function AdminDashboard() {
                     <Ticket size={24} />
                   </div>
                   <div>
-                    <div className="text-sm text-muted-foreground font-medium mb-1">
-                      VIP Passes
-                    </div>
-                    <div className="text-3xl font-bold font-display">
-                      {stats.vipCount}
-                    </div>
+                    <div className="text-sm text-muted-foreground font-medium mb-1">VIP Passes</div>
+                    <div className="text-3xl font-bold font-display">{stats.vipCount}</div>
                   </div>
                 </div>
 
@@ -505,9 +487,7 @@ function AdminDashboard() {
                     <div className="text-sm text-muted-foreground font-medium mb-1">
                       General Passes
                     </div>
-                    <div className="text-3xl font-bold font-display">
-                      {stats.generalCount}
-                    </div>
+                    <div className="text-3xl font-bold font-display">{stats.generalCount}</div>
                   </div>
                 </div>
               </div>
@@ -533,9 +513,7 @@ function AdminDashboard() {
                     <div className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
                       Pending Payment
                     </div>
-                    <div className="text-xl font-bold">
-                      {stats.pendingCount}
-                    </div>
+                    <div className="text-xl font-bold">{stats.pendingCount}</div>
                   </div>
                 </div>
                 <div className="bg-card rounded-2xl border border-border/60 p-5 flex items-center gap-4">
@@ -579,26 +557,18 @@ function AdminDashboard() {
                     <tbody className="divide-y divide-border/60">
                       {allRegistrations.length === 0 ? (
                         <tr>
-                          <td
-                            colSpan={5}
-                            className="px-6 py-12 text-center text-muted-foreground"
-                          >
+                          <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
                             No registrations yet.
                           </td>
                         </tr>
                       ) : (
                         allRegistrations.slice(0, 5).map((reg) => (
-                          <tr
-                            key={reg.id}
-                            className="hover:bg-accent/30 transition-colors"
-                          >
+                          <tr key={reg.id} className="hover:bg-accent/30 transition-colors">
                             <td className="px-6 py-4">
                               <div className="font-semibold text-foreground">
                                 {reg.first_name} {reg.last_name}
                               </div>
-                              <div className="text-xs text-muted-foreground">
-                                {reg.email}
-                              </div>
+                              <div className="text-xs text-muted-foreground">{reg.email}</div>
                             </td>
                             <td className="px-6 py-4 text-muted-foreground">
                               {reg.company || "-"}
@@ -617,8 +587,7 @@ function AdminDashboard() {
                             <td className="px-6 py-4">
                               <span
                                 className={`px-2.5 py-1 rounded-md text-xs font-bold ${
-                                  reg.payment_status === "free" ||
-                                  reg.payment_status === "paid"
+                                  reg.payment_status === "free" || reg.payment_status === "paid"
                                     ? "bg-green-500/10 text-green-600"
                                     : "bg-amber-500/10 text-amber-600"
                                 }`}
@@ -660,11 +629,7 @@ function AdminDashboard() {
                 <div className="flex gap-2 items-center">
                   <select
                     value={filterPassType}
-                    onChange={(e) =>
-                      setFilterPassType(
-                        e.target.value as "all" | "general" | "vip",
-                      )
-                    }
+                    onChange={(e) => setFilterPassType(e.target.value as "all" | "general" | "vip")}
                     className="rounded-xl border border-border bg-secondary/50 px-3 py-2.5 text-sm outline-none focus:border-primary"
                   >
                     <option value="all">All Passes</option>
@@ -687,10 +652,7 @@ function AdminDashboard() {
                 <span className="font-semibold text-foreground">
                   {filteredRegistrations.length}
                 </span>{" "}
-                of{" "}
-                <span className="font-semibold text-foreground">
-                  {allRegistrations.length}
-                </span>{" "}
+                of <span className="font-semibold text-foreground">{allRegistrations.length}</span>{" "}
                 registrations
               </div>
 
@@ -739,10 +701,7 @@ function AdminDashboard() {
                     <tbody className="divide-y divide-border/60">
                       {filteredRegistrations.length === 0 ? (
                         <tr>
-                          <td
-                            colSpan={8}
-                            className="px-6 py-12 text-center text-muted-foreground"
-                          >
+                          <td colSpan={8} className="px-6 py-12 text-center text-muted-foreground">
                             {searchQuery
                               ? "No registrations match your search."
                               : "No registrations found."}
@@ -750,16 +709,11 @@ function AdminDashboard() {
                         </tr>
                       ) : (
                         filteredRegistrations.map((reg) => (
-                          <tr
-                            key={reg.id}
-                            className="hover:bg-accent/30 transition-colors"
-                          >
+                          <tr key={reg.id} className="hover:bg-accent/30 transition-colors">
                             <td className="px-6 py-4 font-semibold text-foreground whitespace-nowrap">
                               {reg.first_name} {reg.last_name}
                             </td>
-                            <td className="px-6 py-4 text-muted-foreground">
-                              {reg.email}
-                            </td>
+                            <td className="px-6 py-4 text-muted-foreground">{reg.email}</td>
                             <td className="px-6 py-4 text-muted-foreground">
                               {reg.company || "-"}
                             </td>
@@ -782,8 +736,7 @@ function AdminDashboard() {
                             <td className="px-6 py-4">
                               <span
                                 className={`px-2.5 py-1 rounded-md text-xs font-bold ${
-                                  reg.payment_status === "free" ||
-                                  reg.payment_status === "paid"
+                                  reg.payment_status === "free" || reg.payment_status === "paid"
                                     ? "bg-green-500/10 text-green-600"
                                     : "bg-amber-500/10 text-amber-600"
                                 }`}
@@ -811,9 +764,7 @@ function AdminDashboard() {
           {activeTab === "sessions" && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h2 className="font-bold text-2xl font-display">
-                  Session Management
-                </h2>
+                <h2 className="font-bold text-2xl font-display">Session Management</h2>
                 <button
                   onClick={() => setShowSessionForm(!showSessionForm)}
                   className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors shadow-glow"
@@ -829,9 +780,7 @@ function AdminDashboard() {
                   onSubmit={addSession}
                   className="bg-card rounded-3xl border border-border/60 shadow-elegant p-6 space-y-4"
                 >
-                  <h3 className="font-bold text-lg font-display">
-                    New Session
-                  </h3>
+                  <h3 className="font-bold text-lg font-display">New Session</h3>
                   <div className="grid sm:grid-cols-2 gap-4">
                     <input
                       required
@@ -884,9 +833,7 @@ function AdminDashboard() {
                       className="rounded-xl border border-border bg-secondary/50 px-4 py-2.5 text-sm outline-none focus:border-primary"
                     />
                     <div>
-                      <label className="text-xs text-muted-foreground block mb-1">
-                        Start Time
-                      </label>
+                      <label className="text-xs text-muted-foreground block mb-1">Start Time</label>
                       <input
                         required
                         type="datetime-local"
@@ -901,9 +848,7 @@ function AdminDashboard() {
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-muted-foreground block mb-1">
-                        End Time
-                      </label>
+                      <label className="text-xs text-muted-foreground block mb-1">End Time</label>
                       <input
                         required
                         type="datetime-local"
@@ -968,9 +913,7 @@ function AdminDashboard() {
               {sessions.length === 0 ? (
                 <div className="bg-card rounded-3xl border border-border/60 shadow-elegant p-12 text-center">
                   <Calendar className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-30" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
-                    No Sessions Yet
-                  </h3>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">No Sessions Yet</h3>
                   <p className="text-muted-foreground text-sm">
                     Click "Add Session" above to create your first agenda item.
                   </p>
@@ -988,14 +931,11 @@ function AdminDashboard() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-4">
                           <div>
-                            <h3 className="font-bold text-foreground text-base">
-                              {session.title}
-                            </h3>
+                            <h3 className="font-bold text-foreground text-base">{session.title}</h3>
                             {session.speaker_name && (
                               <p className="text-sm text-muted-foreground mt-0.5">
                                 {session.speaker_name}
-                                {session.speaker_role &&
-                                  ` · ${session.speaker_role}`}
+                                {session.speaker_role && ` · ${session.speaker_role}`}
                               </p>
                             )}
                           </div>
@@ -1015,20 +955,17 @@ function AdminDashboard() {
                         <div className="flex flex-wrap gap-3 mt-3 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Clock size={12} />
-                            {new Date(session.start_time).toLocaleString(
-                              "en-KE",
-                              {
-                                month: "short",
-                                day: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              },
-                            )}{" "}
+                            {new Date(session.start_time).toLocaleString("en-KE", {
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}{" "}
                             –{" "}
-                            {new Date(session.end_time).toLocaleTimeString(
-                              "en-KE",
-                              { hour: "2-digit", minute: "2-digit" },
-                            )}
+                            {new Date(session.end_time).toLocaleTimeString("en-KE", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
                           </span>
                           <span className="flex items-center gap-1">
                             <MapPin size={12} />
@@ -1055,9 +992,8 @@ function AdminDashboard() {
                   Broadcast Announcement
                 </h2>
                 <p className="text-sm text-muted-foreground mb-6">
-                  Send a global announcement to all attendees' dashboards and
-                  mobile apps. Announcements appear in real-time via Supabase
-                  Realtime.
+                  Send a global announcement to all attendees' dashboards and mobile apps.
+                  Announcements appear in real-time via Supabase Realtime.
                 </p>
                 <form onSubmit={sendNotification} className="space-y-4">
                   <div>
@@ -1157,24 +1093,17 @@ function AdminDashboard() {
                           );
                         })
                         .map((lead) => (
-                          <tr
-                            key={lead.id}
-                            className="hover:bg-accent/30 transition-colors"
-                          >
+                          <tr key={lead.id} className="hover:bg-accent/30 transition-colors">
                             <td className="px-6 py-4 font-semibold text-foreground whitespace-nowrap">
                               {lead.company_name}
                             </td>
                             <td className="px-6 py-4 text-muted-foreground whitespace-nowrap">
                               {lead.contact_name}
                               {lead.phone && (
-                                <div className="text-xs text-muted-foreground/70">
-                                  {lead.phone}
-                                </div>
+                                <div className="text-xs text-muted-foreground/70">{lead.phone}</div>
                               )}
                             </td>
-                            <td className="px-6 py-4 text-muted-foreground">
-                              {lead.email}
-                            </td>
+                            <td className="px-6 py-4 text-muted-foreground">{lead.email}</td>
                             <td className="px-6 py-4">
                               <span
                                 className={`px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${
@@ -1198,10 +1127,7 @@ function AdminDashboard() {
                         ))}
                       {leads.length === 0 && (
                         <tr>
-                          <td
-                            colSpan={6}
-                            className="px-6 py-12 text-center text-muted-foreground"
-                          >
+                          <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
                             <Briefcase className="w-10 h-10 mx-auto mb-3 opacity-20" />
                             No partner inquiries yet.
                           </td>

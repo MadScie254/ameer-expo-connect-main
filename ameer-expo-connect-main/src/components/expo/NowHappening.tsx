@@ -99,7 +99,8 @@ export function NowHappening() {
           </p>
         ) : (
           <p className="font-medium">
-            <span className="font-bold">Next:</span> {state.session.title} at {formatClock(state.session.start_time)} EAT
+            <span className="font-bold">Next:</span> {state.session.title} at{" "}
+            {formatClock(state.session.start_time)} EAT
           </p>
         )}
       </div>

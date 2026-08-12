@@ -45,18 +45,38 @@ function AdminSetup() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="text-sm mb-1 block">Email</label>
-            <input value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-lg border bg-secondary/50 px-3 py-2 outline-none" required />
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-lg border bg-secondary/50 px-3 py-2 outline-none"
+              required
+            />
           </div>
           <div>
             <label className="text-sm mb-1 block">New Password</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full rounded-lg border bg-secondary/50 px-3 py-2 outline-none" required />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-lg border bg-secondary/50 px-3 py-2 outline-none"
+              required
+            />
           </div>
           <div>
             <label className="text-sm mb-1 block">Setup PIN</label>
-            <input value={pin} onChange={(e) => setPin(e.target.value)} className="w-full rounded-lg border bg-secondary/50 px-3 py-2 outline-none" required />
+            <input
+              value={pin}
+              onChange={(e) => setPin(e.target.value)}
+              className="w-full rounded-lg border bg-secondary/50 px-3 py-2 outline-none"
+              required
+            />
           </div>
           <div>
-            <button type="submit" className="w-full bg-primary text-primary-foreground py-2 rounded-lg font-semibold" disabled={loading}>
+            <button
+              type="submit"
+              className="w-full bg-primary text-primary-foreground py-2 rounded-lg font-semibold"
+              disabled={loading}
+            >
               {loading ? "Setting…" : "Set Password"}
             </button>
           </div>

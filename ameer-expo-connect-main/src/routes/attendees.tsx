@@ -2,7 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/expo/Navbar";
 import { Footer } from "@/components/expo/Footer";
-import { Search, Briefcase, Handshake, CheckCircle2, MessageCircle, XCircle, Clock } from "lucide-react";
+import {
+  Search,
+  Briefcase,
+  Handshake,
+  CheckCircle2,
+  MessageCircle,
+  XCircle,
+  Clock,
+} from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/attendees")({
@@ -29,8 +37,6 @@ type Profile = {
   bio: string;
   is_public: boolean;
 };
-
-
 
 function Attendees() {
   const [attendees, setAttendees] = useState<Profile[]>([]);

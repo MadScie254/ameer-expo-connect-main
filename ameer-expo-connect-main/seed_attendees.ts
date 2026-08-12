@@ -36,12 +36,11 @@ async function seed() {
   for (const u of mockUsers) {
     try {
       // Create user in auth.users (the trigger will create a profile row)
-      const { data: created, error: createErr } =
-        await supabaseAdmin.auth.admin.createUser({
-          email: u.email,
-          email_confirm: true,
-          user_metadata: { first_name: u.first_name, last_name: u.last_name },
-        });
+      const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+        email: u.email,
+        email_confirm: true,
+        user_metadata: { first_name: u.first_name, last_name: u.last_name },
+      });
 
       let userId: string;
       if (createErr) {

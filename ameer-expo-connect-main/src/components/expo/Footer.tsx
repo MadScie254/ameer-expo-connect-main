@@ -129,7 +129,11 @@ export function Footer() {
                     Download Brochure
                   </a>
                 ) : (
-                  <span className="opacity-50 cursor-not-allowed" aria-disabled="true" title="Coming soon">
+                  <span
+                    className="opacity-50 cursor-not-allowed"
+                    aria-disabled="true"
+                    title="Coming soon"
+                  >
                     Download Brochure
                   </span>
                 )}
@@ -162,7 +166,11 @@ export function Footer() {
                 Privacy
               </a>
             ) : (
-              <span className="opacity-50 cursor-not-allowed" aria-disabled="true" title="Coming soon">
+              <span
+                className="opacity-50 cursor-not-allowed"
+                aria-disabled="true"
+                title="Coming soon"
+              >
                 Privacy
               </span>
             )}
@@ -174,7 +182,11 @@ export function Footer() {
                 Cookies
               </a>
             ) : (
-              <span className="opacity-50 cursor-not-allowed" aria-disabled="true" title="Coming soon">
+              <span
+                className="opacity-50 cursor-not-allowed"
+                aria-disabled="true"
+                title="Coming soon"
+              >
                 Cookies
               </span>
             )}

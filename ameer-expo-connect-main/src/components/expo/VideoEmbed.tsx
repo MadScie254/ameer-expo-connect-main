@@ -12,7 +12,7 @@ export function VideoEmbed({ youtubeId, src, caption, autoPlay }: VideoEmbedProp
         {youtubeId ? (
           <iframe
             className="absolute top-0 left-0 h-full w-full"
-            src={`https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1${autoPlay ? '&autoplay=1&mute=1' : ''}`}
+            src={`https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1${autoPlay ? "&autoplay=1&mute=1" : ""}`}
             title="Video player"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen

@@ -47,12 +47,8 @@ function AdminLogin() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-primary mb-4">
             <ShieldCheck size={32} />
           </div>
-          <h1 className="font-display text-3xl font-bold text-foreground">
-            Admin Portal
-          </h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Ameer Expo 2026 — Staff Access Only
-          </p>
+          <h1 className="font-display text-3xl font-bold text-foreground">Admin Portal</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Ameer Expo 2026 — Staff Access Only</p>
         </div>
 
         {/* Card */}
@@ -127,11 +123,7 @@ function AdminLogin() {
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
-                  <svg
-                    className="animate-spin h-4 w-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                  >
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
                     <circle
                       className="opacity-25"
                       cx="12"
@@ -140,11 +132,7 @@ function AdminLogin() {
                       stroke="currentColor"
                       strokeWidth="4"
                     />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v8H4z"
-                    />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                   </svg>
                   Signing in…
                 </span>
@@ -156,7 +144,10 @@ function AdminLogin() {
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-6">
-          <a href="/" className="hover:text-foreground transition-colors underline underline-offset-2">
+          <a
+            href="/"
+            className="hover:text-foreground transition-colors underline underline-offset-2"
+          >
             ← Back to main site
           </a>
         </p>

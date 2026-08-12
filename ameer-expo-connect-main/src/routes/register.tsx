@@ -316,6 +316,7 @@ function Register() {
   const [personalValidationAttempted, setPersonalValidationAttempted] = useState(false);
   const [resumeId, setResumeId] = useState<string | null>(null);
   const [isResuming, setIsResuming] = useState(false);
+  const [paymentFailed, setPaymentFailed] = useState(false);
 
   // Check for rid in URL on mount
   useEffect(() => {
@@ -512,6 +513,9 @@ function Register() {
       }
       setSubmitted(result.ticketNumber || result.referenceCode);
       setSubmittedId(result.id);
+      if (result.paymentFailed) {
+        setPaymentFailed(true);
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Registration failed. Please try again.";
       console.error("Registration error:", err);
@@ -714,6 +718,18 @@ function Register() {
               <p className="mt-1 text-sm text-primary-foreground/70">
                 A confirmation email and QR badge are on their way.
               </p>
+
+              {paymentFailed && (
+                <div className="mt-4 rounded-xl bg-destructive/10 border border-destructive/20 p-4 text-left">
+                  <h3 className="font-semibold text-destructive mb-1 flex items-center gap-2">
+                    <AlertTriangle size={16} /> Payment Pending
+                  </h3>
+                  <p className="text-sm text-destructive/80">
+                    Your registration is saved, but we couldn't start the payment right now. You can
+                    pay later using the secure link in your confirmation email.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Dashed divider — ticket tear */}
