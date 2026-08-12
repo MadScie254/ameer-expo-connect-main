@@ -400,18 +400,20 @@ function ExhibitPage() {
           <p className="ml-9 text-sm text-muted-foreground">
             Pick an available booth directly from the live floor plan to reserve it.
           </p>
-          
+
           <div className="mt-8 -mx-6 sm:mx-0">
-            <FloorPlanGrid 
+            <FloorPlanGrid
               booths={dbBooths as Booth[]}
               selectedBoothNumber={wizardState.selection}
               onBoothClick={async (b) => {
                 // Optimistically select it
                 setField("selection", b.booth_number);
                 setField("amount", b.price);
-                
+
                 // Immediately reserve it
-                const res = await reserveBooth({ data: { boothNumber: b.booth_number, inquiryId } });
+                const res = await reserveBooth({
+                  data: { boothNumber: b.booth_number, inquiryId },
+                });
                 if (!res.success) {
                   alert(res.error || "Failed to reserve booth");
                   setField("selection", "");
@@ -421,24 +423,28 @@ function ExhibitPage() {
               }}
             />
           </div>
-          
+
           <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-secondary/30 p-4 rounded-xl border border-border/50">
             <div>
-              <div className="text-xs text-muted-foreground uppercase tracking-widest font-semibold mb-1">Selected Booth</div>
+              <div className="text-xs text-muted-foreground uppercase tracking-widest font-semibold mb-1">
+                Selected Booth
+              </div>
               <div className="font-display text-xl font-bold text-primary">
                 {wizardState.selection ? `Booth ${wizardState.selection}` : "None selected"}
               </div>
             </div>
             {wizardState.amount ? (
               <div className="text-right">
-                <div className="text-xs text-muted-foreground uppercase tracking-widest font-semibold mb-1">Price</div>
+                <div className="text-xs text-muted-foreground uppercase tracking-widest font-semibold mb-1">
+                  Price
+                </div>
                 <div className="font-display text-xl font-bold text-gold">
                   KES {wizardState.amount.toLocaleString()}
                 </div>
               </div>
             ) : null}
           </div>
-          
+
           <p className="mt-4 text-xs text-muted-foreground text-center">
             Deposit: 30% at booking · Balance: within 10 working days
           </p>

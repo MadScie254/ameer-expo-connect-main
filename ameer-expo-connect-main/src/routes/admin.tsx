@@ -22,8 +22,10 @@ import {
   ChevronUp,
   Eye,
   Briefcase,
+  CheckCheck,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { confirmBoothBooking } from "@/server/booths";
 
 export const Route = createFileRoute("/admin")({
   component: AdminDashboard,
@@ -70,6 +72,7 @@ type Lead = {
   phone: string | null;
   message: string | null;
   amount: number | null;
+  booth_number: string | null;
   created_at: string;
 };
 
@@ -100,6 +103,7 @@ function AdminDashboard() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [leadsSearch, setLeadsSearch] = useState("");
+  const [confirmingBoothId, setConfirmingBoothId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterPassType, setFilterPassType] = useState<"all" | "general" | "vip">("all");
   const [sortField, setSortField] = useState<"created_at" | "first_name">("created_at");
@@ -194,7 +198,9 @@ function AdminDashboard() {
         // Load partner inquiry leads
         const { data: leadsData } = await supabase
           .from("partner_inquiries")
-          .select("id, type, company_name, contact_name, email, phone, message, amount, created_at")
+          .select(
+            "id, type, company_name, contact_name, email, phone, message, amount, booth_number, created_at",
+          )
           .order("created_at", { ascending: false });
 
         if (leadsData) {
@@ -1139,8 +1145,10 @@ function AdminDashboard() {
                         <th className="px-6 py-4 font-semibold">Contact</th>
                         <th className="px-6 py-4 font-semibold">Email</th>
                         <th className="px-6 py-4 font-semibold">Interest</th>
+                        <th className="px-6 py-4 font-semibold">Booth</th>
                         <th className="px-6 py-4 font-semibold">Message</th>
                         <th className="px-6 py-4 font-semibold">Date</th>
+                        <th className="px-6 py-4 font-semibold">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/60">
@@ -1177,6 +1185,15 @@ function AdminDashboard() {
                                 {lead.type}
                               </span>
                             </td>
+                            <td className="px-6 py-4">
+                              {lead.booth_number ? (
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-orange-500/10 text-orange-600">
+                                  <MapPin size={11} /> #{lead.booth_number}
+                                </span>
+                              ) : (
+                                <span className="text-muted-foreground/40 text-xs italic">—</span>
+                              )}
+                            </td>
                             <td className="px-6 py-4 text-muted-foreground max-w-xs">
                               <p className="line-clamp-2 text-xs">
                                 {lead.message || <span className="italic opacity-50">—</span>}
@@ -1185,11 +1202,45 @@ function AdminDashboard() {
                             <td className="px-6 py-4 text-muted-foreground whitespace-nowrap">
                               {new Date(lead.created_at).toLocaleDateString()}
                             </td>
+                            <td className="px-6 py-4">
+                              {lead.booth_number ? (
+                                <button
+                                  disabled={confirmingBoothId === lead.id}
+                                  onClick={async () => {
+                                    if (!lead.booth_number) return;
+                                    setConfirmingBoothId(lead.id);
+                                    try {
+                                      const res = await confirmBoothBooking({
+                                        data: {
+                                          inquiryId: lead.id,
+                                          boothNumber: lead.booth_number,
+                                        },
+                                      });
+                                      if (res.success) {
+                                        alert(`Booth #${lead.booth_number} marked as BOOKED.`);
+                                      } else {
+                                        alert(res.error || "Failed to confirm booking.");
+                                      }
+                                    } finally {
+                                      setConfirmingBoothId(null);
+                                    }
+                                  }}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                                >
+                                  <CheckCheck size={13} />
+                                  {confirmingBoothId === lead.id
+                                    ? "Confirming…"
+                                    : "Confirm Booking"}
+                                </button>
+                              ) : (
+                                <span className="text-muted-foreground/40 text-xs italic">—</span>
+                              )}
+                            </td>
                           </tr>
                         ))}
                       {leads.length === 0 && (
                         <tr>
-                          <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
+                          <td colSpan={8} className="px-6 py-12 text-center text-muted-foreground">
                             <Briefcase className="w-10 h-10 mx-auto mb-3 opacity-20" />
                             No partner inquiries yet.
                           </td>
