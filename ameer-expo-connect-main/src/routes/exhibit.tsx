@@ -56,31 +56,24 @@ export const Route = createFileRoute("/exhibit")({
 const booths = [
   {
     name: "Standard Booth",
-    size: "2m × 2m",
-    price: "KES 70,000",
-    amount: 70000,
-    desc: "Compact 2m × 2m shell scheme booth for a focused exhibitor presence.",
+    size: "2m × 3m",
+    price: "KES 90,000",
+    amount: 90000,
+    desc: "Compact 2m × 3m shell scheme booth for a focused exhibitor presence.",
   },
   {
     name: "Double Booth",
     size: "3m × 3m",
-    price: "KES 120,000",
-    amount: 120000,
+    price: "KES 130,000",
+    amount: 130000,
     desc: "Expanded 3m × 3m shell scheme with more display space and comfort.",
   },
   {
     name: "Premium Booth",
     size: "3m × 6m",
-    price: "KES 200,000",
-    amount: 200000,
+    price: "KES 220,000",
+    amount: 220000,
     desc: "Large 3m × 6m booth with premium location, furniture and connectivity.",
-  },
-  {
-    name: "Large Booth",
-    size: "6m × 6m",
-    price: "KES 250,000",
-    amount: 250000,
-    desc: "Spacious 6m × 6m showcase area for high-impact brand presence.",
   },
 ];
 
@@ -311,6 +304,16 @@ function ExhibitPage() {
   function setField<K extends keyof WizardState>(key: K, value: WizardState[K]) {
     setWizardState((s) => ({ ...s, [key]: value }));
   }
+
+  // Turnstile callback — must live here in ExhibitPage (a proper component), not inside renderStep3
+  useEffect(() => {
+    window.onTurnstileSuccess = (token: string) => {
+      setWizardState((s) => ({ ...s, turnstileToken: token }));
+    };
+    return () => {
+      delete window.onTurnstileSuccess;
+    };
+  }, []);
 
   // Step 1 → step 2 (from RegistrationTypeGate)
   function handleTypeContinue(type: "visitor" | "exhibitor" | "sponsor") {
@@ -565,16 +568,6 @@ function ExhibitPage() {
         }
       }
     };
-
-    // Turnstile callback integration
-    useEffect(() => {
-      window.onTurnstileSuccess = (token: string) => {
-        setWizardState((s) => ({ ...s, turnstileToken: token }));
-      };
-      return () => {
-        delete window.onTurnstileSuccess;
-      };
-    }, []);
 
     return (
       <form
