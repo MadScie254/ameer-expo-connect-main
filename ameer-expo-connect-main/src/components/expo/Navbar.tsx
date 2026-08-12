@@ -13,7 +13,6 @@ const links = [
   { label: "Networking", to: "/attendees" },
   { label: "Resources", to: "/resources" },
   { label: "Venue", to: "/", hash: "venue" },
-  { label: "Speakers", to: "/", hash: "speakers" },
   { label: "FAQ", to: "/", hash: "faq" },
   { label: "Admin", to: "/admin" },
 ];

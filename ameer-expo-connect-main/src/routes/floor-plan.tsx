@@ -108,7 +108,7 @@ function FloorPlan() {
               Sarit Expo Centre - Ground Floor
             </div>
 
-            <div className="flex-1 w-full h-full overflow-auto relative grid place-items-center bg-[#f8fafc] dark:bg-black/20 p-8">
+            <div className="flex-1 w-full h-full overflow-auto relative bg-[#f8fafc] dark:bg-black/20 p-8 pt-12">
               <FloorPlanGrid
                 booths={booths as Booth[]}
                 selectedBoothNumber={selectedBooth}
