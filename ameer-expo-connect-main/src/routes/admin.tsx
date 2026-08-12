@@ -69,6 +69,7 @@ type Lead = {
   email: string;
   phone: string | null;
   message: string | null;
+  amount: number | null;
   created_at: string;
 };
 
@@ -87,6 +88,12 @@ function AdminDashboard() {
     paidCount: 0,
     pendingCount: 0,
     checkedInCount: 0,
+  });
+
+  const [partnerStats, setPartnerStats] = useState({
+    totalExhibitors: 0,
+    totalSponsors: 0,
+    totalBoothRevenue: 0,
   });
 
   const [allRegistrations, setAllRegistrations] = useState<Registration[]>([]);
@@ -187,10 +194,20 @@ function AdminDashboard() {
         // Load partner inquiry leads
         const { data: leadsData } = await supabase
           .from("partner_inquiries")
-          .select("id, type, company_name, contact_name, email, phone, message, created_at")
+          .select("id, type, company_name, contact_name, email, phone, message, amount, created_at")
           .order("created_at", { ascending: false });
 
         if (leadsData) {
+          const exhibitors = leadsData.filter((l) => l.type === "exhibitor").length;
+          const sponsors = leadsData.filter((l) => l.type === "sponsor").length;
+          const revenue = leadsData.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+
+          setPartnerStats({
+            totalExhibitors: exhibitors,
+            totalSponsors: sponsors,
+            totalBoothRevenue: revenue,
+          });
+
           setLeads(leadsData as Lead[]);
         }
       } catch (err) {
@@ -488,6 +505,51 @@ function AdminDashboard() {
                       General Passes
                     </div>
                     <div className="text-3xl font-bold font-display">{stats.generalCount}</div>
+                  </div>
+                </div>
+
+                <div className="bg-card p-6 rounded-3xl border border-border/60 shadow-elegant flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0">
+                    <Briefcase size={24} />
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground font-medium mb-1">
+                      Total Exhibitors
+                    </div>
+                    <div className="text-3xl font-bold font-display">
+                      {partnerStats.totalExhibitors}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-card p-6 rounded-3xl border border-border/60 shadow-elegant flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center shrink-0">
+                    <DollarSign size={24} />
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground font-medium mb-1">
+                      Total Sponsors
+                    </div>
+                    <div className="text-3xl font-bold font-display">
+                      {partnerStats.totalSponsors}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-card p-6 rounded-3xl border border-border/60 shadow-elegant flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+                    <BarChart size={24} />
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground font-medium mb-1">
+                      Total Booth Revenue
+                    </div>
+                    <div className="text-3xl font-bold font-display">
+                      KES{" "}
+                      {partnerStats.totalBoothRevenue.toLocaleString("en-KE", {
+                        minimumFractionDigits: 0,
+                      })}
+                    </div>
                   </div>
                 </div>
               </div>

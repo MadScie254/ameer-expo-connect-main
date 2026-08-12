@@ -13,6 +13,7 @@ const PartnerInquirySchema = z.object({
   selection: z.string().optional(),
   amount: z.number().optional(),
   turnstileToken: z.string().optional(),
+  id: z.string().uuid().optional(),
 });
 
 async function verifyTurnstile(token: string | undefined): Promise<boolean> {
@@ -61,7 +62,7 @@ export const submitPartnerInquiry = createServerFn({ method: "POST" })
         };
       }
 
-      const id = crypto.randomUUID();
+      const id = data.id || crypto.randomUUID();
 
       const { data: row, error: insertError } = await supabaseAdmin
         .from("partner_inquiries")

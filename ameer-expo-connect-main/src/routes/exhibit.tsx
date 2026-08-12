@@ -15,6 +15,8 @@ import {
 import logo from "@/assets/ameer-expo-logo.png";
 import { submitPartnerInquiry } from "../server/partners";
 import { RegistrationTypeGate } from "../components/expo/RegistrationTypeGate";
+import { listBooths, reserveBooth } from "../server/booths";
+import { FloorPlanGrid, type Booth } from "../components/expo/FloorPlanGrid";
 
 declare global {
   interface Window {
@@ -25,13 +27,6 @@ declare global {
   }
 }
 
-// Lead-capture flow by design: no payment is collected here; booth/sponsorship deals are negotiated
-// manually after the team follows up.
-// NOTE: this route previously wrote to `exhibitor_leads` via `submitExhibitorLead`.
-//       It now writes to `partner_inquiries` (the single source of truth, also used by the
-//       homepage #exhibit / #sponsor anchors). The /exhibit URL is intentionally preserved
-//       to avoid breaking any bookmarked or indexed links.
-
 const searchSchema = z.object({
   type: z.enum(["exhibitor", "sponsor"]).optional(),
   tier: z.string().optional(),
@@ -40,6 +35,10 @@ const searchSchema = z.object({
 export const Route = createFileRoute("/exhibit")({
   component: ExhibitPage,
   validateSearch: searchSchema,
+  loader: async () => {
+    const dbBooths = await listBooths();
+    return { dbBooths };
+  },
   head: () => ({
     meta: [
       { title: "Exhibit & Sponsor · Ameer Expo Africa & Middle East 2026" },
@@ -237,11 +236,18 @@ function StepProgress({ step }: { step: number }) {
 
 function ExhibitPage() {
   const navigate = useNavigate();
-  const search = useSearch({ from: "/exhibit" });
+  const search = Route.useSearch();
+  const { dbBooths } = Route.useLoaderData();
 
-  // Derive initial values from query params
-  const paramType = search.type ?? null;
-  const paramTier = search.tier ?? null;
+  // Determine initial type from URL
+  const paramType = search.type || null;
+  const paramTier = search.tier || null;
+
+  // We need a stable ID for reserving the booth before form submission
+  const [inquiryId] = useState(() => crypto.randomUUID());
+
+  // Form State
+  const [typeGateDone, setTypeGateDone] = useState(false);
 
   // wizard step: 1 = type gate, 2 = selection, 3 = contact/review
   const [step, setStep] = useState<1 | 2 | 3>(paramType ? 2 : 1);
@@ -384,7 +390,7 @@ function ExhibitPage() {
   const renderStep2 = () => {
     if (wizardState.type === "exhibitor") {
       return (
-        <div className="rounded-2xl bg-card border border-border/60 shadow-soft p-6 sm:p-10">
+        <div className="rounded-2xl bg-card border border-border/60 shadow-soft p-6 sm:p-10 w-full overflow-hidden">
           <div className="flex items-center gap-3 mb-1">
             <Building2 size={24} className="text-primary shrink-0" />
             <h2 className="font-display text-2xl sm:text-3xl font-bold text-foreground">
@@ -392,40 +398,48 @@ function ExhibitPage() {
             </h2>
           </div>
           <p className="ml-9 text-sm text-muted-foreground">
-            Shell scheme booths with power, internet, furniture and signage included.
+            Pick an available booth directly from the live floor plan to reserve it.
           </p>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            {booths.map((b) => {
-              const isActive = wizardState.selection === b.name;
-              return (
-                <button
-                  key={b.name}
-                  type="button"
-                  onClick={() => {
-                    setField("selection", b.name);
-                    setField("amount", b.amount);
-                  }}
-                  className={`relative text-left rounded-2xl border-2 p-5 transition-all duration-200 hover:-translate-y-0.5 ${
-                    isActive
-                      ? "border-primary bg-primary/5 shadow-elegant ring-2 ring-primary/20"
-                      : "border-border/60 bg-card hover:border-primary/40 hover:shadow-soft"
-                  }`}
-                >
-                  {isActive && (
-                    <span className="absolute top-3 right-3 grid h-6 w-6 place-items-center rounded-full bg-gradient-primary text-primary-foreground">
-                      <Check size={13} strokeWidth={3} />
-                    </span>
-                  )}
-                  <div className="font-display text-base font-bold text-foreground">{b.name}</div>
-                  <div className="mt-0.5 text-xs text-muted-foreground">{b.size}</div>
-                  <div className="mt-2 font-display text-lg font-bold text-gold">{b.price}</div>
-                  <p className="mt-2 text-xs text-muted-foreground leading-relaxed">{b.desc}</p>
-                  <div className="mt-3 h-0.5 w-8 rounded-full bg-gradient-gold" />
-                </button>
-              );
-            })}
+          
+          <div className="mt-8 -mx-6 sm:mx-0">
+            <FloorPlanGrid 
+              booths={dbBooths as Booth[]}
+              selectedBoothNumber={wizardState.selection}
+              onBoothClick={async (b) => {
+                // Optimistically select it
+                setField("selection", b.booth_number);
+                setField("amount", b.price);
+                
+                // Immediately reserve it
+                const res = await reserveBooth({ data: { boothNumber: b.booth_number, inquiryId } });
+                if (!res.success) {
+                  alert(res.error || "Failed to reserve booth");
+                  setField("selection", "");
+                  setField("amount", 0);
+                  // Refreshing the route could be good here, but an alert is a start
+                }
+              }}
+            />
           </div>
-          <p className="mt-4 text-xs text-muted-foreground">
+          
+          <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-secondary/30 p-4 rounded-xl border border-border/50">
+            <div>
+              <div className="text-xs text-muted-foreground uppercase tracking-widest font-semibold mb-1">Selected Booth</div>
+              <div className="font-display text-xl font-bold text-primary">
+                {wizardState.selection ? `Booth ${wizardState.selection}` : "None selected"}
+              </div>
+            </div>
+            {wizardState.amount ? (
+              <div className="text-right">
+                <div className="text-xs text-muted-foreground uppercase tracking-widest font-semibold mb-1">Price</div>
+                <div className="font-display text-xl font-bold text-gold">
+                  KES {wizardState.amount.toLocaleString()}
+                </div>
+              </div>
+            ) : null}
+          </div>
+          
+          <p className="mt-4 text-xs text-muted-foreground text-center">
             Deposit: 30% at booking · Balance: within 10 working days
           </p>
           <NavButtons
@@ -538,6 +552,7 @@ function ExhibitPage() {
       try {
         const result = await submitPartnerInquiry({
           data: {
+            id: inquiryId,
             type: wizardState.type,
             companyName: wizardState.companyName,
             contactName: wizardState.contactName,
@@ -596,9 +611,7 @@ function ExhibitPage() {
               <div className="text-xs text-muted-foreground capitalize">{wizardState.type}</div>
             </div>
             <div className="font-display text-lg font-bold text-gold">
-              {wizardState.type === "exhibitor"
-                ? booths.find((b) => b.name === wizardState.selection)?.price
-                : packages.find((p) => p.tier === wizardState.selection)?.price}
+              KES {wizardState.amount?.toLocaleString() || "0"}
             </div>
           </div>
         </div>
