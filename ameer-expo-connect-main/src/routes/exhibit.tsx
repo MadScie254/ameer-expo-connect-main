@@ -18,15 +18,6 @@ import { RegistrationTypeGate } from "../components/expo/RegistrationTypeGate";
 import { listBooths, reserveBooth } from "../server/booths";
 import { FloorPlanGrid, type Booth } from "../components/expo/FloorPlanGrid";
 
-declare global {
-  interface Window {
-    onTurnstileSuccess?: (token: string) => void;
-    turnstile?: {
-      reset: () => void;
-    };
-  }
-}
-
 const searchSchema = z.object({
   type: z.enum(["exhibitor", "sponsor"]).optional(),
   tier: z.string().optional(),
@@ -165,7 +156,6 @@ type WizardState = {
   email: string;
   phone: string;
   message: string;
-  turnstileToken?: string;
 };
 
 const inputCls =
@@ -310,16 +300,6 @@ function ExhibitPage() {
   function setField<K extends keyof WizardState>(key: K, value: WizardState[K]) {
     setWizardState((s) => ({ ...s, [key]: value }));
   }
-
-  // Turnstile callback — must live here in ExhibitPage (a proper component), not inside renderStep3
-  useEffect(() => {
-    window.onTurnstileSuccess = (token: string) => {
-      setWizardState((s) => ({ ...s, turnstileToken: token }));
-    };
-    return () => {
-      delete window.onTurnstileSuccess;
-    };
-  }, []);
 
   // Step 1 → step 2 (from RegistrationTypeGate)
   function handleTypeContinue(type: "visitor" | "exhibitor" | "sponsor") {
@@ -567,7 +547,6 @@ function ExhibitPage() {
             message: wizardState.message || undefined,
             selection: wizardState.selection,
             amount: wizardState.amount,
-            turnstileToken: wizardState.turnstileToken,
           },
         });
         if (!result.success) {
@@ -584,9 +563,6 @@ function ExhibitPage() {
           err instanceof Error ? err.message : "Unable to submit your request right now.",
         );
         setSubmitStatus("error");
-        if (window.turnstile) {
-          window.turnstile.reset();
-        }
       }
     };
 
@@ -704,16 +680,9 @@ function ExhibitPage() {
           </div>
         </div>
 
-        {import.meta.env.VITE_TURNSTILE_SITE_KEY ? (
-          <div className="mt-8 flex justify-center">
-            <div
-              className="cf-turnstile"
-              data-sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
-              data-callback="onTurnstileSuccess"
-              data-action="turnstile-spin-v2"
-            />
-          </div>
-        ) : null}
+        <div className="mt-4 rounded-xl border border-dashed border-border bg-secondary/40 px-4 py-3 text-xs text-muted-foreground">
+          Your data is encrypted in transit.
+        </div>
 
         <NavButtons
           onBack={() => setStep(2)}

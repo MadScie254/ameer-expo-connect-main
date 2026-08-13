@@ -12,41 +12,13 @@ const PartnerInquirySchema = z.object({
   message: z.string().optional(),
   selection: z.string().optional(),
   amount: z.number().optional(),
-  turnstileToken: z.string().optional(),
   id: z.string().uuid().optional(),
 });
-
-async function verifyTurnstile(token: string | undefined): Promise<boolean> {
-  const secret = process.env.TURNSTILE_SECRET;
-  if (!secret) return true;
-  if (!token) return false;
-
-  try {
-    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ secret, response: token }),
-    });
-    const data = (await res.json()) as { success: boolean };
-    return data.success === true;
-  } catch {
-    console.error("Turnstile verification request failed");
-    return true;
-  }
-}
 
 export const submitPartnerInquiry = createServerFn({ method: "POST" })
   .validator((data: unknown) => PartnerInquirySchema.parse(data))
   .handler(async ({ data }) => {
     try {
-      const turnstileOk = await verifyTurnstile(data.turnstileToken);
-      if (!turnstileOk) {
-        return {
-          success: false,
-          error: "CAPTCHA verification failed. Please refresh and try again.",
-        };
-      }
-
       const fiveMinsAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
       const { data: recentInquiry } = await supabaseAdmin
         .from("partner_inquiries")
