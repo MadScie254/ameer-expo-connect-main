@@ -29,7 +29,6 @@ const RegistrationSchema = z.object({
   accessibility: z.string(),
   terms: z.boolean().refine((val) => val === true, "Must accept terms"),
   passType: z.string().optional(),
-  turnstileToken: z.string().optional(),
 });
 
 async function findOrCreateUserId(email: string, firstName: string, lastName: string) {
@@ -80,47 +79,10 @@ async function findOrCreateUserId(email: string, firstName: string, lastName: st
   }
 }
 
-/**
- * Verify a Cloudflare Turnstile token server-side.
- * Returns true if verification passes OR if no secret key is configured
- * (graceful degradation when Turnstile hasn't been set up yet).
- */
-async function verifyTurnstile(token: string | undefined): Promise<boolean> {
-  const secret = process.env.TURNSTILE_SECRET;
-  if (!secret) {
-    // Turnstile not configured — fall through (5-minute throttle is the backstop)
-    return true;
-  }
-  if (!token) return false;
-
-  try {
-    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ secret, response: token }),
-    });
-    const data = (await res.json()) as { success: boolean };
-    return data.success === true;
-  } catch {
-    // Network failure — don't block the user, log and allow
-    console.error("Turnstile verification request failed");
-    return true;
-  }
-}
-
 export const submitRegistration = createServerFn({ method: "POST" })
   .validator((data: unknown) => RegistrationSchema.parse(data))
   .handler(async ({ data }) => {
     try {
-      // ── Turnstile check ─────────────────────────────────────────────────
-      const turnstileOk = await verifyTurnstile(data.turnstileToken);
-      if (!turnstileOk) {
-        return {
-          success: false,
-          error: "CAPTCHA verification failed. Please refresh and try again.",
-        };
-      }
-
       // ── Detect pending VIP payment ───────────────────────────────────────────
       const { data: pendingVip } = await supabaseAdmin
         .from("registrations")

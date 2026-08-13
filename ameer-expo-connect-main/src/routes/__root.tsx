@@ -116,7 +116,6 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
-        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
       </head>
       <body suppressHydrationWarning>
         <GoogleTranslateLoader />

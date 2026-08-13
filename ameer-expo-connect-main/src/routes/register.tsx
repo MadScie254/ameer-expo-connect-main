@@ -114,7 +114,6 @@ type FormState = {
   accessibility: string;
   terms: boolean;
   passType: string;
-  turnstileToken?: string;
 };
 
 const initial: FormState = {
@@ -297,16 +296,6 @@ function Register() {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Turnstile callback integration
-  useEffect(() => {
-    window.onTurnstileSuccess = (token: string) => {
-      set("turnstileToken", token);
-    };
-    return () => {
-      delete window.onTurnstileSuccess;
-    };
-  }, []);
-
   const [confirmingRid, setConfirmingRid] = useState<string | null>(null);
   const [pendingRid, setPendingRid] = useState<string | null>(null);
   const [submittedId, setSubmittedId] = useState<string | null>(null);
@@ -485,10 +474,6 @@ function Register() {
 
       if (!result.success) {
         setSubmitError(result.error || "Registration failed. Please try again.");
-        // Reset Turnstile widget so user can retry with a fresh token
-        if (window.turnstile) {
-          window.turnstile.reset();
-        }
         return;
       }
 
@@ -519,10 +504,6 @@ function Register() {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Registration failed. Please try again.";
       console.error("Registration error:", err);
-      // Reset Turnstile widget so user can retry with a fresh token
-      if (window.turnstile) {
-        window.turnstile.reset();
-      }
       if (msg.trim().startsWith("<")) {
         setSubmitError(
           "Something went wrong saving your registration. Please try again in a moment.",
@@ -1292,20 +1273,9 @@ function Register() {
                     </span>
                   </label>
 
-                  {import.meta.env.VITE_TURNSTILE_SITE_KEY ? (
-                    <div className="mt-6">
-                      <div
-                        className="cf-turnstile"
-                        data-sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
-                        data-callback="onTurnstileSuccess"
-                        data-action="turnstile-spin-v2"
-                      />
-                    </div>
-                  ) : (
-                    <div className="mt-4 rounded-xl border border-dashed border-border bg-secondary/40 px-4 py-3 text-xs text-muted-foreground">
-                      Your data is encrypted in transit.
-                    </div>
-                  )}
+                  <div className="mt-4 rounded-xl border border-dashed border-border bg-secondary/40 px-4 py-3 text-xs text-muted-foreground">
+                    Your data is encrypted in transit.
+                  </div>
                 </StepBlock>
               )}
 
