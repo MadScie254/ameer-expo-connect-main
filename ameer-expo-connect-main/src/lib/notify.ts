@@ -179,7 +179,11 @@ export async function sendRegistrantConfirmation(registration: {
   const lastName = escapeHtml(registration.lastName);
   const fullName = [firstName, lastName].filter(Boolean).join(" ");
   const passLabel = registration.passType === "vip" ? "VIP Pass" : "General Admission (Free)";
-  const isVerified = registration.paymentStatus === "paid" || registration.paymentStatus === "free" || !registration.paymentStatus;
+  const ticketNumber = registration.ticketNumber || registration.referenceCode;
+  const isVerified =
+    registration.paymentStatus === "paid" ||
+    registration.paymentStatus === "free" ||
+    !registration.paymentStatus;
   const qrBorderColor = isVerified ? "#10B981" : "#F59E0B"; // Green or Amber
 
   // ── QR code section ────────────────────────────────────────────────────────

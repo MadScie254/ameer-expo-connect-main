@@ -82,9 +82,11 @@ export async function generateTicketPdf(ticket: {
   const textDark = rgb(0.2, 0.2, 0.2);
   const colorGreen = rgb(16 / 255, 185 / 255, 129 / 255);
   const colorAmber = rgb(245 / 255, 158 / 255, 11 / 255);
-  
+
   const statusColor = ticket.verified ? colorGreen : colorAmber;
-  const statusBg = ticket.verified ? rgb(209 / 255, 250 / 255, 229 / 255) : rgb(254 / 255, 243 / 255, 199 / 255);
+  const statusBg = ticket.verified
+    ? rgb(209 / 255, 250 / 255, 229 / 255)
+    : rgb(254 / 255, 243 / 255, 199 / 255);
 
   // Fonts
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);

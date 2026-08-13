@@ -90,7 +90,7 @@ export const confirmCheckIn = createServerFn({ method: "POST" })
           ticket_number: ticketNumber,
           action: "pin_fail",
         });
-        
+
         const expectedStaffPin = process.env.STAFF_CHECKIN_PIN;
         if (expectedStaffPin && pin === expectedStaffPin) {
           return { success: false as const, reason: "unverified_vip_override_required" as const };

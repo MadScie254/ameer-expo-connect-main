@@ -15,7 +15,9 @@ export const downloadTicketPdf = createServerFn({ method: "GET" })
     if (error || !registration) {
       throw new Error("Registration not found.");
     }
-    const verified = registration.payment_status === "free" || registration.payment_status === "paid";
+    const verified =
+      registration.payment_status === "free" || registration.payment_status === "paid";
+
     if (!registration.ticket_number) {
       throw new Error("Ticket number has not been generated yet.");
     }
@@ -51,7 +53,9 @@ export const downloadTicketIcs = createServerFn({ method: "GET" })
     if (error || !registration) {
       throw new Error("Registration not found.");
     }
-    const verified = registration.payment_status === "free" || registration.payment_status === "paid";
+    const verified =
+      registration.payment_status === "free" || registration.payment_status === "paid";
+
     if (!registration.ticket_number) {
       throw new Error("Ticket number has not been generated yet.");
     }
