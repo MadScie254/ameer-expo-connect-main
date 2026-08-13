@@ -268,8 +268,9 @@ export const submitRegistration = createServerFn({ method: "POST" })
             dietary: row.dietary,
             accessibility: row.accessibility,
             gender: row.gender,
-            ticketNumber: null,
+            ticketNumber: row.ticket_number as string | null,
             ticketQrBase64: null,
+            paymentStatus: row.payment_status,
           }).catch((e) => console.error("Registrant confirmation failed (non-fatal):", e));
 
           return {
@@ -280,6 +281,7 @@ export const submitRegistration = createServerFn({ method: "POST" })
             redirectUrl: null,
             ticketNumber: null,
             paymentFailed: true, // frontend shows a non-blocking "pay later" notice
+            paymentStatus: row.payment_status,
           };
         }
       }
@@ -335,8 +337,9 @@ export const submitRegistration = createServerFn({ method: "POST" })
         referenceCode: row.reference_code,
         passType,
         redirectUrl: null,
-        ticketNumber: row.ticket_number as string | null,
+        ticketNumber: ticketNumber || null,
         paymentFailed: false,
+        paymentStatus: row.payment_status,
       };
     } catch (error) {
       console.error("Registration error:", error);

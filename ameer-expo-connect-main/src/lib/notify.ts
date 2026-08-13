@@ -167,6 +167,7 @@ export async function sendRegistrantConfirmation(registration: {
   gender?: string | null;
   ticketNumber?: string | null;
   ticketQrBase64?: string | null;
+  paymentStatus?: string | null;
 }) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
@@ -178,7 +179,8 @@ export async function sendRegistrantConfirmation(registration: {
   const lastName = escapeHtml(registration.lastName);
   const fullName = [firstName, lastName].filter(Boolean).join(" ");
   const passLabel = registration.passType === "vip" ? "VIP Pass" : "General Admission (Free)";
-  const ticketNumber = registration.ticketNumber || registration.referenceCode;
+  const isVerified = registration.paymentStatus === "paid" || registration.paymentStatus === "free" || !registration.paymentStatus;
+  const qrBorderColor = isVerified ? "#10B981" : "#F59E0B"; // Green or Amber
 
   // ── QR code section ────────────────────────────────────────────────────────
   // If a base64 QR is supplied, embed inline AND attach for Outlook.
@@ -201,7 +203,7 @@ export async function sendRegistrantConfirmation(registration: {
               ? `<br/>
             <img src="${qrSrc}" alt="QR code for ticket ${escapeHtml(ticketNumber)}"
               width="160" height="160"
-              style="display:block;margin:16px auto 0;border-radius:8px;" />
+              style="display:block;margin:16px auto 0;border-radius:8px;border:4px solid ${qrBorderColor};padding:4px;background:#FFFFFF;" />
             <p style="margin:10px 0 0;font-size:12px;color:#6B7280;font-family:Arial,sans-serif;">
               Scan at entry
             </p>`
@@ -242,6 +244,23 @@ export async function sendRegistrantConfirmation(registration: {
       ${row("Dietary requirements", registration.dietary)}
       ${row("Accessibility needs", registration.accessibility)}
     </table>`;
+
+  const unverifiedNotice =
+    !isVerified && registration.passType === "vip"
+      ? `
+        <tr>
+          <td style="padding:0 40px 24px;">
+            <div style="background:#FFFBEB;border:1px solid #FCD34D;border-radius:8px;padding:16px;">
+              <p style="margin:0;font-size:14px;color:#92400E;font-weight:600;">Action Required: Complete your payment</p>
+              <p style="margin:8px 0 0;font-size:13px;color:#92400E;line-height:1.5;">
+                Your VIP pass is currently unverified because payment was not completed.
+                Please complete your payment to activate your ticket before the event.
+              </p>
+            </div>
+          </td>
+        </tr>
+      `
+      : "";
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -343,6 +362,8 @@ export async function sendRegistrantConfirmation(registration: {
             </table>
           </td>
         </tr>
+
+        ${unverifiedNotice}
 
         <!-- Divider -->
         <tr>

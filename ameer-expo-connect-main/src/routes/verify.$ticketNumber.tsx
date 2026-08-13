@@ -139,7 +139,12 @@ function bgWash(kind: Screen["kind"]): string {
 type Screen =
   | { kind: "loading" }
   | { kind: "not_found" }
-  | { kind: "not_valid" }
+  | {
+      kind: "not_valid";
+      firstName: string;
+      lastName: string;
+      passType: string;
+    }
   | {
       kind: "ready";
       firstName: string;
@@ -229,7 +234,12 @@ function VerifyPage() {
         }
 
         if (!result.eventValid) {
-          setScreen({ kind: "not_valid" });
+          setScreen({
+            kind: "not_valid",
+            firstName: result.firstName,
+            lastName: result.lastName,
+            passType: result.passType,
+          });
           return;
         }
 
@@ -295,11 +305,48 @@ function VerifyPage() {
         return;
       }
 
+      if (result.reason === "unverified_vip_override_required") {
+        setPinError("Unverified VIP — supervisor override required");
+        return;
+      }
+
       setPinError("Check-in failed. Please try again.");
     } catch {
       setPinError("Network error. Please try again.");
     } finally {
       setIsChecking(false);
+    }
+  };
+
+  // ── Force check-in handler (ADMIN-GATED for unverified VIP) ─────────────────
+  const handleForceCheckIn = async () => {
+    if (!adminPin.trim()) {
+      setUndoError("Enter admin PIN to continue.");
+      adminPinInputRef.current?.focus();
+      return;
+    }
+    setUndoError(null);
+    setIsUndoing(true);
+
+    try {
+      const result = await confirmCheckIn({ data: { ticketNumber, pin: adminPin } });
+
+      if (result.success) {
+        // Cache admin PIN as staff PIN for convenience? Let's just reload.
+        window.location.reload();
+        return;
+      }
+
+      if (result.reason === "invalid_pin") {
+        setUndoError("Incorrect Admin PIN. Please try again.");
+        return;
+      }
+
+      setUndoError("Check-in failed. Please try again.");
+    } catch {
+      setUndoError("Network error. Please try again.");
+    } finally {
+      setIsUndoing(false);
     }
   };
 
@@ -365,13 +412,77 @@ function VerifyPage() {
 
       {/* ── Not valid (payment pending) ── */}
       {screen.kind === "not_valid" && (
-        <StatusCard
-          icon={AlertTriangle}
-          iconClass="bg-amber-500/10 text-amber-600 dark:text-amber-400"
-          title="Ticket Not Active"
-          description="This ticket is not yet active. Payment confirmation may still be pending."
-          borderClass="border-amber-400/40"
-        />
+        <div className="rounded-2xl bg-card border-2 border-amber-400/50 shadow-elegant p-10 text-center max-w-sm w-full">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
+            <ShieldAlert size={32} />
+          </div>
+          <h1 className="font-display text-2xl font-bold text-foreground mb-2">
+            Unverified {passLabel(screen.passType)}
+          </h1>
+          <p className="text-sm text-muted-foreground mb-4">
+            Payment has not been confirmed for {screen.firstName} {screen.lastName}.
+          </p>
+          <div className="mt-8 border-t border-border/60 pt-6">
+            {!showUndo ? (
+              <button
+                onClick={() => setShowUndo(true)}
+                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Supervisor override
+              </button>
+            ) : (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                <div className="space-y-2 text-left">
+                  <label
+                    htmlFor="admin-pin"
+                    className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                  >
+                    <KeyRound size={13} />
+                    Admin PIN
+                  </label>
+                  <input
+                    id="admin-pin"
+                    ref={adminPinInputRef}
+                    type="password"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    value={adminPin}
+                    onChange={(e) => {
+                      setAdminPin(e.target.value);
+                      setUndoError(null);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleForceCheckIn();
+                    }}
+                    placeholder="Enter admin PIN"
+                    className="w-full rounded-xl border border-input bg-secondary/50 px-4 py-3 text-sm font-mono text-foreground shadow-sm outline-none transition-all focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 placeholder:text-muted-foreground/50"
+                  />
+                  {undoError && (
+                    <p className="flex items-center gap-1.5 text-sm text-destructive">
+                      <ShieldX size={13} className="shrink-0" />
+                      {undoError}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setShowUndo(false)}
+                    className="flex-1 rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium hover:border-foreground/20 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleForceCheckIn}
+                    disabled={isUndoing}
+                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-3 text-sm font-semibold text-white shadow-sm disabled:opacity-60 hover:-translate-y-0.5 transition-all"
+                  >
+                    {isUndoing ? <Loader2 size={16} className="animate-spin" /> : "Force Entry"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       {/* ── Error ── */}

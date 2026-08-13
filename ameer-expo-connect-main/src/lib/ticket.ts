@@ -1,5 +1,5 @@
 import QRCode from "qrcode";
-import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { PDFDocument, rgb, StandardFonts, degrees } from "pdf-lib";
 
 /**
  * Characters used for ticket number generation.
@@ -11,7 +11,7 @@ const TICKET_PREFIX = "AE26";
 
 /**
  * Generates a crypto-random reference code like `AE26-7QK3M9`.
- * Uses 6 characters from the unambiguous charset — shorter than ticket numbers
+ * Uses 6 characters from the unambiguous charset, shorter than ticket numbers
  * because reference codes are human-typed in support queries, not scanned.
  */
 export function generateReferenceCode(): string {
@@ -67,6 +67,7 @@ export async function generateTicketPdf(ticket: {
   passType: string;
   referenceCode: string;
   qrPngBuffer: Buffer;
+  verified: boolean;
 }): Promise<Buffer> {
   const pdfDoc = await PDFDocument.create();
 
@@ -79,6 +80,11 @@ export async function generateTicketPdf(ticket: {
   const brandGold = rgb(200 / 255, 169 / 255, 74 / 255); // #C8A94A roughly
   const white = rgb(1, 1, 1);
   const textDark = rgb(0.2, 0.2, 0.2);
+  const colorGreen = rgb(16 / 255, 185 / 255, 129 / 255);
+  const colorAmber = rgb(245 / 255, 158 / 255, 11 / 255);
+  
+  const statusColor = ticket.verified ? colorGreen : colorAmber;
+  const statusBg = ticket.verified ? rgb(209 / 255, 250 / 255, 229 / 255) : rgb(254 / 255, 243 / 255, 199 / 255);
 
   // Fonts
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
@@ -120,16 +126,27 @@ export async function generateTicketPdf(ticket: {
     color: textDark,
   });
 
-  page.drawText(
-    `Pass Type: ${ticket.passType === "vip" ? "VIP Pass" : "General Admission (Free)"}`,
-    {
-      x: 20,
-      y: startY - 25,
-      size: 12,
-      font: fontRegular,
-      color: textDark,
-    },
-  );
+  let passLabel = "VERIFIED GENERAL PASS";
+  if (ticket.passType === "vip") {
+    passLabel = ticket.verified ? "VERIFIED VIP PASS" : "UNVERIFIED VIP PASS";
+  }
+
+  // Draw pill background
+  page.drawRectangle({
+    x: 20,
+    y: startY - 28,
+    width: fontBold.widthOfTextAtSize(passLabel, 10) + 16,
+    height: 18,
+    color: statusBg,
+  });
+
+  page.drawText(passLabel, {
+    x: 28,
+    y: startY - 22,
+    size: 10,
+    font: fontBold,
+    color: statusColor,
+  });
 
   page.drawText(`Reference: ${ticket.referenceCode}`, {
     x: 20,
@@ -167,7 +184,7 @@ export async function generateTicketPdf(ticket: {
     y: qrY - 30,
     width: qrSize + 20,
     height: qrSize + 60,
-    borderColor: brandGold,
+    borderColor: statusColor,
     borderWidth: 2,
   });
 
@@ -186,6 +203,18 @@ export async function generateTicketPdf(ticket: {
     font: fontBold,
     color: brandNavy,
   });
+
+  if (!ticket.verified) {
+    page.drawText("PAYMENT PENDING", {
+      x: 50,
+      y: 90,
+      size: 28,
+      font: fontBold,
+      color: rgb(252 / 255, 211 / 255, 77 / 255), // Amber 300
+      rotate: degrees(30),
+      opacity: 0.8,
+    });
+  }
 
   const pdfBytes = await pdfDoc.save();
   return Buffer.from(pdfBytes);

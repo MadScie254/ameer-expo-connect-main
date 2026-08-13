@@ -68,15 +68,46 @@ export const confirmCheckIn = createServerFn({ method: "POST" })
       return { success: false as const, reason: "rate_limited" as const };
     }
 
-    // 1. PIN gate — checked server-side; PIN never leaves the server.
-    const expectedPin = process.env.STAFF_CHECKIN_PIN;
-    if (!expectedPin || pin !== expectedPin) {
-      // Record the failed attempt for rate-limit accounting
-      await supabaseAdmin.from("ticket_checkin_log").insert({
-        ticket_number: ticketNumber,
-        action: "pin_fail",
-      });
-      return { success: false as const, reason: "invalid_pin" as const };
+    // 1. Fetch ticket to determine if admin override is needed
+    const { data: ticketRow, error: ticketError } = await supabaseAdmin
+      .from("registrations")
+      .select("pass_type, payment_status")
+      .eq("ticket_number", ticketNumber)
+      .maybeSingle();
+
+    if (ticketError || !ticketRow) {
+      return { success: false as const, reason: "db_error" as const };
+    }
+
+    const isVip = ticketRow.pass_type === "vip";
+    const isPaid = ticketRow.payment_status === "paid" || ticketRow.payment_status === "free";
+    const requireAdmin = isVip && !isPaid;
+
+    if (requireAdmin) {
+      const expectedAdminPin = process.env.ADMIN_OVERRIDE_PIN;
+      if (!expectedAdminPin || pin !== expectedAdminPin) {
+        await supabaseAdmin.from("ticket_checkin_log").insert({
+          ticket_number: ticketNumber,
+          action: "pin_fail",
+        });
+        
+        const expectedStaffPin = process.env.STAFF_CHECKIN_PIN;
+        if (expectedStaffPin && pin === expectedStaffPin) {
+          return { success: false as const, reason: "unverified_vip_override_required" as const };
+        }
+        return { success: false as const, reason: "invalid_pin" as const };
+      }
+    } else {
+      // Regular PIN gate
+      const expectedPin = process.env.STAFF_CHECKIN_PIN;
+      if (!expectedPin || pin !== expectedPin) {
+        // Record the failed attempt for rate-limit accounting
+        await supabaseAdmin.from("ticket_checkin_log").insert({
+          ticket_number: ticketNumber,
+          action: "pin_fail",
+        });
+        return { success: false as const, reason: "invalid_pin" as const };
+      }
     }
 
     // 2. Atomic conditional update — only succeeds when checked_in_at IS NULL.

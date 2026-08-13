@@ -23,6 +23,8 @@ import {
   AlertTriangle,
   CheckCircle2,
   Crown,
+  ShieldCheck,
+  ShieldAlert,
 } from "lucide-react";
 import logo from "@/assets/ameer-expo-logo.png";
 import { VideoEmbed } from "../components/expo/VideoEmbed";
@@ -289,6 +291,7 @@ function Register() {
   const [step, setStep] = useState(0);
   const [f, setF] = useState<FormState>(initial);
   const [submitted, setSubmitted] = useState<string | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [resumedAt, setResumedAt] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
@@ -335,11 +338,13 @@ function Register() {
         if (result && result.paymentStatus === "paid") {
           setSubmitted(result.ticketNumber || result.referenceCode);
           setSubmittedId(confirmingRid);
+          setPaymentStatus("paid");
           try {
             localStorage.setItem(
               STORAGE_KEY,
               JSON.stringify({
                 submitted: result.ticketNumber || result.referenceCode,
+                paymentStatus: "paid",
                 savedAt: new Date().toISOString(),
               }),
             );
@@ -387,9 +392,11 @@ function Register() {
           step?: number;
           savedAt?: string;
           submitted?: string | null;
+          paymentStatus?: string | null;
         };
         if (parsed.submitted) {
           setSubmitted(parsed.submitted);
+          if (parsed.paymentStatus) setPaymentStatus(parsed.paymentStatus);
           // Note: we can't restore submittedId from localStorage right now,
           // so download buttons won't appear on a hard refresh after success.
         } else {
@@ -490,6 +497,7 @@ function Register() {
           STORAGE_KEY,
           JSON.stringify({
             submitted: result.ticketNumber || result.referenceCode,
+            paymentStatus: result.paymentStatus,
             savedAt: new Date().toISOString(),
           }),
         );
@@ -497,6 +505,7 @@ function Register() {
         /* ignore */
       }
       setSubmitted(result.ticketNumber || result.referenceCode);
+      setPaymentStatus(result.paymentStatus as string);
       setSubmittedId(result.id);
       if (result.paymentFailed) {
         setPaymentFailed(true);
@@ -733,13 +742,24 @@ function Register() {
               </div>
 
               {/* Ticket number badge */}
-              <div className="rounded-xl border border-border/60 bg-card px-5 py-3">
-                <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
-                  Ticket Number
+              <div className="rounded-xl border border-border/60 bg-card px-5 py-3 flex items-center justify-between">
+                <div className="text-left">
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
+                    Ticket Number
+                  </div>
+                  <div className="font-mono text-xl font-bold text-primary tracking-wider">
+                    {submitted}
+                  </div>
                 </div>
-                <div className="font-mono text-xl font-bold text-primary tracking-wider">
-                  {submitted}
-                </div>
+                {paymentStatus === "paid" || paymentStatus === "free" ? (
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-full px-2.5 py-1">
+                    <ShieldCheck size={14} /> Verified
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-600 bg-amber-50 border border-amber-100 rounded-full px-2.5 py-1">
+                    <ShieldAlert size={14} /> Unverified
+                  </div>
+                )}
               </div>
 
               {/* Event details */}
